@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+
+
 """
 fritztools:
 

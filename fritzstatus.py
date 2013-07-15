@@ -1,10 +1,23 @@
-#! /opt/local/bin/python2.7
-#! /usr/bin/env python2.7
+# -*- coding: utf-8 -*-
 
+"""
+fritzstatus.py
 
+Modul to read status-informations from an AVM FritzBox.
+"""
+
+_version_ = '0.1.1'
+
+import argparse
+import collections
 import time
 import fritzconnection
 import fritztools
+
+
+# version-access:
+def get_version():
+    return _version_
 
 
 class FritzStatus(object):
@@ -15,7 +28,7 @@ class FritzStatus(object):
     with the FritzBox fails.
     """
 
-    def __init__(self, address=fritzconnection.FRITZ_ADDRESS,
+    def __init__(self, address=fritzconnection.FRITZ_IP_ADDRESS,
                        port=fritzconnection.FRITZ_TCP_PORT):
         super(FritzStatus, self).__init__()
         self.fc = fritzconnection.FritzConnection(address=address, port=port)
@@ -84,8 +97,8 @@ class FritzStatus(object):
         received = self.bytes_received
         traffic_call = time.time()
         time_delta = traffic_call - self.last_traffic_call
-        upstream = int(1.0 * (sent - self.last_bytes_sent) / time_delta)
-        downstream = int(1.0 * (received - self.last_bytes_received) / time_delta)
+        upstream = int(1.0 * (sent - self.last_bytes_sent)/time_delta)
+        downstream = int(1.0 * (received - self.last_bytes_received)/time_delta)
         self.last_bytes_sent = sent
         self.last_bytes_received = received
         self.last_traffic_call = traffic_call
@@ -114,7 +127,7 @@ class FritzStatus(object):
         Same as max_bit_rate but returns the rate in bytes/sec.
         """
         upstream, downstream = self.max_bit_rate
-        return upstream / 8, downstream / 8
+        return upstream / 8.0, downstream / 8.0
 
     @property
     def str_max_bit_rate(self):
@@ -131,20 +144,40 @@ class FritzStatus(object):
         self.fc.reconnect()
 
 
-if __name__ == '__main__':
-    fs = FritzStatus()
-    print(fs.modelname)
-    print(fs.bytes_sent)
-    print(fs.bytes_received)
-    print(fs.is_linked)
-    print(fs.is_connected)
-    print(fs.external_ip)
-    print(fs.uptime)
-    print(fs.str_uptime)
-    print(fs.max_bit_rate)
-    print(fs.max_byte_rate)
-    print(fs.str_max_bit_rate)
-    print(fs.transmission_rate)
-    time.sleep(1)
-    print(fs.transmission_rate)
+# ---------------------------------------------------------
+# cli-section:
+# ---------------------------------------------------------
 
+def _get_cli_arguments():
+    parser = argparse.ArgumentParser(description='FritzBox Status')
+    parser.add_argument('-i', '--ip-address',
+                        nargs='?', default=fritzconnection.FRITZ_IP_ADDRESS,
+                        dest='address',
+                        help='ip-address of the FritzBox to connect to. '
+                             'Default: %s' % fritzconnection.FRITZ_IP_ADDRESS)
+    parser.add_argument('-p', '--port',
+                        nargs='?', default=fritzconnection.FRITZ_TCP_PORT,
+                        dest='port',
+                        help='port of the FritzBox to connect to. '
+                             'Default: %s' % fritzconnection.FRITZ_TCP_PORT)
+    args = parser.parse_args()
+    return args
+
+def _print_status(arguments):
+    print('\nFritzStatus:')
+    print('{:<20}{}'.format('version:', get_version()))
+    fs = FritzStatus(address=arguments.address, port=arguments.port)
+    for status, info in collections.OrderedDict([
+        ('model:', fs.modelname),
+        ('is linked:', fs.is_linked),
+        ('is connected:', fs.is_connected),
+        ('external ip:', fs.external_ip),
+        ('uptime:', fs.str_uptime),
+        ('bytes send:', fs.bytes_sent),
+        ('bytes received:', fs.bytes_received),
+        ('max. bit rate:', fs.str_max_bit_rate)
+        ]).items():
+        print('{:<20}{}'.format(status, info))
+
+if __name__ == '__main__':
+    _print_status(_get_cli_arguments())

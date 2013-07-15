@@ -1,0 +1,6 @@
+syntax: glob
+
+*.pyc
+.DS_Store
+__pycache__/*
+

@@ -1,4 +1,16 @@
+# -*- coding: utf-8 -*-
 
+"""
+fritzmonitor.py
+
+Implement a tkinter-based grafic interface to view basic status- and
+traffic-informations.
+
+"""
+
+_version_ = '0.1.0'
+
+import argparse
 try:
     # python 2
     import Tkinter as tk
@@ -60,7 +72,7 @@ class MeterRectangle(object):
 class FritzMonitor(tk.Frame):
 
     def __init__(self, master=None,
-                       address=fritzconnection.FRITZ_ADDRESS,
+                       address=fritzconnection.FRITZ_IP_ADDRESS,
                        port=fritzconnection.FRITZ_TCP_PORT):
         tk.Frame.__init__(self, master)
         self.status = fritzstatus.FritzStatus(address=address, port=port)
@@ -97,6 +109,7 @@ class FritzMonitor(tk.Frame):
         self.traffic_info.set(text)
 
     def update_status(self):
+        """Update status informations in tkinter window."""
         try:
             # all this may fail if the connection to the fritzbox is down
             self.update_connection_status()
@@ -104,13 +117,19 @@ class FritzMonitor(tk.Frame):
             self.ip.set(self.status.external_ip)
             self.uptime.set(self.status.str_uptime)
             upstream, downstream = self.status.transmission_rate
-            self.in_meter.set_fraction(1.0 * downstream / self.max_downstream)
-            self.out_meter.set_fraction(1.0 * upstream / self.max_upstream)
-            self.update_traffic_info()
         except IOError:
             # here we inform the user about being unable to
             # update the status informations
             pass
+        else:
+            # max_downstream and max_upstream may be zero if the
+            # fritzbox is configured as ip-client.
+            if self.max_downstream > 0:
+                self.in_meter.set_fraction(
+                    1.0 * downstream / self.max_downstream)
+            if self.max_upstream > 0:
+                self.out_meter.set_fraction(1.0 * upstream / self.max_upstream)
+            self.update_traffic_info()
         self.after(1000, self.update_status)
 
     def create_widgets(self):
@@ -154,8 +173,27 @@ class FritzMonitor(tk.Frame):
         tk.Button(self, text='Quit', command=self.quit).grid(row=5, column=1)
 
 
+# ---------------------------------------------------------
+# cli-section:
+# ---------------------------------------------------------
+
+def _get_cli_arguments():
+    parser = argparse.ArgumentParser(description='FritzBox Monitor')
+    parser.add_argument('-i', '--ip-address',
+                        nargs='?', default=fritzconnection.FRITZ_IP_ADDRESS,
+                        dest='address',
+                        help='ip-address of the FritzBox to connect to. '
+                             'Default: %s' % fritzconnection.FRITZ_IP_ADDRESS)
+    parser.add_argument('-p', '--port',
+                        nargs='?', default=fritzconnection.FRITZ_TCP_PORT,
+                        dest='port',
+                        help='port of the FritzBox to connect to. '
+                             'Default: %s' % fritzconnection.FRITZ_TCP_PORT)
+    args = parser.parse_args()
+    return args
 
 if __name__ == '__main__':
-    app = FritzMonitor()
+    arguments = _get_cli_arguments()
+    app = FritzMonitor(address=arguments.address, port=arguments.port)
     app.master.title('FritzMonitor')
     app.mainloop()

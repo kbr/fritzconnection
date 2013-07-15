@@ -1,5 +1,4 @@
-#! /opt/local/bin/python2.7
-#! /usr/bin/env python2.7
+# -*- coding: utf-8 -*-
 
 """
 fritzconnection.py
@@ -9,9 +8,12 @@ All availabel actions (aka commands) and corresponding parameters are
 read from the xml-configuration files requested from the FritzBox. So
 the available actions may change depending on the FritzBox model and
 firmware.
+The command-line interface allows the api-inspection.
 
 Runs with python >= 2.7
 """
+
+_version_ = '0.1.1'
 
 try:
     # python 3
@@ -23,12 +25,17 @@ except ImportError:
     from urllib2 import urlopen
 import xml.etree.ElementTree as etree
 import xml.sax
+import argparse
 
 
 # FritzConnection defaults:
-FRITZ_ADDRESS = '169.254.1.1'
+FRITZ_IP_ADDRESS = '169.254.1.1'
 FRITZ_TCP_PORT = 49000
 FRITZ_DESC_FILES = ('igddesc.xml',)# 'tr64desc.xml')
+
+# version-access:
+def get_version():
+    return _version_
 
 
 class FritzBoxSAXHandler(xml.sax.handler.ContentHandler):
@@ -84,13 +91,14 @@ class FritzAction(object):
         </s:Body>
         </s:Envelope>
         """
-    address = FRITZ_ADDRESS
+    address = FRITZ_IP_ADDRESS
     port = FRITZ_TCP_PORT
     method = 'post'
 
-    def __init__(self, service_type, control_url):
+    def __init__(self, service_type, control_url, connection_user):
         self.service_type = service_type
         self.control_url = control_url
+        self.connection_user = connection_user
         self.name = ''
         self.arguments = {}
 
@@ -101,15 +109,18 @@ class FritzAction(object):
     def execute(self, timeout=2):
         """
         Calls the FritzBox action and returns a dictionary with the arguments.
-        TODO: set values!
+        TODO: send arguments in case of tr64-connection.
         Will raise an IOError if connection.request() fails.
         """
         header = self.header.copy()
         header['soapaction'] = '%s#%s' % (self.service_type, self.name)
         message = self.envelope % (self.name, self.service_type)
+        # TODO: catch IOError exception and try to get access with
+        # the connection_user.
         connection = HTTPConnection(self.address, self.port, timeout)
         connection.request(self.method, self.control_url, message, header)
         response = connection.getresponse().read()
+        # end of TODO section (reading)
         handler = FritzBoxSAXHandler(self.arguments)
         xml.sax.parseString(response, handler)
         return handler.get_values()
@@ -196,12 +207,14 @@ class FritzSCDPParser(FritzXmlParser):
             state_variables[key] = value
         return state_variables
 
-    def get_actions(self):
+    def get_actions(self, connection_user):
         """Returns a list of FritzAction instances."""
         actions = []
         nodes = self.root.iter(self.nodename('action'))
         for node in nodes:
-            action = FritzAction(self.service_type, self.control_url)
+            action = FritzAction(self.service_type,
+                                 self.control_url,
+                                 connection_user)
             action.name = node.find(self.nodename('name')).text
             action.arguments = self._get_arguments(node)
             actions.append(action)
@@ -232,19 +245,36 @@ class FritzSCDPParser(FritzXmlParser):
         return argument
 
 
+class FritzConnectionUser(object):
+    """
+    TR64 connections are only allowed by a registered user.
+    We need this user for every action to execute.
+    This is a singleton object.
+    """
+    def __init__(self, user, password):
+        self.user = user
+        self.password = password
+
+    @property
+    def url_prefix(self):
+        return '%s:%s@' % (self.user, self.password)
+
+
 class FritzConnection(object):
     """
     FritzBox-Interface for status-information
-
     """
-    def __init__(self, address=FRITZ_ADDRESS,
+    def __init__(self, address=FRITZ_IP_ADDRESS,
                        port=FRITZ_TCP_PORT,
-                       descfiles=FRITZ_DESC_FILES):
+                       descfiles=FRITZ_DESC_FILES,
+                       user='',
+                       password=''):
         FritzAction.address = address
         FritzAction.port = port
         self.address = address
         self.port = port
         self.descfiles = descfiles
+        self.connection_user = FritzConnectionUser(user, password)
         self.modelname = None
         self.actions = {}
         self._read_descriptions()
@@ -262,7 +292,7 @@ class FritzConnection(object):
         """Get actions from services."""
         for service in services:
             parser = FritzSCDPParser(self.address, self.port, service)
-            actions = parser.get_actions()
+            actions = parser.get_actions(self.connection_user)
             self.actions.update({action.name: action for action in actions})
 
     @property
@@ -293,16 +323,64 @@ class FritzConnection(object):
         self.call_action('ForceTermination')
 
 
-if __name__ == '__main__':
-    print('FritzConnection:')
-    fc = FritzConnection()
+# ---------------------------------------------------------
+# cli-section:
+# ---------------------------------------------------------
 
-    print(fc.modelname)
-    print(fc.actionnames)
-    print(fc.get_action_arguments('GetStatusInfo'))
-    print(fc.call_action('GetStatusInfo'))
-    print(fc.call_action('GetTotalBytesSent'))
-    print(fc.call_action('GetTotalBytesReceived'))
-    print(fc.call_action('GetExternalIPAddress'))
-    print(fc.call_action('GetCommonLinkProperties'))
-#     print(fc.call_action('ForceTermination'))
+def _get_cli_arguments():
+    parser = argparse.ArgumentParser(description='FritzBox API')
+    parser.add_argument('-i', '--ip-address',
+                        nargs='?', default=FRITZ_IP_ADDRESS,
+                        dest='address',
+                        help='ip-address of the FritzBox to connect to. '
+                             'Default: %s' % FRITZ_IP_ADDRESS)
+    parser.add_argument('-p', '--port',
+                        nargs='?', default=FRITZ_TCP_PORT,
+                        dest='port',
+                        help='port of the FritzBox to connect to. '
+                             'Default: %s' % FRITZ_TCP_PORT)
+    parser.add_argument('-a', '--actionnames',
+                        action='store_true',
+                        dest='show_actionnames',
+                        help='show supported actionnames')
+    parser.add_argument('-l', '--list-args',
+                        nargs=1,
+                        dest='show_action_arg',
+                        help='show arguments of a given action: -l <actionname>')
+    parser.add_argument('-c', '--complete-args',
+                        action='store_true',
+                        dest='show_all_action_args',
+                        help='show arguments of all actions')
+    args = parser.parse_args()
+    return args
+
+def _print_actionnames(fc):
+    print('{:<20}'.format('actionnames:'))
+    for name in fc.actionnames:
+        print('{:<20}{}'.format('', name))
+
+def _print_action_arg(fc, actionname):
+    args = fc.get_action_arguments(actionname)
+    print('\n{:<20}{}'.format('actionname:', actionname))
+    print('{:<20}'.format('arguments:'))
+    for arg in args:
+        print('{:<20}{}'.format('', arg))
+
+def _print_all_action_args(fc):
+    for name in fc.actionnames:
+        _print_action_arg(fc, name)
+
+def _print_information(arguments):
+    print('\nFritzConnection:')
+    print('{:<20}{}'.format('version:', get_version()))
+    fc = FritzConnection(address=arguments.address, port=arguments.port)
+    print('{:<20}{}'.format('model:', fc.modelname))
+    if arguments.show_actionnames:
+        _print_actionnames(fc)
+    if arguments.show_action_arg:
+        _print_action_arg(fc, arguments.show_action_arg[0])
+    if arguments.show_all_action_args:
+        _print_all_action_args(fc)
+
+if __name__ == '__main__':
+    _print_information(_get_cli_arguments())
