@@ -18,7 +18,7 @@ _version_ = '0.2.0'
 import argparse
 import requests
 
-from lxml import etree as etree
+from lxml import etree
 
 
 # FritzConnection defaults:
