@@ -10,22 +10,15 @@ the available actions may change depending on the FritzBox model and
 firmware.
 The command-line interface allows the api-inspection.
 
-Runs with python >= 2.7
+#Runs with python >= 2.7 # TODO: test with 2.7
 """
 
-_version_ = '0.1.1'
+_version_ = '0.2.0'
 
-try:
-    # python 3
-    from http.client import HTTPConnection
-    from urllib.request import urlopen
-except ImportError:
-    # python 2
-    from httplib import HTTPConnection
-    from urllib2 import urlopen
-import xml.etree.ElementTree as etree
-import xml.sax
 import argparse
+import requests
+
+from lxml import etree as etree
 
 
 # FritzConnection defaults:
@@ -33,45 +26,10 @@ FRITZ_IP_ADDRESS = '169.254.1.1'
 FRITZ_TCP_PORT = 49000
 FRITZ_DESC_FILES = ('igddesc.xml',)# 'tr64desc.xml')
 
+
 # version-access:
 def get_version():
     return _version_
-
-
-class FritzBoxSAXHandler(xml.sax.handler.ContentHandler):
-    """
-    Handler for xml-response returned from FritzBox.
-    """
-
-    def __init__(self, arguments, *args, **kwargs):
-        # for old-style class compatibility we don't use super:
-        xml.sax.handler.ContentHandler.__init__(self, *args, **kwargs)
-        self.argument = None
-        self.arguments = arguments
-        self.values = {argument: '' for argument in arguments}
-
-    def startElement(self, name, attrs):
-        if name in self.values:
-            self.argument = name
-
-    def endElement(self, name):
-        if name == self.argument:
-            self.argument = None
-
-    def characters(self, content):
-        if self.argument:
-            self.values[self.argument] = content
-
-    def get_values(self):
-        for argument, value in self.values.items():
-            data_type = self.arguments[argument].data_type
-            if data_type.startswith('ui'):
-                try:
-                    self.values[argument] = int(value)
-                except ValueError:
-                    # should not happen, but happens :(
-                    self.values[argument] = 0
-        return self.values
 
 
 class FritzAction(object):
@@ -95,10 +53,9 @@ class FritzAction(object):
     port = FRITZ_TCP_PORT
     method = 'post'
 
-    def __init__(self, service_type, control_url, connection_user):
+    def __init__(self, service_type, control_url):
         self.service_type = service_type
         self.control_url = control_url
-        self.connection_user = connection_user
         self.name = ''
         self.arguments = {}
 
@@ -106,24 +63,39 @@ class FritzAction(object):
     def info(self):
         return [self.arguments[argument].info for argument in self.arguments]
 
-    def execute(self, timeout=2):
+    def execute(self):
         """
         Calls the FritzBox action and returns a dictionary with the arguments.
         TODO: send arguments in case of tr64-connection.
-        Will raise an IOError if connection.request() fails.
         """
-        header = self.header.copy()
-        header['soapaction'] = '%s#%s' % (self.service_type, self.name)
-        message = self.envelope % (self.name, self.service_type)
-        # TODO: catch IOError exception and try to get access with
-        # the connection_user.
-        connection = HTTPConnection(self.address, self.port, timeout)
-        connection.request(self.method, self.control_url, message, header)
-        response = connection.getresponse().read()
-        # end of TODO section (reading)
-        handler = FritzBoxSAXHandler(self.arguments)
-        xml.sax.parseString(response, handler)
-        return handler.get_values()
+        headers = self.header.copy()
+        headers['soapaction'] = '%s#%s' % (self.service_type, self.name)
+        data = self.envelope % (self.name, self.service_type)
+        url = 'http://%s:%s%s' % (self.address, self.port, self.control_url)
+        response = requests.post(url, data=data, headers=headers)
+        # lxml needs bytes, therefor .content (not .text)
+        result = self.parse_response(response.content)
+        return result
+
+    def parse_response(self, response):
+        """
+        Evaluates the action-call response from a FritzBox.
+        The response is a xml byte-string.
+        Returns a dictionary with the received arguments-value pairs.
+        The values are converted according to the given data_types.
+        """
+        result = {}
+        root = etree.fromstring(response)
+        for argument in self.arguments.values():
+            value = root.find('.//%s' % argument.name).text
+            if argument.data_type.startswith('ui'):
+                try:
+                    value = int(value)
+                except ValueError:
+                    # should not happen
+                    value = None
+            result[argument.name] = value
+        return result
 
 
 class FritzActionArgument(object):
@@ -138,22 +110,21 @@ class FritzActionArgument(object):
 
 
 class FritzXmlParser(object):
-    """
-    Base class for parsing fritzbox-xml-files.
-    """
+    """Base class for parsing fritzbox-xml-files."""
 
-    def __init__(self, address, port, filename):
+    def __init__(self, address, port, filename=None):
         """Loads and parses an xml-file from a FritzBox."""
-        stream = urlopen('http://%s:%s/%s' % (address, port, filename))
-        content = stream.read()
-        self.root = etree.fromstring(content)
-        self.ns_prefix = ''
-        if self.root.tag.startswith('{'):
-            self.ns_prefix = self.root.tag.split('}')[0] + '}'
+        if address is None:
+            source = filename
+        else:
+            source = 'http://{0}:{1}/{2}'.format(address, port, filename)
+        tree = etree.parse(source)
+        self.root = tree.getroot()
+        self.namespace = etree.QName(self.root.tag).namespace
 
     def nodename(self, name):
         """Extends name with the xmlns-prefix to a valid nodename."""
-        return "%s%s" % (self.ns_prefix, name)
+        return etree.QName(self.root, name)
 
 
 class FritzDescParser(FritzXmlParser):
@@ -161,7 +132,7 @@ class FritzDescParser(FritzXmlParser):
 
     def get_modelname(self):
         """Returns the FritzBox model name."""
-        xpath = "%sdevice/%smodelName" % (self.ns_prefix, self.ns_prefix)
+        xpath = '%s/%s' % (self.nodename('device'), self.nodename('modelName'))
         return self.root.find(xpath).text
 
     def get_services(self):
@@ -170,7 +141,8 @@ class FritzDescParser(FritzXmlParser):
         (serviceType, controlURL, SCDPURL)
         """
         result = []
-        nodes = self.root.iter(self.nodename('service'))
+        nodes = self.root.iterfind(
+            './/ns:service', namespaces={'ns': self.namespace})
         for node in nodes:
             result.append((
                 node.find(self.nodename('serviceType')).text,
@@ -182,39 +154,44 @@ class FritzDescParser(FritzXmlParser):
 class FritzSCDPParser(FritzXmlParser):
     """Class for parsing SCDP.xml-files"""
 
-    def __init__(self, address, port, service):
+    def __init__(self, address, port, service, filename=None):
         """
         Reads and parses a SCDP.xml-file from FritzBox.
         'service' is a tuple of containing:
         (serviceType, controlURL, SCPDURL)
         """
+        self.state_variables = {}
         self.service_type, self.control_url, scpd_url = service
-        super(FritzSCDPParser, self).__init__(address, port, scpd_url)
-        self.state_variables = self._get_state_variables()
+        if filename is None:
+            # access the FritzBox
+            super(FritzSCDPParser, self).__init__(address, port, scpd_url)
+        else:
+            # for testing read the xml-data from a file
+            super(FritzSCDPParser, self).__init__(None, None, filename=filename)
 
-    def _get_state_variables(self):
+    def _read_state_variables(self):
         """
         Reads the stateVariable information from the xml-file.
         The information we like to extract are name and dataType so we
         can assign them later on to FritzActionArgument-instances.
         Returns a dictionary: key:value = name:dataType
         """
-        state_variables = {}
-        nodes = self.root.iter(self.nodename('stateVariable'))
+        nodes = self.root.iterfind(
+            './/ns:stateVariable', namespaces={'ns': self.namespace})
         for node in nodes:
             key = node.find(self.nodename('name')).text
             value = node.find(self.nodename('dataType')).text
-            state_variables[key] = value
-        return state_variables
+            self.state_variables[key] = value
 
-    def get_actions(self, connection_user):
+    def get_actions(self):
         """Returns a list of FritzAction instances."""
+        self._read_state_variables()
         actions = []
-        nodes = self.root.iter(self.nodename('action'))
+        nodes = self.root.iterfind(
+            './/ns:action', namespaces={'ns': self.namespace})
         for node in nodes:
             action = FritzAction(self.service_type,
-                                 self.control_url,
-                                 connection_user)
+                                 self.control_url)
             action.name = node.find(self.nodename('name')).text
             action.arguments = self._get_arguments(node)
             actions.append(action)
@@ -225,9 +202,8 @@ class FritzSCDPParser(FritzXmlParser):
         Returns a dictionary of arguments for the given action_node.
         """
         arguments = {}
-        xpath = r'./%s/%s' % (self.nodename('argumentList'),
-                              self.nodename('argument'))
-        argument_nodes = action_node.findall(xpath)
+        argument_nodes = action_node.iterfind(
+            r'./ns:argumentList/ns:argument', namespaces={'ns': self.namespace})
         for argument_node in argument_nodes:
             argument = self._get_argument(argument_node)
             arguments[argument.name] = argument
@@ -245,21 +221,6 @@ class FritzSCDPParser(FritzXmlParser):
         return argument
 
 
-class FritzConnectionUser(object):
-    """
-    TR64 connections are only allowed by a registered user.
-    We need this user for every action to execute.
-    This is a singleton object.
-    """
-    def __init__(self, user, password):
-        self.user = user
-        self.password = password
-
-    @property
-    def url_prefix(self):
-        return '%s:%s@' % (self.user, self.password)
-
-
 class FritzConnection(object):
     """
     FritzBox-Interface for status-information
@@ -274,7 +235,6 @@ class FritzConnection(object):
         self.address = address
         self.port = port
         self.descfiles = descfiles
-        self.connection_user = FritzConnectionUser(user, password)
         self.modelname = None
         self.actions = {}
         self._read_descriptions()
@@ -292,7 +252,7 @@ class FritzConnection(object):
         """Get actions from services."""
         for service in services:
             parser = FritzSCDPParser(self.address, self.port, service)
-            actions = parser.get_actions(self.connection_user)
+            actions = parser.get_actions()
             self.actions.update({action.name: action for action in actions})
 
     @property
@@ -351,6 +311,10 @@ def _get_cli_arguments():
                         action='store_true',
                         dest='show_all_action_args',
                         help='show arguments of all actions')
+    parser.add_argument('-r', '--reconnect',
+                        action='store_true',
+                        dest='reconnect',
+                        help='reconnect with new ip')
     args = parser.parse_args()
     return args
 
@@ -381,6 +345,8 @@ def _print_information(arguments):
         _print_action_arg(fc, arguments.show_action_arg[0])
     if arguments.show_all_action_args:
         _print_all_action_args(fc)
+    if arguments.reconnect:
+        fc.reconnect()
 
 if __name__ == '__main__':
     _print_information(_get_cli_arguments())

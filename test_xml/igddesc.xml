@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<root xmlns="urn:schemas-upnp-org:device-1-0">
+	<specVersion>
+		<major>1</major>
+		<minor>0</minor>
+	</specVersion>
+	<device>
+		<deviceType>urn:schemas-upnp-org:device:InternetGatewayDevice:1</deviceType>
+		<friendlyName>radon UPnP/1.0 AVM FRITZ!Box Fon WLAN 7170 29.04.87</friendlyName>
+		<manufacturer>AVM Berlin</manufacturer>
+		<manufacturerURL>http://www.avm.de</manufacturerURL>
+		<modelDescription>FRITZ!Box Fon WLAN 7170</modelDescription>
+		<modelName>FRITZ!Box Fon WLAN 7170</modelName>
+		<modelNumber>avm</modelNumber>
+		<modelURL>http://www.avm.de</modelURL>
+		<UDN>uuid:75802409-bccb-40e7-8e6c-001A4F30547A</UDN>
+		<iconList>
+			<icon>
+				<mimetype>image/gif</mimetype>
+				<width>118</width>
+				<height>119</height>
+				<depth>8</depth>
+				<url>/ligd.gif</url>
+			</icon>
+		</iconList>
+		<serviceList>
+			<service>
+				<serviceType>urn:schemas-any-com:service:Any:1</serviceType>
+				<serviceId>urn:any-com:serviceId:any1</serviceId>
+				<controlURL>/upnp/control/any</controlURL>
+				<eventSubURL>/upnp/control/any</eventSubURL>
+				<SCPDURL>/any.xml</SCPDURL>
+			</service>
+        </serviceList>
+		<deviceList>
+			<device>
+				<deviceType>urn:schemas-upnp-org:device:WANDevice:1</deviceType>
+				<friendlyName>WANDevice - FRITZ!Box Fon WLAN 7170</friendlyName>
+				<manufacturer>AVM Berlin</manufacturer>
+				<manufacturerURL>www.avm.de</manufacturerURL>
+				<modelDescription>WANDevice - FRITZ!Box Fon WLAN 7170</modelDescription>
+				<modelName>WANDevice - FRITZ!Box Fon WLAN 7170</modelName>
+				<modelNumber>avm</modelNumber>
+				<modelURL>www.avm.de</modelURL>
+				<UDN>uuid:75802409-bccb-40e7-8e6b-001A4F30547A</UDN>
+				<UPC>AVM IGD</UPC>
+				<serviceList>
+					<service>
+						<serviceType>urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1</serviceType>
+						<serviceId>urn:upnp-org:serviceId:WANCommonIFC1</serviceId>
+						<controlURL>/upnp/control/WANCommonIFC1</controlURL>
+						<eventSubURL>/upnp/control/WANCommonIFC1</eventSubURL>
+						<SCPDURL>/igdicfgSCPD.xml</SCPDURL>
+					</service>
+				</serviceList>
+				<deviceList>
+					<device>
+						<deviceType>urn:schemas-upnp-org:device:WANConnectionDevice:1</deviceType>
+						<friendlyName>WANConnectionDevice - FRITZ!Box Fon WLAN 7170</friendlyName>
+						<manufacturer>AVM Berlin</manufacturer>
+						<manufacturerURL>www.avm.de</manufacturerURL>
+						<modelDescription>WANConnectionDevice - FRITZ!Box Fon WLAN 7170</modelDescription>
+						<modelName>WANConnectionDevice - FRITZ!Box Fon WLAN 7170</modelName>
+						<modelNumber>avm</modelNumber>
+						<modelURL>www.avm.de</modelURL>
+						<UDN>uuid:75802409-bccb-40e7-8e6a-001A4F30547A</UDN>
+						<UPC>AVM IGD</UPC>
+						<serviceList>
+							<service>
+								<serviceType>urn:schemas-upnp-org:service:WANDSLLinkConfig:1</serviceType>
+								<serviceId>urn:upnp-org:serviceId:WANDSLLinkC1</serviceId>
+								<controlURL>/upnp/control/WANDSLLinkC1</controlURL>
+								<eventSubURL>/upnp/control/WANDSLLinkC1</eventSubURL>
+								<SCPDURL>/igddslSCPD.xml</SCPDURL>
+							</service>
+							<service>
+								<serviceType>urn:schemas-upnp-org:service:WANIPConnection:1</serviceType>
+								<serviceId>urn:upnp-org:serviceId:WANIPConn1</serviceId>
+								<controlURL>/upnp/control/WANIPConn1</controlURL>
+								<eventSubURL>/upnp/control/WANIPConn1</eventSubURL>
+								<SCPDURL>/igdconnSCPD.xml</SCPDURL>
+							</service>
+						</serviceList>
+					</device>
+				</deviceList>
+			</device>
+		</deviceList>
+		<presentationURL>http://fritz.box</presentationURL>
+	</device>
+</root>
