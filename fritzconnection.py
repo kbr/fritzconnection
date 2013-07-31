@@ -13,10 +13,11 @@ The command-line interface allows the api-inspection.
 #Runs with python >= 2.7 # TODO: test with 2.7
 """
 
-_version_ = '0.2.0'
+_version_ = '0.3.0'
 
 import argparse
 import requests
+from requests.auth import HTTPDigestAuth
 
 from lxml import etree
 
@@ -24,7 +25,8 @@ from lxml import etree
 # FritzConnection defaults:
 FRITZ_IP_ADDRESS = '169.254.1.1'
 FRITZ_TCP_PORT = 49000
-FRITZ_DESC_FILES = ('igddesc.xml',)# 'tr64desc.xml')
+FRITZ_IGD_DESC_FILE = 'igddesc.xml'
+FRITZ_TR64_DESC_FILE = 'tr64desc.xml'
 
 
 # version-access:
@@ -36,6 +38,9 @@ class FritzAction(object):
     """
     Class representing an action (aka command).
     Knows how to execute itself.
+    Access to any password-protected action must require HTTP digest
+    authentication.
+    See: http://www.broadband-forum.org/technical/download/TR-064.pdf
     """
     header = {'soapaction': '',
               'content-type': 'text/xml',
@@ -52,6 +57,8 @@ class FritzAction(object):
     address = FRITZ_IP_ADDRESS
     port = FRITZ_TCP_PORT
     method = 'post'
+    user = ''
+    password = ''
 
     def __init__(self, service_type, control_url):
         self.service_type = service_type
@@ -72,7 +79,10 @@ class FritzAction(object):
         headers['soapaction'] = '%s#%s' % (self.service_type, self.name)
         data = self.envelope % (self.name, self.service_type)
         url = 'http://%s:%s%s' % (self.address, self.port, self.control_url)
-        response = requests.post(url, data=data, headers=headers)
+        auth = None
+        if self.password:
+            auth=HTTPDigestAuth(self.user, self.password)
+        response = requests.post(url, data=data, headers=headers, auth=auth)
         # lxml needs bytes, therefor .content (not .text)
         result = self.parse_response(response.content)
         return result
@@ -83,6 +93,7 @@ class FritzAction(object):
         The response is a xml byte-string.
         Returns a dictionary with the received arguments-value pairs.
         The values are converted according to the given data_types.
+        TODO: boolean and signed integers data-types from tr64 responses
         """
         result = {}
         root = etree.fromstring(response)
@@ -107,6 +118,20 @@ class FritzActionArgument(object):
     @property
     def info(self):
         return (self.name, self.direction, self.data_type)
+
+
+class FritzService(object):
+    """Attribute class for service."""
+
+    def __init__(self, service_type, control_url, scpd_url):
+        self.service_type = service_type
+        self.control_url = control_url
+        self.scpd_url = scpd_url
+        self.actions = {}
+
+    @property
+    def name(self):
+        return self.service_type.split(':')[-2]
 
 
 class FritzXmlParser(object):
@@ -136,15 +161,12 @@ class FritzDescParser(FritzXmlParser):
         return self.root.find(xpath).text
 
     def get_services(self):
-        """
-        Returns a list of tuples with service informations:
-        (serviceType, controlURL, SCDPURL)
-        """
+        """Returns a list of FritzService-objects."""
         result = []
         nodes = self.root.iterfind(
             './/ns:service', namespaces={'ns': self.namespace})
         for node in nodes:
-            result.append((
+            result.append(FritzService(
                 node.find(self.nodename('serviceType')).text,
                 node.find(self.nodename('controlURL')).text,
                 node.find(self.nodename('SCPDURL')).text))
@@ -159,12 +181,14 @@ class FritzSCDPParser(FritzXmlParser):
         Reads and parses a SCDP.xml-file from FritzBox.
         'service' is a tuple of containing:
         (serviceType, controlURL, SCPDURL)
+        'service' is a FritzService object:
         """
         self.state_variables = {}
-        self.service_type, self.control_url, scpd_url = service
+        self.service = service
         if filename is None:
             # access the FritzBox
-            super(FritzSCDPParser, self).__init__(address, port, scpd_url)
+            super(FritzSCDPParser, self).__init__(address, port,
+                                                  service.scpd_url)
         else:
             # for testing read the xml-data from a file
             super(FritzSCDPParser, self).__init__(None, None, filename=filename)
@@ -190,8 +214,8 @@ class FritzSCDPParser(FritzXmlParser):
         nodes = self.root.iterfind(
             './/ns:action', namespaces={'ns': self.namespace})
         for node in nodes:
-            action = FritzAction(self.service_type,
-                                 self.control_url)
+            action = FritzAction(self.service.service_type,
+                                 self.service.control_url)
             action.name = node.find(self.nodename('name')).text
             action.arguments = self._get_arguments(node)
             actions.append(action)
@@ -217,7 +241,8 @@ class FritzSCDPParser(FritzXmlParser):
         argument.name = argument_node.find(self.nodename('name')).text
         argument.direction = argument_node.find(self.nodename('direction')).text
         rsv = argument_node.find(self.nodename('relatedStateVariable')).text
-        argument.data_type = self.state_variables[rsv]
+        # TODO: track malformed xml-nodes (i.e. misspelled)
+        argument.data_type = self.state_variables.get(rsv, None)
         return argument
 
 
@@ -227,21 +252,27 @@ class FritzConnection(object):
     """
     def __init__(self, address=FRITZ_IP_ADDRESS,
                        port=FRITZ_TCP_PORT,
-                       descfiles=FRITZ_DESC_FILES,
                        user='',
                        password=''):
         FritzAction.address = address
         FritzAction.port = port
+        FritzAction.user = user
+        FritzAction.password = password
         self.address = address
         self.port = port
-        self.descfiles = descfiles
         self.modelname = None
-        self.actions = {}
-        self._read_descriptions()
+        self.services = {}
+        self._read_descriptions(password)
 
-    def _read_descriptions(self):
-        """Read and evaluate FRITZ_DESC_FILES."""
-        for descfile in self.descfiles:
+    def _read_descriptions(self, password):
+        """
+        Read and evaluate the igddesc.xml file
+        and the tr64desc.xml file if a password is given.
+        """
+        descfiles = [FRITZ_IGD_DESC_FILE]
+        if password:
+            descfiles.append(FRITZ_TR64_DESC_FILE)
+        for descfile in descfiles:
             parser = FritzDescParser(self.address, self.port, descfile)
             if not self.modelname:
                 self.modelname = parser.get_modelname()
@@ -253,100 +284,161 @@ class FritzConnection(object):
         for service in services:
             parser = FritzSCDPParser(self.address, self.port, service)
             actions = parser.get_actions()
-            self.actions.update({action.name: action for action in actions})
+            service.actions = {action.name: action for action in actions}
+            self.services[service.name] = service
 
     @property
     def actionnames(self):
-        """Returns a alphabetical sorted list with all known action-names."""
-        return sorted(self.actions.keys())
+        """
+        Returns a alphabetical sorted list of tuples with all known
+        service- and action-names.
+        """
+        actions = []
+        for service_name in sorted(self.services.keys()):
+            action_names = self.services[service_name].actions.keys()
+            for action_name in sorted(action_names):
+                actions.append((service_name, action_name))
+        return actions
 
-    def get_action_arguments(self, action_name):
+    def get_action_arguments(self, service_name, action_name):
         """
         Returns a list of tuples with all known arguments for the given
-        action-name. The tuples contain the argument-name, direction and
-        data_type.
-        'action_name' is a string and must be a member of the actions
-        returned by 'actionsnames'. An unknown action_name will raise a
-        KeyError.
+        service- and action-name combination. The tuples contain the
+        argument-name, direction and data_type.
         """
-        return self.actions[action_name].info
+        return self.services[service_name].actions[action_name].info
 
-    def call_action(self, action_name):
+    def call_action(self, service_name, action_name, **kwargs):
         """Executes the given action. Raise a KeyError on unkown actions."""
-        return self.actions[action_name].execute()
+        action = self.services[service_name].actions[action_name]
+        return action.execute()
 
     def reconnect(self):
         """
         Terminate the connection and reconnects with a new ip.
         Will raise a KeyError if this command is unknown (by any means).
         """
-        self.call_action('ForceTermination')
+        self.call_action('WANIPConnection', 'ForceTermination')
+
+
+# ---------------------------------------------------------
+# Inspection class for cli use:
+# ---------------------------------------------------------
+
+class FritzInspection(object):
+
+    def __init__(self, address, port, username, password):
+        self.fc = FritzConnection(address, port, username, password)
+
+    def get_servicenames(self):
+        return sorted(self.fc.services.keys())
+
+    def get_actionnames(self, servicename):
+        try:
+            service = self.fc.services[servicename]
+        except KeyError:
+            return []
+        return sorted(service.actions.keys())
+
+    def view_header(self):
+        print('\nFritzConnection:')
+        print('{:<20}{}'.format('version:', get_version()))
+        print('{:<20}{}'.format('model:', self.fc.modelname))
+
+    def view_servicenames(self):
+        print('Servicenames:')
+        for name in self.get_servicenames():
+            print('{:20}{}'.format('', name))
+
+    def view_actionnames(self, servicename):
+        print('\n{:<20}{}'.format('Servicename:', servicename))
+        print('Actionnames:')
+        for name in self.get_actionnames(servicename):
+            print('{:20}{}'.format('', name))
+
+    def view_actionarguments(self, servicename, actionname):
+        print('\n{:<20}{}'.format('Servicename:', servicename))
+        print('{:<20}{}'.format('Actionname:', actionname))
+        print('Arguments:')
+        self._view_arguments('{:20}{}', servicename, actionname)
+
+    def view_servicearguments(self, servicename):
+        print('\n{:<20}{}'.format('Servicename:', servicename))
+        actionnames = self.get_actionnames(servicename)
+        for actionname in actionnames:
+            print('{:<20}{}'.format('Actionname:', actionname))
+            self._view_arguments('{:24}{}', servicename, actionname)
+
+    def _view_arguments(self, fs, servicename, actionname):
+        for argument in sorted(
+            self.fc.get_action_arguments(servicename, actionname)):
+            print(fs.format('', argument))
+
+    def view_complete(self):
+        print('FritzBox API:')
+        for servicename in self.get_servicenames():
+            self.view_servicearguments(servicename)
 
 
 # ---------------------------------------------------------
 # cli-section:
 # ---------------------------------------------------------
 
-def _get_cli_arguments():
+def get_cli_arguments():
     parser = argparse.ArgumentParser(description='FritzBox API')
     parser.add_argument('-i', '--ip-address',
                         nargs='?', default=FRITZ_IP_ADDRESS,
                         dest='address',
-                        help='ip-address of the FritzBox to connect to. '
+                        help='Specify ip-address of the FritzBox to connect to.'
                              'Default: %s' % FRITZ_IP_ADDRESS)
-    parser.add_argument('-p', '--port',
+    parser.add_argument('--port',
                         nargs='?', default=FRITZ_TCP_PORT,
-                        dest='port',
-                        help='port of the FritzBox to connect to. '
+                        help='Port of the FritzBox to connect to. '
                              'Default: %s' % FRITZ_TCP_PORT)
-    parser.add_argument('-a', '--actionnames',
-                        action='store_true',
-                        dest='show_actionnames',
-                        help='show supported actionnames')
-    parser.add_argument('-l', '--list-args',
-                        nargs=1,
-                        dest='show_action_arg',
-                        help='show arguments of a given action: -l <actionname>')
-    parser.add_argument('-c', '--complete-args',
-                        action='store_true',
-                        dest='show_all_action_args',
-                        help='show arguments of all actions')
+    parser.add_argument('-u', '--username',
+                        nargs=1, default='',
+                        help='Fritzbox authentication username')
+    parser.add_argument('-p', '--password',
+                        nargs=1, default='',
+                        help='Fritzbox authentication password')
     parser.add_argument('-r', '--reconnect',
                         action='store_true',
-                        dest='reconnect',
-                        help='reconnect with new ip')
+                        help='Reconnect and get a new ip')
+    parser.add_argument('-s', '--services',
+                        action='store_true',
+                        help='List all available services')
+    parser.add_argument('-S', '--serviceactions',
+                        nargs=1,
+                        help='List actions for the given service: <service>')
+    parser.add_argument('-a', '--servicearguments',
+                        nargs=1,
+                        help='List arguments for the actions of a'
+                             'specified service: <service>.')
+    parser.add_argument('-A', '--actionarguments',
+                        nargs=2,
+                        help='List arguments for the given action of a'
+                             'specified service: <service> <action>.')
+    parser.add_argument('-c', '--complete',
+                        action='store_true',
+                        help='List all services with actionnames and arguments.'
+                        )
     args = parser.parse_args()
     return args
 
-def _print_actionnames(fc):
-    print('{:<20}'.format('actionnames:'))
-    for name in fc.actionnames:
-        print('{:<20}{}'.format('', name))
-
-def _print_action_arg(fc, actionname):
-    args = fc.get_action_arguments(actionname)
-    print('\n{:<20}{}'.format('actionname:', actionname))
-    print('{:<20}'.format('arguments:'))
-    for arg in args:
-        print('{:<20}{}'.format('', arg))
-
-def _print_all_action_args(fc):
-    for name in fc.actionnames:
-        _print_action_arg(fc, name)
-
-def _print_information(arguments):
-    print('\nFritzConnection:')
-    print('{:<20}{}'.format('version:', get_version()))
-    fc = FritzConnection(address=arguments.address, port=arguments.port)
-    print('{:<20}{}'.format('model:', fc.modelname))
-    if arguments.show_actionnames:
-        _print_actionnames(fc)
-    if arguments.show_action_arg:
-        _print_action_arg(fc, arguments.show_action_arg[0])
-    if arguments.show_all_action_args:
-        _print_all_action_args(fc)
-    if arguments.reconnect:
-        fc.reconnect()
 
 if __name__ == '__main__':
-    _print_information(_get_cli_arguments())
+    args = get_cli_arguments()
+    fi = FritzInspection(args.address, args.port, args.username, args.password)
+    fi.view_header()
+    if args.services:
+        fi.view_servicenames()
+    elif args.serviceactions:
+        fi.view_actionnames(args.serviceactions[0])
+    elif args.servicearguments:
+        fi.view_servicearguments(args.servicearguments[0])
+    elif args.actionarguments:
+        fi.view_actionarguments(args.actionarguments[0],
+                                args.actionarguments[1])
+    elif args.complete:
+        fi.view_complete()
+    print()  # print an empty line

@@ -6,7 +6,7 @@ fritzstatus.py
 Modul to read status-informations from an AVM FritzBox.
 """
 
-_version_ = '0.1.1'
+_version_ = '0.1.2'
 
 import argparse
 import collections
@@ -43,7 +43,8 @@ class FritzStatus(object):
     @property
     def is_linked(self):
         """Returns True if the FritzBox is physically linked to the provider."""
-        status = self.fc.call_action('GetCommonLinkProperties')
+        status = self.fc.call_action('WANCommonInterfaceConfig',
+                                     'GetCommonLinkProperties')
         return status['NewPhysicalLinkStatus'] == 'Up'
 
     @property
@@ -51,25 +52,26 @@ class FritzStatus(object):
         """
         Returns True if the FritzBox has established an internet-connection.
         """
-        status = self.fc.call_action('GetStatusInfo')
+        status = self.fc.call_action('WANIPConnection', 'GetStatusInfo')
         return status['NewConnectionStatus'] == 'Connected'
 
     @property
     def wan_access_type(self):
         """Returns connection-type: DSL, Cable."""
-        return self.fc.call_action(
+        return self.fc.call_action('WANCommonInterfaceConfig',
             'GetCommonLinkProperties')['NewWANAccessType']
 
     @property
     def external_ip(self):
         """Returns the external ip-address."""
-        return self.fc.call_action(
+        return self.fc.call_action('WANIPConnection',
             'GetExternalIPAddress')['NewExternalIPAddress']
 
     @property
     def uptime(self):
         """uptime in seconds."""
-        return self.fc.call_action('GetStatusInfo')['NewUptime']
+        status = self.fc.call_action('WANIPConnection', 'GetStatusInfo')
+        return status['NewUptime']
 
     @property
     def str_uptime(self):
@@ -80,12 +82,15 @@ class FritzStatus(object):
 
     @property
     def bytes_sent(self):
-        return self.fc.call_action('GetTotalBytesSent')['NewTotalBytesSent']
+        status = self.fc.call_action('WANCommonInterfaceConfig',
+                                     'GetTotalBytesSent')
+        return status['NewTotalBytesSent']
 
     @property
     def bytes_received(self):
-        return self.fc.call_action(
-            'GetTotalBytesReceived')['NewTotalBytesReceived']
+        status = self.fc.call_action('WANCommonInterfaceConfig',
+                                     'GetTotalBytesReceived')
+        return status['NewTotalBytesReceived']
 
     @property
     def transmission_rate(self):
@@ -116,9 +121,10 @@ class FritzStatus(object):
         Returns a tuple with the maximun upstream- and downstream-rate
         of the given connection. The rate is given in bits/sec.
         """
-        stream_rate = self.fc.call_action('GetCommonLinkProperties')
-        downstream = stream_rate['NewLayer1DownstreamMaxBitRate']
-        upstream = stream_rate['NewLayer1UpstreamMaxBitRate']
+        status = self.fc.call_action('WANCommonInterfaceConfig',
+                                     'GetCommonLinkProperties')
+        downstream = status['NewLayer1DownstreamMaxBitRate']
+        upstream = status['NewLayer1UpstreamMaxBitRate']
         return upstream, downstream
 
     @property
@@ -155,7 +161,7 @@ def _get_cli_arguments():
                         dest='address',
                         help='ip-address of the FritzBox to connect to. '
                              'Default: %s' % fritzconnection.FRITZ_IP_ADDRESS)
-    parser.add_argument('-p', '--port',
+    parser.add_argument('--port',
                         nargs='?', default=fritzconnection.FRITZ_TCP_PORT,
                         dest='port',
                         help='port of the FritzBox to connect to. '

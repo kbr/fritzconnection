@@ -18,6 +18,7 @@ from fritzconnection import (
     FritzSCDPParser,
     FritzAction,
     FritzActionArgument,
+    FritzService,
     )
 
 FRITZBOX_MODEL = 'FRITZ!Box Fon WLAN 7170'
@@ -55,18 +56,21 @@ class TestFritzDescParser(unittest.TestCase):
         the case for all tuples in the list.
         """
         services = self.fp.get_services()
-        self.assertEqual(r'/any.xml', services[0][-1])
+        self.assertEqual(r'/any.xml', services[0].scpd_url)
 
 
 class TestFritzSCDPParser(unittest.TestCase):
 
     def setUp(self):
-        service = (
+        self.service = FritzService(
             'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1',
             '/upnp/control/WANCommonIFC1',
             '/igdicfgSCPD.xml'
             )
-        self.fp = FritzSCDPParser(None, None, service, filename=SCPD_FILE)
+        self.fp = FritzSCDPParser(None, None, self.service, filename=SCPD_FILE)
+
+    def test_get_service_name(self):
+        self.assertEqual('WANCommonInterfaceConfig', self.service.name)
 
     def test_read_state_variables(self):
         """Parse the stateVariables and check for a single value."""
