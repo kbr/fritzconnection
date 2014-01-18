@@ -13,7 +13,7 @@ The command-line interface allows the api-inspection.
 #Runs with python >= 2.7 # TODO: test with 2.7
 """
 
-_version_ = '0.3.0'
+_version_ = '0.4.0'
 
 import argparse
 import requests
@@ -48,12 +48,18 @@ class FritzAction(object):
     envelope = """
         <?xml version="1.0" encoding="utf-8"?>
         <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-                    xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
-        <s:Body>
-        <u:%s xmlns:u="%s" />
-        </s:Body>
+                    xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">%s
         </s:Envelope>
         """
+    body_template = """
+        <s:Body>
+        <u:%(action_name)s xmlns:u="%(service_type)s">%(arguments)s
+        </u:%(action_name)s>
+        </s:Body>
+        """
+    argument_template = """
+        <s:%(name)s>%(value)s</s:%(name)s>"""
+
     address = FRITZ_IP_ADDRESS
     port = FRITZ_TCP_PORT
     method = 'post'
@@ -70,14 +76,33 @@ class FritzAction(object):
     def info(self):
         return [self.arguments[argument].info for argument in self.arguments]
 
-    def execute(self):
+    def _body_builder(self, kwargs):
+        """
+        Helper method to construct the appropriate SOAP-body to call a
+        FritzBox-Service.
+        """
+        p = {
+            'action_name': self.name,
+            'service_type': self.service_type,
+            'arguments': '',
+            }
+        if kwargs:
+            arguments = [
+                self.argument_template % {'name': k, 'value': v}
+                for k, v in kwargs.items()
+            ]
+            p['arguments'] = ''.join(arguments)
+        body = self.body_template % p
+        return body
+
+    def execute(self, **kwargs):
         """
         Calls the FritzBox action and returns a dictionary with the arguments.
         TODO: send arguments in case of tr64-connection.
         """
         headers = self.header.copy()
         headers['soapaction'] = '%s#%s' % (self.service_type, self.name)
-        data = self.envelope % (self.name, self.service_type)
+        data = self.envelope % self._body_builder(kwargs)
         url = 'http://%s:%s%s' % (self.address, self.port, self.control_url)
         auth = None
         if self.password:
@@ -98,7 +123,12 @@ class FritzAction(object):
         result = {}
         root = etree.fromstring(response)
         for argument in self.arguments.values():
-            value = root.find('.//%s' % argument.name).text
+            try:
+                value = root.find('.//%s' % argument.name).text
+            except AttributeError:
+                # will happen by searching for in-parameters and by
+                # parsing responses with status_code != 200
+                continue
             if argument.data_type.startswith('ui'):
                 try:
                     value = int(value)
@@ -311,7 +341,7 @@ class FritzConnection(object):
     def call_action(self, service_name, action_name, **kwargs):
         """Executes the given action. Raise a KeyError on unkown actions."""
         action = self.services[service_name].actions[action_name]
-        return action.execute()
+        return action.execute(**kwargs)
 
     def reconnect(self):
         """
