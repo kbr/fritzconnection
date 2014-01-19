@@ -13,7 +13,7 @@ The command-line interface allows the api-inspection.
 #Runs with python >= 2.7 # TODO: test with 2.7
 """
 
-_version_ = '0.4.0'
+_version_ = '0.4.1'
 
 import argparse
 import requests
@@ -27,6 +27,7 @@ FRITZ_IP_ADDRESS = '169.254.1.1'
 FRITZ_TCP_PORT = 49000
 FRITZ_IGD_DESC_FILE = 'igddesc.xml'
 FRITZ_TR64_DESC_FILE = 'tr64desc.xml'
+FRITZ_USERNAME = 'dslf-config'
 
 
 # version-access:
@@ -282,7 +283,7 @@ class FritzConnection(object):
     """
     def __init__(self, address=FRITZ_IP_ADDRESS,
                        port=FRITZ_TCP_PORT,
-                       user='',
+                       user=FRITZ_USERNAME,
                        password=''):
         FritzAction.address = address
         FritzAction.port = port
