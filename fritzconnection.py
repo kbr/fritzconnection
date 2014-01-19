@@ -13,7 +13,7 @@ The command-line interface allows the api-inspection.
 #Runs with python >= 2.7 # TODO: test with 2.7
 """
 
-_version_ = '0.4.1'
+_version_ = '0.4.2'
 
 import argparse
 import requests
@@ -459,7 +459,11 @@ def get_cli_arguments():
 
 if __name__ == '__main__':
     args = get_cli_arguments()
-    fi = FritzInspection(args.address, args.port, args.username, args.password)
+    if args.password:
+        password = args.password[0]
+    else:
+        password = ''
+    fi = FritzInspection(args.address, args.port, args.username, password)
     fi.view_header()
     if args.services:
         fi.view_servicenames()
