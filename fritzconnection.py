@@ -285,6 +285,10 @@ class FritzConnection(object):
                        port=FRITZ_TCP_PORT,
                        user=FRITZ_USERNAME,
                        password=''):
+        if password and type(password) is list:
+            password = password[0]
+        if user and type(user) is list:
+            user = user[0]
         FritzAction.address = address
         FritzAction.port = port
         FritzAction.user = user
@@ -459,11 +463,7 @@ def get_cli_arguments():
 
 if __name__ == '__main__':
     args = get_cli_arguments()
-    if args.password:
-        password = args.password[0]
-    else:
-        password = ''
-    fi = FritzInspection(args.address, args.port, args.username, password)
+    fi = FritzInspection(args.address, args.port, args.username, args.password)
     fi.view_header()
     if args.services:
         fi.view_servicenames()
