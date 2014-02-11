@@ -29,10 +29,14 @@ class FritzStatus(object):
     with the FritzBox fails.
     """
 
-    def __init__(self, address=fritzconnection.FRITZ_IP_ADDRESS,
-                       port=fritzconnection.FRITZ_TCP_PORT):
+    def __init__(self,
+                 fc=None,
+                 address=fritzconnection.FRITZ_IP_ADDRESS,
+                 port=fritzconnection.FRITZ_TCP_PORT):
         super(FritzStatus, self).__init__()
-        self.fc = fritzconnection.FritzConnection(address=address, port=port)
+        if fc is None:
+            fc = fritzconnection.FritzConnection(address=address, port=port)
+        self.fc = fc
         self.last_bytes_sent = self.bytes_sent
         self.last_bytes_received = self.bytes_received
         self.last_traffic_call = time.time()

@@ -477,4 +477,6 @@ if __name__ == '__main__':
                                 args.actionarguments[1])
     elif args.complete:
         fi.view_complete()
+    elif args.reconnect:
+        fi.fc.reconnect()
     print()  # print an empty line

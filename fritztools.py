@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
-
 """
-fritztools:
-
-collection of helper functions.
+helper functions.
 
 """
 
@@ -27,6 +23,7 @@ def format_num(num, unit='bytes'):
             return '%3.1f %s%s' % (num, dimension, extension)
         num /= 1024
     return '%3.1f P%s' % (num, extension)
+
 
 def format_rate(num, unit='bytes'):
     """
