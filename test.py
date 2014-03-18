@@ -23,8 +23,10 @@ from fritzconnection import (
     )
 
 FRITZBOX_MODEL = 'FRITZ!Box Fon WLAN 7170'
-DESCRIPTION_FILE = os.path.join('test_xml', 'igddesc.xml')
-SCPD_FILE = os.path.join('test_xml', 'igdconnSCPD.xml')
+DESCRIPTION_FILE = os.path.join(os.path.dirname(__file__),
+                                'test_xml', 'igddesc.xml')
+SCPD_FILE = os.path.join(os.path.dirname(__file__),
+                         'test_xml', 'igdconnSCPD.xml')
 
 
 class TestFritzXmlParser(unittest.TestCase):
@@ -60,18 +62,27 @@ class TestFritzDescParser(unittest.TestCase):
         self.assertEqual(r'/any.xml', services[0].scpd_url)
 
 
+class FritzSCDPTestParser(FritzSCDPParser):
+    """Helper subclass of FritzSCDPParser to generate an object configured
+       for testing purposes
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.service = FritzService(
+                    'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1',
+                    '/upnp/control/WANCommonIFC1',
+                    '/igdicfgSCPD.xml'
+                    )
+        super(FritzSCDPTestParser, self).__init__(None, None, self.service, filename=SCPD_FILE)
+
+
 class TestFritzSCDPParser(unittest.TestCase):
 
     def setUp(self):
-        self.service = FritzService(
-            'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1',
-            '/upnp/control/WANCommonIFC1',
-            '/igdicfgSCPD.xml'
-            )
-        self.fp = FritzSCDPParser(None, None, self.service, filename=SCPD_FILE)
+        self.fp = FritzSCDPTestParser()
 
     def test_get_service_name(self):
-        self.assertEqual('WANCommonInterfaceConfig', self.service.name)
+        self.assertEqual('WANCommonInterfaceConfig', self.fp.service.name)
 
     def test_read_state_variables(self):
         """Parse the stateVariables and check for a single value."""
@@ -81,13 +92,10 @@ class TestFritzSCDPParser(unittest.TestCase):
 
     def test_get_actions(self):
         """Read actionnames and corresponding arguments from xml-file."""
-        actions = self.get_actions()
+        actions = self.fp.get_actions()
         first_action = actions[0]
         self.assertEqual(
             type(FritzAction(None, None)), type(first_action))
-
-    def get_actions(self):
-        return self.fp.get_actions()
 
 
 class TestFritzAction(unittest.TestCase):
@@ -113,8 +121,7 @@ class TestFritzAction(unittest.TestCase):
         Returns a dictionary with argumentname,
         FritzActionArgument-object pairs.
         """
-        scdp = TestFritzSCDPParser()
-        scdp.setUp()
+        scdp = FritzSCDPTestParser()
         actions = {action.name: action for action in scdp.get_actions()}
         return actions[self.action_name].arguments
 
