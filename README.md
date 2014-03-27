@@ -20,6 +20,8 @@ It also serves as an example on how to use the fritzconnection module.
 `fritzmonitor.py` is a Tkinter GUI to display current IP as well as the upstream and downstream rates.
 It also makes it easy to reconnect and thus get a different IP from your ISP.
 
+`fritzhosts.py` is a command line interface to display the hosts known by the FRITZ!Box with IP, name, MAC and status.
+
 ### Other Files
 
 `fritztools.py` contains some helper functions and `test.py` contains unit tests.

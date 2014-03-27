@@ -100,7 +100,6 @@ class FritzAction(object):
     def execute(self, **kwargs):
         """
         Calls the FritzBox action and returns a dictionary with the arguments.
-        TODO: send arguments in case of tr64-connection.
         """
         headers = self.header.copy()
         headers['soapaction'] = '%s#%s' % (self.service_type, self.name)
@@ -110,7 +109,7 @@ class FritzAction(object):
         if self.password:
             auth=HTTPDigestAuth(self.user, self.password)
         response = requests.post(url, data=data, headers=headers, auth=auth)
-        # lxml needs bytes, therefor .content (not .text)
+        # lxml needs bytes, therefore response.content (not response.text)
         result = self.parse_response(response.content)
         return result
 
