@@ -118,7 +118,10 @@ class FritzStatus(object):
     def str_transmission_rate(self):
         """Returns a tuple of human readable transmission rates in bytes."""
         upstream, downstream = self.transmission_rate
-        return self.format_num(upstream), self.format_num(downstream)
+        return (
+            fritztools.format_num(upstream),
+            fritztools.format_num(downstream)
+        )
 
     @property
     def max_bit_rate(self):
@@ -147,8 +150,10 @@ class FritzStatus(object):
         of the given connection. The rate is given in bits/sec.
         """
         upstream, downstream = self.max_bit_rate
-        return fritztools.format_rate(upstream, unit='bits'), \
-               fritztools.format_rate(downstream, unit ='bits')
+        return (
+            fritztools.format_rate(upstream, unit='bits'),
+            fritztools.format_rate(downstream, unit ='bits')
+        )
 
     def reconnect(self):
         """Makes a reconnection with a new external ip."""
