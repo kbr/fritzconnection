@@ -47,6 +47,23 @@ class FritzHosts(object):
         result = self.action('GetSpecificHostEntry', NewMACAddress=mac_address)
         return result
 
+    def get_hosts_info(self):
+        """
+        Returns a list of dicts with information about the known hosts.
+        The dict-keys are: 'ip', 'name', 'mac', 'status'
+        """
+        result = []
+        index = 0
+        while index < self.host_numbers:
+            host = self.get_generic_host_entry(index)
+            result.append({
+                'ip': host['NewIPAddress'],
+                'name': host['NewHostName'],
+                'mac': host['NewMACAddress'],
+                'status': host['NewActive']})
+            index += 1
+        return result
+
 
 # ---------------------------------------------------------
 # terminal-output:
@@ -59,27 +76,24 @@ def _print_header(fh):
     print('{:<20}{}'.format('ip:', fh.fc.address))
 
 
-def _print_hosts(fh):
+def print_hosts(fh):
     print('\nList of registered hosts:\n')
     print('{:>3}: {:<15} {:<26} {:<17}   {}\n'.format(
         'n', 'ip', 'name', 'mac', 'status'))
-    index = 0
-    host_num = fh.host_numbers
-    while index < host_num:
-        host = fh.get_generic_host_entry(index)
-        if host['NewActive'] == '1':
+    hosts = fh.get_hosts_info()
+    for index, host in enumerate(hosts):
+        if host['status'] == '1':
             status = 'active'
         else:
             status = '-'
         print('{:>3}: {:<15} {:<26} {:<17}   {}'.format(
             index,
-            host['NewIPAddress'],
-            host['NewHostName'],
-            host['NewMACAddress'],
+            host['ip'],
+            host['name'],
+            host['mac'],
             status,
             )
         )
-        index += 1
     print('\n')
 
 
@@ -144,7 +158,7 @@ def _print_status(arguments):
     elif arguments.nums:
         _print_nums(fh)
     else:
-        _print_hosts(fh)
+        print_hosts(fh)
 
 
 if __name__ == '__main__':

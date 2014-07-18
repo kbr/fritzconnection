@@ -3,9 +3,13 @@
 Python-Tool to communicate with the AVM FritzBox.
 Uses the TR-064 protocol.
 
+### Installation:
+
+    pip install fritzconnection
+
 ### Dependencies
 
-You need to get the python modules `lxml` and `requests` in order to use the tools:
+fritzconnection requires the python modules `lxml` and `requests`:
 
     pip install lxml requests
 
@@ -33,3 +37,10 @@ It also makes it easy to reconnect and thus get a different IP from your ISP.
   * [AVM's manual First Steps with TR-064](http://www.avm.de/de/Extern/files/tr-064/AVM_TR-064_first_steps.pdf)
   * [TR-064 Technical Report DSL Forum](http://www.broadband-forum.org/technical/download/TR-064.pdf)
 
+### Contributers
+
+Many thanks for contributions, bugfixes or issue-reporting to:
+
+* [Philipp Klaus](https://bitbucket.org/pklaus)
+* [malleYay](https://bitbucket.org/malleYay)
+* [Thomas Westfeld](https://bitbucket.org/westfeld)
