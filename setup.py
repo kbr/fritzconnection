@@ -2,14 +2,13 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'fritzconnection',
-    version = '0.4.2',
+    version = '0.4.4',
     packages = find_packages(),
     license = 'MIT',
     description = 'Communicate with the AVM FritzBox',
-    long_description = open('README.md').read(),
     author = 'Klaus Bremer',
     author_email = 'bremer@bremer-media.de',
-    url = 'https://bitbucket.org/kbr/fritzconnection'
+    url = 'https://bitbucket.org/kbr/fritzconnection',
     classifiers = [
         'Development Status :: 4 - Beta',
         'Environment :: Console',

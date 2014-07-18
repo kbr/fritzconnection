@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-_version_ = '0.1.0'
+_version_ = '0.4.3'
 
 import argparse
 import fritzconnection
