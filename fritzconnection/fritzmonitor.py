@@ -9,7 +9,7 @@ traffic-informations.
 
 """
 
-_version_ = '0.1.0'
+__version__ = '0.1.0'
 
 import argparse
 try:

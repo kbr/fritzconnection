@@ -10,11 +10,24 @@ read from the xml-configuration files requested from the FritzBox. So
 the available actions may change depending on the FritzBox model and
 firmware.
 The command-line interface allows the api-inspection.
+The api can also be inspected by a terminal session:
 
-#Runs with python >= 2.7 # TODO: test with 2.7
+>>> import fritzconnection as fc
+>>> fc.print_api()
+
+'print_api' takes the optional parameters:
+    address = ip-address
+    port = port number (should not change)
+    user = the username
+    password = password (to access tr64-services)
+
+In most cases you have to provide the ip (in case you changed the
+default or have multiple boxes i.e. for multiple WLAN access points).
+Also you may have to send the password to get the complete api.
+
 """
 
-_version_ = '0.4.2'
+__version__ = '0.4.5'
 
 import argparse
 import requests
@@ -33,7 +46,7 @@ FRITZ_USERNAME = 'dslf-config'
 
 # version-access:
 def get_version():
-    return _version_
+    return __version__
 
 
 class FritzAction(object):
@@ -362,8 +375,11 @@ class FritzConnection(object):
 
 class FritzInspection(object):
 
-    def __init__(self, address, port, username, password):
-        self.fc = FritzConnection(address, port, username, password)
+    def __init__(self, address=FRITZ_IP_ADDRESS,
+                       port=FRITZ_TCP_PORT,
+                       user=FRITZ_USERNAME,
+                       password=''):
+        self.fc = FritzConnection(address, port, user, password)
 
     def get_servicenames(self):
         return sorted(self.fc.services.keys())
@@ -413,6 +429,28 @@ class FritzInspection(object):
         print('FritzBox API:')
         for servicename in self.get_servicenames():
             self.view_servicearguments(servicename)
+
+
+# ---------------------------------------------------------
+# terminal-output:
+# ---------------------------------------------------------
+
+def print_servicenames(address=FRITZ_IP_ADDRESS,
+                       port=FRITZ_TCP_PORT,
+                       user=FRITZ_USERNAME,
+                       password=''):
+    fi = FritzInspection(address, port, user, password)
+    fi.view_header()
+    fi.view_servicenames()
+
+
+def print_api(address=FRITZ_IP_ADDRESS,
+              port=FRITZ_TCP_PORT,
+              user=FRITZ_USERNAME,
+              password=''):
+    fi = FritzInspection(address, port, user, password)
+    fi.view_header()
+    fi.view_complete()
 
 
 # ---------------------------------------------------------

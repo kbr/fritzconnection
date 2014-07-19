@@ -30,6 +30,24 @@ It also makes it easy to reconnect and thus get a different IP from your ISP.
 
 `fritztools.py` contains some helper functions and `test.py` contains unit tests.
 
+### Quickstart:
+
+Inspect the API:
+
+    >>> import fritzconnection as fc
+    >>> fc.print_api(password='your_password')
+
+An API-Call is made by the `call_action`-method of the FritzConnection-Class. This method takes the `servicename`, the `actionname` and optional arguments as parameter and may return a dictionary with the results (as described in the TR-064 protocoll description). A simple example is to reconnect for a new external ip:
+
+    >>> from fritzconnection import FritzConnection
+    >>> connection = FritzConnection()
+    >>> connection.call_action('WANIPConnection', 'ForceTermination')
+    # or more comfortable:
+    >>> connection.reconnect()
+
+The latter wrapps the `call_action`-method. For a more complete example look at the `frtizhosts.py` souce-code.
+
+
 ### Resources
 
 * [The Source Code of fritzconnection](https://bitbucket.org/kbr/fritzconnection)

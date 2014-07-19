@@ -7,7 +7,7 @@ fritzstatus.py
 Modul to read status-informations from an AVM FritzBox.
 """
 
-_version_ = '0.1.2'
+__version__ = '0.4.5'
 
 import argparse
 import collections
@@ -18,7 +18,7 @@ import fritztools
 
 # version-access:
 def get_version():
-    return _version_
+    return __version__
 
 
 class FritzStatus(object):
@@ -161,6 +161,28 @@ class FritzStatus(object):
 
 
 # ---------------------------------------------------------
+# terminal-output:
+# ---------------------------------------------------------
+
+def print_status(address=fritzconnection.FRITZ_IP_ADDRESS,
+                 port=fritzconnection.FRITZ_TCP_PORT):
+    print('\nFritzStatus:')
+    print('{:<20}{}'.format('version:', get_version()))
+    fs = FritzStatus(address=address, port=port)
+    for status, info in collections.OrderedDict([
+        ('model:', fs.modelname),
+        ('is linked:', fs.is_linked),
+        ('is connected:', fs.is_connected),
+        ('external ip:', fs.external_ip),
+        ('uptime:', fs.str_uptime),
+        ('bytes send:', fs.bytes_sent),
+        ('bytes received:', fs.bytes_received),
+        ('max. bit rate:', fs.str_max_bit_rate)
+        ]).items():
+        print('{:<20}{}'.format(status, info))
+
+
+# ---------------------------------------------------------
 # cli-section:
 # ---------------------------------------------------------
 
@@ -179,21 +201,10 @@ def _get_cli_arguments():
     args = parser.parse_args()
     return args
 
+
 def _print_status(arguments):
-    print('\nFritzStatus:')
-    print('{:<20}{}'.format('version:', get_version()))
-    fs = FritzStatus(address=arguments.address, port=arguments.port)
-    for status, info in collections.OrderedDict([
-        ('model:', fs.modelname),
-        ('is linked:', fs.is_linked),
-        ('is connected:', fs.is_connected),
-        ('external ip:', fs.external_ip),
-        ('uptime:', fs.str_uptime),
-        ('bytes send:', fs.bytes_sent),
-        ('bytes received:', fs.bytes_received),
-        ('max. bit rate:', fs.str_max_bit_rate)
-        ]).items():
-        print('{:<20}{}'.format(status, info))
+    print_status(address=arguments.address, port=arguments.port)
+
 
 if __name__ == '__main__':
     _print_status(_get_cli_arguments())

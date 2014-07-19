@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-_version_ = '0.4.3'
+__version__ = '0.4.5'
 
 import argparse
 import fritzconnection
@@ -11,7 +11,7 @@ SERVICE = 'Hosts'
 
 # version-access:
 def get_version():
-    return _version_
+    return __version__
 
 
 class FritzHosts(object):
