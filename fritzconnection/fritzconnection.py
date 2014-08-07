@@ -107,7 +107,7 @@ class FritzAction(object):
                 for k, v in kwargs.items()
             ]
             p['arguments'] = ''.join(arguments)
-        body = self.body_template % p
+        body = self.body_template.strip() % p
         return body
 
     def execute(self, **kwargs):
@@ -116,7 +116,7 @@ class FritzAction(object):
         """
         headers = self.header.copy()
         headers['soapaction'] = '%s#%s' % (self.service_type, self.name)
-        data = self.envelope % self._body_builder(kwargs)
+        data = self.envelope.strip() % self._body_builder(kwargs)
         url = 'http://%s:%s%s' % (self.address, self.port, self.control_url)
         auth = None
         if self.password:
