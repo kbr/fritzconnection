@@ -45,7 +45,7 @@ An API-Call is made by the `call_action`-method of the FritzConnection-Class. Th
     # or more comfortable:
     >>> connection.reconnect()
 
-The latter wrapps the `call_action`-method. For a more complete example look at the `frtizhosts.py` souce-code.
+The latter wrapps the `call_action`-method. For a more complete example look at the `fritzhosts.py` souce-code.
 
 
 ### Resources
@@ -62,3 +62,4 @@ Many thanks for contributions, bugfixes or issue-reporting to:
 * [Philipp Klaus](https://bitbucket.org/pklaus)
 * [malleYay](https://bitbucket.org/malleYay)
 * [Thomas Westfeld](https://bitbucket.org/westfeld)
+* [Christian Fetzer](https://bitbucket.org/fetzerch)
