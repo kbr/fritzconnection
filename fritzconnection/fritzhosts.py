@@ -3,7 +3,7 @@
 __version__ = '0.4.5'
 
 import argparse
-import fritzconnection
+from . import fritzconnection
 
 
 SERVICE = 'Hosts'
