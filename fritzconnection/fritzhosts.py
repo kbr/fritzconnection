@@ -84,11 +84,12 @@ def print_hosts(fh):
     for index, host in enumerate(hosts):
         status = 'active' if host['status'] == '1' else  '-'
         ip = '-' if host['ip'] == None else host['ip']
+        mac = '-' if host['mac'] == None else host['mac']
         print('{:>3}: {:<15} {:<26} {:<17}   {}'.format(
             index,
             ip,
             host['name'],
-            host['mac'],
+            mac,
             status,
             )
         )
