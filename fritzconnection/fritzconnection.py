@@ -27,7 +27,7 @@ Also you may have to send the password to get the complete api.
 
 """
 
-__version__ = '0.4.6'
+__version__ = '0.4.8'
 
 import argparse
 import requests
@@ -148,6 +148,9 @@ class FritzAction(object):
                     value = int(value)
                 except ValueError:
                     # should not happen
+                    value = None
+                except TypeError:
+                    # raised in case that value is None. Should also not happen.
                     value = None
             result[argument.name] = value
         return result
@@ -321,7 +324,13 @@ class FritzConnection(object):
         if password:
             descfiles.append(FRITZ_TR64_DESC_FILE)
         for descfile in descfiles:
-            parser = FritzDescParser(self.address, self.port, descfile)
+            try:
+                parser = FritzDescParser(self.address, self.port, descfile)
+            except IOError:
+                # failed to load resource. Can happen on custumized models
+                # missing the igddesc.xml file.
+                # It's save to ignore this error.
+                continue
             if not self.modelname:
                 self.modelname = parser.get_modelname()
             services = parser.get_services()
