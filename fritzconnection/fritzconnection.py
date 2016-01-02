@@ -27,7 +27,7 @@ Also you may have to send the password to get the complete api.
 
 """
 
-__version__ = '0.4.6'
+__version__ = '0.4.8'
 
 import argparse
 import requests
@@ -148,6 +148,9 @@ class FritzAction(object):
                     value = int(value)
                 except ValueError:
                     # should not happen
+                    value = None
+                except TypeError:
+                    # raised in case that value is None. Should also not happen.
                     value = None
             result[argument.name] = value
         return result
