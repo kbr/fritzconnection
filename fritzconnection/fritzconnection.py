@@ -321,7 +321,13 @@ class FritzConnection(object):
         if password:
             descfiles.append(FRITZ_TR64_DESC_FILE)
         for descfile in descfiles:
-            parser = FritzDescParser(self.address, self.port, descfile)
+            try:
+                parser = FritzDescParser(self.address, self.port, descfile)
+            except IOError:
+                # failed to load resource. Can happen on custumized models
+                # missing the igddesc.xml file.
+                # It's save to ignore this error.
+                continue
             if not self.modelname:
                 self.modelname = parser.get_modelname()
             services = parser.get_services()
