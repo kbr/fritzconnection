@@ -12,8 +12,8 @@ __version__ = '0.4.5'
 import argparse
 import collections
 import time
-from . import fritzconnection
-from . import fritztools
+import fritzconnection
+import fritztools
 
 
 # version-access:
