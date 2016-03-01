@@ -52,7 +52,7 @@ The latter wrapps the `call_action`-method. For a more complete example look at 
 
 * [The Source Code of fritzconnection](https://bitbucket.org/kbr/fritzconnection)
 * Information on TR-064:
-  * [AVM's manual First Steps with TR-064](http://www.avm.de/de/Extern/files/tr-064/AVM_TR-064_first_steps.pdf)
+  * [AVM's manual First Steps with TR-064](http://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AVM_TR-064_first_steps.pdf)
   * [TR-064 Technical Report DSL Forum](http://www.broadband-forum.org/technical/download/TR-064.pdf)
 
 ### Contributers
