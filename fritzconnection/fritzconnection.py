@@ -27,7 +27,7 @@ Also you may have to send the password to get the complete api.
 
 """
 
-__version__ = '0.4.8'
+__version__ = '0.5.0'
 
 import argparse
 import requests

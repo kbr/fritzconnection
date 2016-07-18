@@ -9,7 +9,7 @@ traffic-informations.
 
 """
 
-__version__ = '0.1.0'
+__version__ = '0.5.0'
 
 import argparse
 try:
@@ -20,9 +20,9 @@ except ImportError:
     # python 3
     import tkinter as tk
     import tkinter.font as tkfont
-import fritzconnection
-import fritzstatus
-import fritztools
+from . import fritzconnection
+from . import fritzstatus
+from . import fritztools
 
 
 class MeterRectangle(object):

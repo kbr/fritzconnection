@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from fritzconnection import (
+from .fritzconnection import (
     FritzConnection,
     FritzInspection,
     print_servicenames,
     print_api,
 )
-from fritzhosts import (
+from .fritzhosts import (
     FritzHosts,
     print_hosts,
 )
-from fritzstatus import (
+from .fritzstatus import (
     FritzStatus,
     print_status,
 )

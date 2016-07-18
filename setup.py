@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'fritzconnection',
-    version = '0.4.5',
+    version = '0.5.0',
     packages = find_packages(),
     license = 'MIT',
     description = 'Communicate with the AVM FritzBox',
@@ -17,6 +17,8 @@ setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords = 'AVM FritzBox',
