@@ -23,8 +23,11 @@ The api can also be inspected by a terminal session:
 
 In most cases you have to provide the ip (in case you changed the
 default or have multiple boxes i.e. for multiple WLAN access points).
-Also you may have to send the password to get the complete api.
+Also you have to send the password to get the complete api.
 
+License: MIT https://opensource.org/licenses/MIT
+Source: https://bitbucket.org/kbr/fritzconnection
+Author: Klaus Bremer
 """
 
 __version__ = '0.5.1'

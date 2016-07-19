@@ -7,6 +7,9 @@ fritzmonitor.py
 Implement a tkinter-based grafic interface to view basic status- and
 traffic-informations.
 
+License: MIT https://opensource.org/licenses/MIT
+Source: https://bitbucket.org/kbr/fritzconnection
+Author: Klaus Bremer
 """
 
 __version__ = '0.5.0'

@@ -5,15 +5,27 @@
 fritzstatus.py
 
 Modul to read status-informations from an AVM FritzBox.
+
+License: MIT https://opensource.org/licenses/MIT
+Source: https://bitbucket.org/kbr/fritzconnection
+Author: Klaus Bremer
 """
 
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 
 import argparse
 import collections
 import time
-from . import fritzconnection
-from . import fritztools
+
+# tiny hack to run this as a package but also from the command line. In
+# the latter case ValueError is raised from python 2.7 and SystemError
+# from Python 3.5
+try:
+    from . import fritzconnection
+    from . import fritztools
+except (ValueError, SystemError):
+    import fritzconnection
+    import fritztools
 
 
 # version-access:

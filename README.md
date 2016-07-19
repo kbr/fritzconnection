@@ -55,6 +55,13 @@ The latter wrapps the `call_action`-method. For a more complete example look at 
   * [AVM's manual First Steps with TR-064](http://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AVM_TR-064_first_steps.pdf)
   * [TR-064 Technical Report DSL Forum](http://www.broadband-forum.org/technical/download/TR-064.pdf)
 
+
+### License
+
+[MIT](https://opensource.org/licenses/MIT)
+Author: Klaus Bremer
+
+
 ### Contributers
 
 Many thanks for contributions, bugfixes or issue-reporting to:
@@ -63,3 +70,4 @@ Many thanks for contributions, bugfixes or issue-reporting to:
 * [malleYay](https://bitbucket.org/malleYay)
 * [Thomas Westfeld](https://bitbucket.org/westfeld)
 * [Christian Fetzer](https://bitbucket.org/fetzerch)
+

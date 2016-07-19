@@ -1,10 +1,29 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '0.5.0'
+"""
+fritzhosts.py
+
+Utility modul for FritzConnection to list the known hosts.
+
+Older versions of FritzOS lists only up to 16 entries.
+For newer versions this limitation is gone.
+
+License: MIT https://opensource.org/licenses/MIT
+Source: https://bitbucket.org/kbr/fritzconnection
+Author: Klaus Bremer
+"""
 
 import argparse
-from . import fritzconnection
 
+# tiny hack to run this as a package but also from the command line. In
+# the latter case ValueError is raised from python 2.7 and SystemError
+# from Python 3.5
+try:
+    from . import fritzconnection
+except (ValueError, SystemError):
+    import fritzconnection
+
+__version__ = '0.5.1'
 
 SERVICE = 'Hosts'
 
