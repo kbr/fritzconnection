@@ -27,7 +27,7 @@ Also you may have to send the password to get the complete api.
 
 """
 
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 
 import argparse
 import requests
@@ -74,18 +74,14 @@ class FritzAction(object):
         """
     argument_template = """
         <s:%(name)s>%(value)s</s:%(name)s>"""
-
-    address = FRITZ_IP_ADDRESS
-    port = FRITZ_TCP_PORT
     method = 'post'
-    user = ''
-    password = ''
 
-    def __init__(self, service_type, control_url):
+    def __init__(self, service_type, control_url, action_parameters):
         self.service_type = service_type
         self.control_url = control_url
         self.name = ''
         self.arguments = {}
+        self.__dict__.update(action_parameters)
 
     @property
     def info(self):
@@ -254,7 +250,7 @@ class FritzSCDPParser(FritzXmlParser):
             value = node.find(self.nodename('dataType')).text
             self.state_variables[key] = value
 
-    def get_actions(self):
+    def get_actions(self, action_parameters):
         """Returns a list of FritzAction instances."""
         self._read_state_variables()
         actions = []
@@ -262,7 +258,8 @@ class FritzSCDPParser(FritzXmlParser):
             './/ns:action', namespaces={'ns': self.namespace})
         for node in nodes:
             action = FritzAction(self.service.service_type,
-                                 self.service.control_url)
+                                 self.service.control_url,
+                                 action_parameters)
             action.name = node.find(self.nodename('name')).text
             action.arguments = self._get_arguments(node)
             actions.append(action)
@@ -305,10 +302,12 @@ class FritzConnection(object):
             password = password[0]
         if user and type(user) is list:
             user = user[0]
-        FritzAction.address = address
-        FritzAction.port = port
-        FritzAction.user = user
-        FritzAction.password = password
+        self.action_parameters = {
+            'address': address,
+            'port': port,
+            'user': user,
+            'password': password
+        }
         self.address = address
         self.port = port
         self.modelname = None
@@ -340,7 +339,7 @@ class FritzConnection(object):
         """Get actions from services."""
         for service in services:
             parser = FritzSCDPParser(self.address, self.port, service)
-            actions = parser.get_actions()
+            actions = parser.get_actions(self.action_parameters)
             service.actions = {action.name: action for action in actions}
             self.services[service.name] = service
 
