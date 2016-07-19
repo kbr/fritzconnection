@@ -305,6 +305,9 @@ class FritzConnection(object):
             password = password[0]
         if user and type(user) is list:
             user = user[0]
+        # The keys of the dictionary are becoming FritzAction instance
+        # attributes on calling the FritzSCDPParser.get_actions() method
+        # in self._read_services():
         self.action_parameters = {
             'address': address,
             'port': port,
