@@ -327,7 +327,7 @@ class FritzConnection(object):
             try:
                 parser = FritzDescParser(self.address, self.port, descfile)
             except IOError:
-                # failed to load resource. Can happen on custumized models
+                # failed to load a resource. Can happen on customized models
                 # missing the igddesc.xml file.
                 # It's save to ignore this error.
                 continue
