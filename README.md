@@ -48,6 +48,20 @@ An API-Call is made by the `call_action`-method of the FritzConnection-Class. Th
 The latter wrapps the `call_action`-method. For a more complete example look at the `fritzhosts.py` souce-code.
 
 
+#### Changed with version 0.6:
+
+FritzConnection now uses long qualified names as `servicename`, i.e. `WLANConfiguration:1` or `WLANConfiguration:2`. So these servicenames can now be used to call actions on different services with the same name:
+
+    >>> connection = FritzConnection()
+    >>> info = connection.call_action('WANIPConnection:2', 'GetInfo')
+
+For backward compatibility servicename-extensions like ':2' can be omitted on calling 'call_action'. In this case FritzConnection will use the extension ':1' as default.
+
+On calling unknown services or actions in both cases KeyErrors has been raised. Calling an unknown service (or one unaccessible without a password) will now raise a `ServiceError`. Calling an invalid action on a service will raise an `ActionError`. Both Exceptions are Subclasses from the new `FritzConnectionException`. The Exception classes can get imported from fritzconnection:
+
+    >>> from fritzconnection import ServiceError, ActionError
+
+
 ### Resources
 
 * [The Source Code of fritzconnection](https://bitbucket.org/kbr/fritzconnection)

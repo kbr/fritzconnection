@@ -30,7 +30,7 @@ Source: https://bitbucket.org/kbr/fritzconnection
 Author: Klaus Bremer
 """
 
-__version__ = '0.5.1'
+__version__ = '0.6'
 
 import argparse
 import requests
@@ -50,6 +50,11 @@ FRITZ_USERNAME = 'dslf-config'
 # version-access:
 def get_version():
     return __version__
+
+
+class FritzConnectionException(Exception): pass
+class ServiceError(FritzConnectionException): pass
+class ActionError(FritzConnectionException): pass
 
 
 class FritzAction(object):
@@ -174,10 +179,7 @@ class FritzService(object):
         self.control_url = control_url
         self.scpd_url = scpd_url
         self.actions = {}
-
-    @property
-    def name(self):
-        return self.service_type.split(':')[-2]
+        self.name = ':'.join(service_type.split(':')[-2:])
 
 
 class FritzXmlParser(object):
@@ -362,17 +364,45 @@ class FritzConnection(object):
                 actions.append((service_name, action_name))
         return actions
 
+    def _get_action(self, service_name, action_name):
+        """
+        Returns an action-object (an instance of FritzAction) with the
+        given action_name from the given service.
+        Raises a ServiceError-Exeption in case of an unknown
+        service_name and an ActionError in case of an unknown
+        action_name.
+        """
+        try:
+            service = self.services[service_name]
+        except KeyError:
+            raise ServiceError('Unknown Service: ' + service_name)
+        try:
+            action = service.actions[action_name]
+        except KeyError:
+            raise ActionError('Unknown Action: ' + action_name)
+        return action
+
     def get_action_arguments(self, service_name, action_name):
         """
         Returns a list of tuples with all known arguments for the given
         service- and action-name combination. The tuples contain the
         argument-name, direction and data_type.
         """
-        return self.services[service_name].actions[action_name].info
+        action = self._get_action(service_name, action_name)
+        return action.info
 
     def call_action(self, service_name, action_name, **kwargs):
-        """Executes the given action. Raise a KeyError on unkown actions."""
-        action = self.services[service_name].actions[action_name]
+        """
+        Executes the given action. Raise a KeyError on unkown actions.
+        service_name can end with an identifier ':n' (with n as an
+        integer) to differentiate between different services with the
+        same name, like WLANConfiguration:1 or WLANConfiguration:2. In
+        case the service_name does not end with an identifier the id
+        ':1' will get added by default.
+        """
+        if not ':' in service_name:
+            service_name += ':1'
+        action = self._get_action(service_name, action_name)
         return action.execute(**kwargs)
 
     def reconnect(self):
@@ -395,10 +425,17 @@ class FritzInspection(object):
                        password=''):
         self.fc = FritzConnection(address, port, user, password)
 
+    @staticmethod
+    def _get_full_servicename(servicename):
+        if ':' not in servicename:
+            servicename += ':1'
+        return servicename
+
     def get_servicenames(self):
         return sorted(self.fc.services.keys())
 
     def get_actionnames(self, servicename):
+        servicename = self._get_full_servicename(servicename)
         try:
             service = self.fc.services[servicename]
         except KeyError:
@@ -422,12 +459,14 @@ class FritzInspection(object):
             print('{:20}{}'.format('', name))
 
     def view_actionarguments(self, servicename, actionname):
+        servicename = self._get_full_servicename(servicename)
         print('\n{:<20}{}'.format('Servicename:', servicename))
         print('{:<20}{}'.format('Actionname:', actionname))
         print('Arguments:')
         self._view_arguments('{:20}{}', servicename, actionname)
 
     def view_servicearguments(self, servicename):
+        servicename = self._get_full_servicename(servicename)
         print('\n{:<20}{}'.format('Servicename:', servicename))
         actionnames = self.get_actionnames(servicename)
         for actionname in actionnames:

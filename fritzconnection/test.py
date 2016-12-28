@@ -82,7 +82,7 @@ class TestFritzSCDPParser(unittest.TestCase):
         self.fp = FritzSCDPTestParser()
 
     def test_get_service_name(self):
-        self.assertEqual('WANCommonInterfaceConfig', self.fp.service.name)
+        self.assertEqual('WANCommonInterfaceConfig:1', self.fp.service.name)
 
     def test_read_state_variables(self):
         """Parse the stateVariables and check for a single value."""
@@ -92,10 +92,10 @@ class TestFritzSCDPParser(unittest.TestCase):
 
     def test_get_actions(self):
         """Read actionnames and corresponding arguments from xml-file."""
-        actions = self.fp.get_actions()
+        actions = self.fp.get_actions({})
         first_action = actions[0]
         self.assertEqual(
-            type(FritzAction(None, None)), type(first_action))
+            type(FritzAction(None, None, {})), type(first_action))
 
 
 class TestFritzAction(unittest.TestCase):
@@ -122,11 +122,11 @@ class TestFritzAction(unittest.TestCase):
         FritzActionArgument-object pairs.
         """
         scdp = FritzSCDPTestParser()
-        actions = {action.name: action for action in scdp.get_actions()}
+        actions = {action.name: action for action in scdp.get_actions({})}
         return actions[self.action_name].arguments
 
     def test_parse_response(self):
-        fa = FritzAction(self.service_type, self.control_url)
+        fa = FritzAction(self.service_type, self.control_url, {})
         fa.arguments = self.get_arguments()  # argument-injection
         result = fa.parse_response(self.response)
         self.assertEqual('Connected', result['NewConnectionStatus'])
