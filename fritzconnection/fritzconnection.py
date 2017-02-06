@@ -32,7 +32,7 @@ Author: Klaus Bremer
 
 __version__ = '0.6'
 
-import argparse
+import os, argparse
 import requests
 from requests.auth import HTTPDigestAuth
 
@@ -513,19 +513,19 @@ def print_api(address=FRITZ_IP_ADDRESS,
 def get_cli_arguments():
     parser = argparse.ArgumentParser(description='FritzBox API')
     parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=FRITZ_IP_ADDRESS,
+                        nargs='?', default=os.getenv('FRITZ_IP_ADDRESS', FRITZ_IP_ADDRESS),
                         dest='address',
                         help='Specify ip-address of the FritzBox to connect to.'
                              'Default: %s' % FRITZ_IP_ADDRESS)
     parser.add_argument('--port',
-                        nargs='?', default=FRITZ_TCP_PORT,
+                        nargs='?', default=os.getenv('FRITZ_TCP_PORT', FRITZ_TCP_PORT),
                         help='Port of the FritzBox to connect to. '
                              'Default: %s' % FRITZ_TCP_PORT)
     parser.add_argument('-u', '--username',
-                        nargs=1, default='',
+                        nargs=1, default=os.getenv('FRITZ_USERNAME', ''),
                         help='Fritzbox authentication username')
     parser.add_argument('-p', '--password',
-                        nargs=1, default='',
+                        nargs=1, default=os.getenv('FRITZ_PASSWORD', ''),
                         help='Fritzbox authentication password')
     parser.add_argument('-r', '--reconnect',
                         action='store_true',
