@@ -27,4 +27,9 @@ setup(
         'lxml>=3.2.5',
         'requests>=2.2.0',
     ],
+    entry_points={'console_scripts': ['fritzconnection = fritzconnection.fritzconnection:main',
+                                      'fritzhosts = fritzconnection.fritzhosts:main',
+                                      'fritzwlan = fritzconnection.fritzwlan:main',
+                                      'fritzmonitor = fritzconnection.fritzmonitor:main',
+                                      'fritzstatus = fritzconnection.fritzstatus:main']}
 )
