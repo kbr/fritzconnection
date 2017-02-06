@@ -551,8 +551,7 @@ def get_cli_arguments():
     args = parser.parse_args()
     return args
 
-
-if __name__ == '__main__':
+def main():
     args = get_cli_arguments()
     fi = FritzInspection(args.address, args.port, args.username, args.password)
     fi.view_header()
@@ -570,3 +569,6 @@ if __name__ == '__main__':
     elif args.reconnect:
         fi.fc.reconnect()
     print()  # print an empty line
+
+if __name__ == '__main__':
+    main()

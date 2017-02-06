@@ -194,6 +194,8 @@ def _print_status(arguments):
         else:
             print_hosts(fh)
 
+def main():
+    _print_status(_get_cli_arguments())
 
 if __name__ == '__main__':
-    _print_status(_get_cli_arguments())
+    main()

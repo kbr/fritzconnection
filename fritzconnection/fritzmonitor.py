@@ -196,8 +196,11 @@ def _get_cli_arguments():
     args = parser.parse_args()
     return args
 
-if __name__ == '__main__':
+def main():
     arguments = _get_cli_arguments()
     app = FritzMonitor(address=arguments.address, port=arguments.port)
     app.master.title('FritzMonitor')
     app.mainloop()
+
+if __name__ == '__main__':
+    main()

@@ -217,6 +217,8 @@ def _get_cli_arguments():
 def _print_status(arguments):
     print_status(address=arguments.address, port=arguments.port)
 
+def main():
+    _print_status(_get_cli_arguments())
 
 if __name__ == '__main__':
-    _print_status(_get_cli_arguments())
+    main()
