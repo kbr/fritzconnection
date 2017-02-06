@@ -115,14 +115,19 @@ def print_hosts(fh):
     print('\n')
 
 
-def _print_detail(fh, detail):
-    mac_address = detail[0]
-    print('\n{:<23}{}\n'.format('Details for host:', mac_address))
+def _print_detail(fh, detail, quiet):
+    mac_address = detail[0].upper()
     info = fh.get_specific_host_entry(mac_address)
-    for key, value in info.items():
-        print('{:<23}: {}'.format(key, value))
-    print('\n')
-
+    if info:
+        if not quiet:
+            print('\n{:<23}{}\n'.format('Details for host:', mac_address))
+            for key, value in info.items():
+                print('{:<23}: {}'.format(key, value))
+            print('\n')
+        else:
+            print(info['NewActive'])
+    else:
+        print('0')
 
 def _print_nums(fh):
     print('{:<20}{}\n'.format('Number of hosts:', fh.host_numbers))
@@ -161,6 +166,10 @@ def _get_cli_arguments():
                         nargs=1, default='',
                         help='Show information about a specific host '
                              '(DETAIL: MAC Address)')
+    parser.add_argument('-q', '--quiet',
+                        action='store_true',
+                        help='Quiet mode '
+                             '(just return state as 0|1 for requested mac address)')
     args = parser.parse_args()
     return args
 
@@ -170,9 +179,10 @@ def _print_status(arguments):
                     port=arguments.port,
                     user=arguments.username,
                     password=arguments.password)
-    _print_header(fh)
+    if not arguments.quiet:
+        _print_header(fh)
     if arguments.detail:
-        _print_detail(fh, arguments.detail)
+        _print_detail(fh, arguments.detail, arguments.quiet)
     elif arguments.nums:
         _print_nums(fh)
     else:

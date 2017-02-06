@@ -114,15 +114,18 @@ def print_hosts(fh):
             )
         )
 
-def _print_detail(fh, detail):
+def _print_detail(fh, detail, quiet):
     mac_address = detail[0].lower()
     info = fh.get_specific_host_entry(mac_address)
     if info:
-        print('\n{:<30}{}'.format('Details for host:', mac_address))
-        print('{:<30}{}\n'.format('', SERVICE+':'+fh.service, fh.host_numbers))
-        for key, value in info.items():
-            print('{:<30}: {}'.format(key, value))
-    # print('\n')
+        if not quiet:
+            print('\n{:<30}{}'.format('Details for host:', mac_address))
+            print('{:<30}{}\n'.format('', SERVICE+':'+fh.service, fh.host_numbers))
+            for key, value in info.items():
+                print('{:<30}: {}'.format(key, value))
+        else: print(info['NewAssociatedDeviceAuthState'])
+    else:
+        if quiet: print('0')
 
 
 def _print_nums(fh):
@@ -148,7 +151,7 @@ def _get_cli_arguments():
                         nargs=1, default=os.getenv('FRITZ_USERNAME', fritzconnection.FRITZ_USERNAME),
                         help='Fritzbox authentication username')
     parser.add_argument('-p', '--password',
-                        nargs=1, default=os.getenv('FRITZ_PASSWORD',''),
+                        nargs=1, default=os.getenv('FRITZ_PASSWORD', ''),
                         help='Fritzbox authentication password')
     parser.add_argument('-s', '--service',
                         nargs=1, default='1,2,3',
@@ -164,6 +167,10 @@ def _get_cli_arguments():
                         nargs=1, default='',
                         help='Show information about a specific host '
                              '(DETAIL: MAC Address)')
+    parser.add_argument('-q', '--quiet',
+                        action='store_true',
+                        help='Quiet mode '
+                             '(just return state as 0|1 for requested mac address)')
     args = parser.parse_args()
     return args
 
@@ -174,15 +181,14 @@ def _print_status(arguments):
                    user=arguments.username,
                    password=arguments.password)
 
-    _print_header(fh)
-    # print('')
+    if not arguments.quiet:
+        _print_header(fh)
 
     services = arguments.service[0] if type(arguments.service) is list else arguments.service
-
     for service in services.split(','):
         fh.service = service
         if arguments.detail:
-            _print_detail(fh, arguments.detail)
+            _print_detail(fh, arguments.detail, arguments.quiet)
         elif arguments.nums:
             _print_nums(fh)
         else:
