@@ -16,7 +16,9 @@ fritzconnection requires the python modules `lxml` and `requests`:
 ### Available Modules, Commands and Tools
 
 `fritzconnection.py` makes the SOAP interface of the FRITZ!Box available on the command line.
-Shows all available services and actions when run with the argument `-c`.
+Shows all available services and actions when run with the argument `-c`. Use `-h` for help.
+
+This is the main module and works standalone. The other modules listet here are utility modules for convenience and examples on how to use fritzconnection.
 
 `fritzstatus.py` is a command line interface to display status information of the FRITZ!Box.
 It also serves as an example on how to use the fritzconnection module.
@@ -25,6 +27,10 @@ It also serves as an example on how to use the fritzconnection module.
 It also makes it easy to reconnect and thus get a different IP from your ISP.
 
 `fritzhosts.py` is a command line interface to display the hosts known by the FRITZ!Box with IP, name, MAC and status.
+
+`fritzwlan.py` Utility modul for FritzConnection to list the known WLAN connections.
+
+`fritzphonebook.py` Utility module for FritzConnection to access phone books.
 
 ### Other Files
 
@@ -84,4 +90,6 @@ Many thanks for contributions, bugfixes or issue-reporting to:
 * [malleYay](https://bitbucket.org/malleYay)
 * [Thomas Westfeld](https://bitbucket.org/westfeld)
 * [Christian Fetzer](https://bitbucket.org/fetzerch)
+* [David Straub](https://bitbucket.org/DavidMStraub)
+* [Bernd Strebel](https://bitbucket.org/bstrebel)
 
