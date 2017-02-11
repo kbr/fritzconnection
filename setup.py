@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-with open('readme.rst') as file:
+with open('pypi_description.rst') as file:
     the_long_description = file.read()
 
 
