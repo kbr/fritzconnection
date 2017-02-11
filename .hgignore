@@ -3,3 +3,5 @@ syntax: glob
 *.pyc
 .DS_Store
 __pycache__/*
+dist/*
+fritzconnection.egg-info/*
