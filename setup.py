@@ -1,11 +1,17 @@
 from setuptools import setup, find_packages
 
+
+with open('readme.rst') as file:
+    the_long_description = file.read()
+
+
 setup(
     name = 'fritzconnection',
     version = '0.6.2',
     packages = find_packages(),
     license = 'MIT',
     description = 'Communicate with the AVM FritzBox',
+    long_description = the_long_description,
     author = 'Klaus Bremer',
     author_email = 'bremer@bremer-media.de',
     url = 'https://bitbucket.org/kbr/fritzconnection',

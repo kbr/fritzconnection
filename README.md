@@ -72,8 +72,8 @@ On calling unknown services or actions in both cases KeyErrors has been raised. 
 
 * [The Source Code of fritzconnection](https://bitbucket.org/kbr/fritzconnection)
 * Information on TR-064:
-  * [AVM's manual First Steps with TR-064](http://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AVM_TR-064_first_steps.pdf)
-  * [TR-064 Technical Report DSL Forum](http://www.broadband-forum.org/technical/download/TR-064.pdf)
+* [AVM's manual First Steps with TR-064](http://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AVM_TR-064_first_steps.pdf)
+* [TR-064 Technical Report DSL Forum](http://www.broadband-forum.org/technical/download/TR-064.pdf)
 
 
 ### License
