@@ -16,10 +16,10 @@ import os, argparse
 # from Python 3.5
 try:
     from . import fritzconnection
-except (ValueError, SystemError):
+except (ValueError, SystemError, ImportError):
     import fritzconnection
 
-__version__ = '0.5.1'
+__version__ = '0.6.2'
 
 SERVICE = 'WLANConfiguration'
 

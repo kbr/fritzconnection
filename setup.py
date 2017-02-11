@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'fritzconnection',
-    version = '0.6',
+    version = '0.6.2',
     packages = find_packages(),
     license = 'MIT',
     description = 'Communicate with the AVM FritzBox',
@@ -31,5 +31,6 @@ setup(
                                       'fritzhosts = fritzconnection.fritzhosts:main',
                                       'fritzwlan = fritzconnection.fritzwlan:main',
                                       'fritzmonitor = fritzconnection.fritzmonitor:main',
-                                      'fritzstatus = fritzconnection.fritzstatus:main']}
+                                      'fritzstatus = fritzconnection.fritzstatus:main',
+                                      'fritzphonebook = fritzconnection.fritzphonebook:main']}
 )

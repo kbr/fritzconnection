@@ -19,11 +19,11 @@ import time
 
 # tiny hack to run this as a package but also from the command line. In
 # the latter case ValueError is raised from python 2.7 and SystemError
-# from Python 3.5
+# from Python 3.5 and ImportError from Python 3.6
 try:
     from . import fritzconnection
     from . import fritztools
-except (ValueError, SystemError):
+except (ValueError, SystemError, ImportError):
     import fritzconnection
     import fritztools
 

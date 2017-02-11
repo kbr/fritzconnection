@@ -16,14 +16,15 @@ Author: Klaus Bremer
 import os, argparse
 
 # tiny hack to run this as a package but also from the command line. In
-# the latter case ValueError is raised from python 2.7 and SystemError
-# from Python 3.5
+# the latter case ValueError is raised from python 2.7,
+# SystemError from Python 3.5
+# ImportError from Python 3.6
 try:
     from . import fritzconnection
-except (ValueError, SystemError):
+except (ValueError, SystemError, ImportError):
     import fritzconnection
 
-__version__ = '0.5.1'
+__version__ = '0.6.2'
 
 SERVICE = 'Hosts'
 
