@@ -14,3 +14,7 @@ from .fritzstatus import (
     FritzStatus,
     print_status,
 )
+from .fritzphonebook import (
+    FritzPhonebook,
+    print_phonebooks,
+)
