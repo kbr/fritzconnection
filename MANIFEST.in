@@ -1,2 +1,3 @@
 include fritzconnection/*.py
 include fritzconnection/test_xml/*
+include pypi_description.rst
