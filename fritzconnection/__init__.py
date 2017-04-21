@@ -18,3 +18,7 @@ from .fritzphonebook import (
     FritzPhonebook,
     print_phonebooks,
 )
+from .fritzcallforwarding import (
+    FritzCallforwarding,
+    print_callforwardings,
+)
