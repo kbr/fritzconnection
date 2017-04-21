@@ -7,7 +7,7 @@ with open('pypi_description.rst') as file:
 
 setup(
     name = 'fritzconnection',
-    version = '0.6.3',
+    version = '0.6.4',
     packages = find_packages(),
     license = 'MIT',
     description = 'Communicate with the AVM FritzBox',
@@ -38,5 +38,6 @@ setup(
                                       'fritzwlan = fritzconnection.fritzwlan:main',
                                       'fritzmonitor = fritzconnection.fritzmonitor:main',
                                       'fritzstatus = fritzconnection.fritzstatus:main',
-                                      'fritzphonebook = fritzconnection.fritzphonebook:main']}
+                                      'fritzphonebook = fritzconnection.fritzphonebook:main',
+                                      'fritzcallforwarding = fritzconnection.fritzcallforwarding:main']}
 )
