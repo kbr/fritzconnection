@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Utility module for FritzConnection to list and switch the known callforwardings.
+Utility module for FritzConnection to list & switch the known callforwardings.
 
 License: MIT https://opensource.org/licenses/MIT
 Author: Julian Tatsch
@@ -9,6 +9,7 @@ Author: Julian Tatsch
 
 import os
 import argparse
+from lxml import etree
 
 # tiny hack to run this as a package but also from the command line. In
 # the latter case ValueError is raised from python 2.7 and SystemError
@@ -29,7 +30,7 @@ def get_version():
 
 
 class FritzCallforwarding(object):
-    """The FritzCallForwarding class offers some convenience functions to manage call forwardings.
+    """The FritzCallForwarding class to manage call forwardings.
 
     It allows to list and switch the known call forwardings of a fritzbox
     """
@@ -43,33 +44,35 @@ class FritzCallforwarding(object):
         """Initialize a FritzCallforwarding instance."""
         super(FritzCallforwarding, self).__init__()
         if fritz_connection is None:
-            fritz_connection = fritzconnection.FritzConnection(address, port, user, password)
+            fritz_connection = fritzconnection.FritzConnection(address, port,
+                                                               user, password)
         self.fritz_connection = fritz_connection
         self.service = 1
 
     def action(self, actionname, **kwargs):
-        """A wrapper to perform an action on a service."""
+        """Perform an action on a service."""
         return self.fritz_connection.call_action(SERVICE+':'+str(self.service),
                                                  actionname, **kwargs)
 
     @property
     def modelname(self):
-        """Get the total number of call forwardings from the fritzbox."""
+        """Get the modelname from the fritzbox."""
         return self.fritz_connection.modelname
 
-    def get_no_call_forwardings(self):
+    def count_forwardings(self):
         """Get the total number of call forwardings from the fritzbox."""
         return self.action('GetNumberOfDeflections')['NewNumberOfDeflections']
 
-    def get_call_forwarding_list(self, filter_blocked=True):
-        """Get the current deflections list from the fritzbox as unparsed xml blob."""
-        raw_deflection_list = self.action('GetDeflections')['NewDeflectionList']
-        return parse_call_forwarding_list(raw_deflection_list, filter_blocked)
+    def get_call_forwardings(self, filter_blocked=True):
+        """Get the forwardings list from the fritzbox as unparsed xml blob."""
+        raw_deflections = self.action('GetDeflections')['NewDeflectionList']
+        return self.parse_call_forwardings(raw_deflections, filter_blocked)
 
     def get_call_forwarding_by_uid(self, uid):
-        """Get a single CallForwarding dict for a uid.
+        """Get a single call forwarding dict for a uid.
 
-        The dict-keys are: 'uid', 'from_number', 'to_number', 'connection_type', 'enabled'
+        Valid dict-keys are:
+        'uid', 'from_number', 'to_number', 'connection_type', 'enabled'
         """
         kwargs = {'NewDeflectionId': uid}
         deflection_dict = self.action('GetDeflection', **kwargs)
@@ -80,40 +83,40 @@ class FritzCallforwarding(object):
                 'enabled': int(deflection_dict['NewEnable'])}
 
     def get_call_forwarding_status_by_uid(self, uid):
-        """Get the CallForwarding status for a uid."""
+        """Get the call forwarding status for a uid."""
         return self.get_call_forwarding_by_uid(uid)['enabled']
 
     def set_call_forwarding(self, uid, enable):
-        """Enable the call forwarding on the fritzbox for a uid."""
+        """Enable call forwarding on the fritzbox for a uid."""
         kwargs = {'NewDeflectionId': uid, 'NewEnable': enable}
         self.action('SetDeflectionEnable', **kwargs)
         return self.get_call_forwarding_status_by_uid(uid)
 
-def parse_call_forwarding_list(call_forwarding_list, filter_blocked=True):
-    """Get a list with all CallForwarding Dicts, parse and filter the blocked ones out."""
-    import xml.etree.ElementTree as ET
-    call_forwardings = []
-    element_tree = ET.fromstring(call_forwarding_list)
-    for element in element_tree.findall('Item'):
-        uid = element.find('DeflectionId').text
-        enabled = int(element.find('Enable').text)
-        connection_type = element.find('Type').text
-        from_number = element.find('Number').text
-        to_number = element.find('DeflectionToNumber').text
-        if filter_blocked:  # without to numbers (= blocked numbers)
-            if to_number is not None:
-                call_forwardings.append({'uid': uid,
-                                         'from_number': from_number,
-                                         'to_number': to_number,
-                                         'connection_type': connection_type,
-                                         'enabled': enabled})
-        else:
+    @staticmethod
+    def parse_call_forwardings(raw_call_forwardings, filter_blocked=True):
+        """
+        Parse and filter call forwardings xml blob.
+
+        Optionally filter blocked numbers out.
+        """
+        call_forwardings = []
+        element_tree = etree.fromstring(raw_call_forwardings)
+        for element in element_tree.findall('Item'):
+            uid = element.find('DeflectionId').text
+            enabled = int(element.find('Enable').text)
+            connection_type = element.find('Type').text
+            from_number = element.find('Number').text
+            to_number = element.find('DeflectionToNumber').text
+            # forwardings without to_number are blocked numbers
+            if filter_blocked and to_number is None:
+                continue
+
             call_forwardings.append({'uid': uid,
                                      'from_number': from_number,
                                      'to_number': to_number,
                                      'connection_type': connection_type,
                                      'enabled': enabled})
-    return call_forwardings
+        return call_forwardings
 
 # ---------------------------------------------------------
 # terminal-output:
@@ -132,7 +135,7 @@ def print_callforwardings(call_forwarding):
     print('\n{}\n'.format(SERVICE + ':' + str(call_forwarding.service)))
     print('{:>5} {:<15} {:<15} {:<10} {:<9}\n'.format(
         'index', 'from', 'to', 'type', 'status'))
-    for call_forwarding_entry in call_forwarding.get_call_forwarding_list():
+    for call_forwarding_entry in call_forwarding.get_call_forwardings():
         status = 'active' if call_forwarding_entry['enabled'] == 1 else 'disabled'
         to_number = '-' if call_forwarding_entry['to_number'] is None else call_forwarding_entry['to_number']
         print('{:>5} {:<15} {:<15} {:<10} {:<9}'.format(
@@ -145,14 +148,14 @@ def print_callforwardings(call_forwarding):
 
 
 def _print_detail(call_forwarding, detail, quiet):
-    """Print the details of a call forwardings entry."""
+    """Print the details of a call forwarding entry."""
     uid = detail[0].lower()
     info = call_forwarding.get_call_forwarding_by_uid(uid)
     if info:
         if not quiet:
             print('\n{:<30}{}'.format('Details for index:', uid))
             print('{:<30}{}{}\n'.format('', SERVICE+':'+str(call_forwarding.service),
-                                        call_forwarding.get_no_call_forwardings))
+                                        call_forwarding.count_forwardings))
             for key, value in info.items():
                 print('{:<30}: {}'.format(key, value))
         else:
@@ -174,7 +177,7 @@ def _print_switch(call_forwarding, switch, quiet):
 
 def _print_nums(call_forwarding):
     print('{}: {}'.format(SERVICE+':'+str(call_forwarding.service),
-                          call_forwarding.get_no_call_forwardings()))
+                          call_forwarding.count_forwardings()))
 
 # ---------------------------------------------------------
 # cli-section:
@@ -245,7 +248,7 @@ def _print_status(arguments):
 
 
 def main():
-    """Business logic for the program being run by itself."""
+    """Run the module on its own."""
     _print_status(_get_cli_arguments())
 
 
