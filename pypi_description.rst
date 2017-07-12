@@ -75,7 +75,7 @@ There is a new attribute *package_version*:
     >>> fritzconnection.package_version
     0.6.5
 
-Because every module of the fritzconnection-package has it's own version, version-history off the package gets confusing over time. From now on every change of the content of the package is indicated by the the package-version. Every unchanged module keeps it's version. So i.e. the recent package-version is 0.6.5 but the fritzconnection-module is still in version 0.6 cause nothing has changed in this module since then.
+Because every module of the fritzconnection-package has it's own version, version-history of the package gets confusing over time. From now on every change of the content of the package is indicated by the the package-version. Every unchanged module keeps it's version. So i.e. the recent package-version is 0.6.5 but the fritzconnection-module is still in version 0.6 cause nothing has changed in this module since then.
 
 Changed with version 0.6:
 -------------------------
