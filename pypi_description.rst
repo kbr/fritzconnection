@@ -40,6 +40,9 @@ It also makes it easy to reconnect and thus get a different IP from your ISP.
 
 ``fritzphonebook.py`` Utility module for FritzConnection to access phone books.
 
+``fritzcall.py`` Gives access to recent phone calls: incoming, outgoing and missed ones.
+
+
 Other Files
 -----------
 
@@ -62,6 +65,17 @@ An API-Call is made by the ``call_action``-method of the FritzConnection-Class. 
     >>> connection.reconnect()
 
 The latter wrapps the ``call_action``-method. For a more complete example look at the ``fritzhosts.py`` souce-code.
+
+Changed with version 0.6.5:
+---------------------------
+
+There is a new attribute *package_version*:
+
+    >>> import fritzconnection
+    >>> fritzconnection.package_version
+    0.6.5
+
+Because every module of the fritzconnection-package has it's own version, version-history off the package gets confusing over time. From now on every change of the content of the package is indicated by the the package-version. Every unchanged module keeps it's version. So i.e. the recent package-version is 0.6.5 but the fritzconnection-module is still in version 0.6 cause nothing has changed in this module since then.
 
 Changed with version 0.6:
 -------------------------
