@@ -132,7 +132,7 @@ def _print_header(call_forwarding):
 
 def print_callforwardings(call_forwarding):
     """Print a nice table with all call forwardings."""
-    print('\n{}\n'.format(SERVICE + ':' + str(call_forwarding.service)))
+    print('\n{}:{}\n'.format(SERVICE, call_forwarding.service))
     print('{:>5} {:<15} {:<15} {:<10} {:<9}\n'.format(
         'index', 'from', 'to', 'type', 'status'))
     for call_forwarding_entry in call_forwarding.get_call_forwardings():
@@ -154,8 +154,8 @@ def _print_detail(call_forwarding, detail, quiet):
     if info:
         if not quiet:
             print('\n{:<30}{}'.format('Details for index:', uid))
-            print('{:<30}{}{}\n'.format('', SERVICE+':'+str(call_forwarding.service),
-                                        call_forwarding.count_forwardings))
+            print('{:<30}{}:{}{}\n'.format('', SERVICE, call_forwarding.service,
+                                           call_forwarding.count_forwardings))
             for key, value in info.items():
                 print('{:<30}: {}'.format(key, value))
         else:
