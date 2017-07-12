@@ -34,7 +34,9 @@ It also makes it easy to reconnect and thus get a different IP from your ISP.
 
 ``fritzhosts.py`` is a command line interface to display the hosts known by the FRITZ!Box with IP, name, MAC and status.
 
-``fritzwlan.py`` Utility modul for FritzConnection to list the known WLAN connections.
+``fritzwlan.py`` Utility module for FritzConnection to list the known WLAN connections.
+
+``fritzcallforwarding.py`` Utility module for FritzConnection to manage callforwardings.
 
 ``fritzphonebook.py`` Utility module for FritzConnection to access phone books.
 
