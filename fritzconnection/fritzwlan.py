@@ -13,19 +13,20 @@ import os, argparse
 
 # tiny hack to run this as a package but also from the command line. In
 # the latter case ValueError is raised from python 2.7 and SystemError
-# from Python 3.5
+# from Python 3.5, and ImportError by Python 3.6
 try:
     from . import fritzconnection
 except (ValueError, SystemError, ImportError):
     import fritzconnection
 
-__version__ = '0.6.2'
+__version__ = '0.6.5'
 
 SERVICE = 'WLANConfiguration'
 
 # version-access:
 def get_version():
     return __version__
+
 
 class FritzWLAN(object):
 
@@ -34,15 +35,17 @@ class FritzWLAN(object):
                  address=fritzconnection.FRITZ_IP_ADDRESS,
                  port=fritzconnection.FRITZ_TCP_PORT,
                  user=fritzconnection.FRITZ_USERNAME,
-                 password=''):
+                 password='',
+                 service=1):
         super(FritzWLAN, self).__init__()
         if fc is None:
             fc = fritzconnection.FritzConnection(address, port, user, password)
         self.fc = fc
-        self.service = 0
+        self.service = service
 
     def action(self, actionname, **kwargs):
-        return self.fc.call_action(SERVICE+':'+self.service, actionname, **kwargs)
+        service = '{}:{}'.format(SERVICE, self.service)
+        return self.fc.call_action(service, actionname, **kwargs)
 
     @property
     def modelname(self):
@@ -88,14 +91,16 @@ class FritzWLAN(object):
 # terminal-output:
 # ---------------------------------------------------------
 
+
 def _print_header(fh):
     print('\nFritzHosts:')
     print('{:<30}{}'.format('version:', get_version()))
     print('{:<30}{}'.format('model:', fh.modelname))
     print('{:<30}{}'.format('ip:', fh.fc.address))
 
+
 def print_hosts(fh):
-    print('\n{}\n'.format(SERVICE+':'+ fh.service))
+    print('\n{}:{}\n'.format(SERVICE, fh.service))
     print('{:>5} {:<7} {:<15} {:<17} {:<7} {:>7} {:>7}\n'.format(
         'index', 'status', 'ip', 'mac', 'service', 'signal', 'speed'))
     hosts = fh.get_hosts_info()
@@ -114,13 +119,14 @@ def print_hosts(fh):
             )
         )
 
+
 def _print_detail(fh, detail, quiet):
     mac_address = detail[0].lower()
     info = fh.get_specific_host_entry(mac_address)
     if info:
         if not quiet:
             print('\n{:<30}{}'.format('Details for host:', mac_address))
-            print('{:<30}{}\n'.format('', SERVICE+':'+fh.service, fh.host_numbers))
+            print('{:<30}{}:{} ({})\n'.format('', SERVICE, fh.service, fh.host_numbers))
             for key, value in info.items():
                 print('{:<30}: {}'.format(key, value))
         else: print(info['NewAssociatedDeviceAuthState'])
@@ -129,11 +135,13 @@ def _print_detail(fh, detail, quiet):
 
 
 def _print_nums(fh):
-    print('{}: {}'.format(SERVICE+':'+fh.service, fh.host_numbers))
+    print('{}:{} {}'.format(SERVICE, fh.service, fh.host_numbers))
+
 
 # ---------------------------------------------------------
 # cli-section:
 # ---------------------------------------------------------
+
 
 def _get_cli_arguments():
     parser = argparse.ArgumentParser(description='FritzBox WLAN')
