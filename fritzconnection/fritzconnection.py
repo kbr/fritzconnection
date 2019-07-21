@@ -297,12 +297,33 @@ class FritzSCDPParser(FritzXmlParser):
 
 class FritzConnection(object):
     """
-    FritzBox-Interface for status-information
+    FritzBox-Interface to read status-information and modify settings.
     """
     def __init__(self, address=FRITZ_IP_ADDRESS,
                        port=FRITZ_TCP_PORT,
-                       user=FRITZ_USERNAME,
-                       password=''):
+                       user=None,
+                       password=None):
+        """
+        Initialisation of FritzConnection: reads all data from the box
+        and also the api-description (the servicenames and according
+        actionnames as well as the parameter-types) that can vary among
+        models and stores these informations as instance-attributes.
+        This can be an expensive operation. Because of this an instance
+        of FritzConnection should be created once and reused in an
+        application. All parameters are optional. But if there is more
+        than one FritzBox in the network, an address (ip as string) must
+        be given, otherwise it is not defined which box may respond. If
+        no user is given the Environment gets checked for a
+        FRITZ_USERNAME setting. If there is no entry in the environment
+        the avm-default-username will be used. If no password is given
+        the Environment gets checked for a FRITZ_PASSWORD setting. So
+        password can be used without using configuration-files or even
+        hardcoding.
+        """
+        if user is None:
+            user = os.getenv('FRITZ_USERNAME', FRITZ_USERNAME)
+        if password is None:
+            password = os.getenv('FRITZ_PASSWORD', '')
         # The keys of the dictionary are becoming FritzAction instance
         # attributes on calling the FritzSCDPParser.get_actions() method
         # in self._read_services():

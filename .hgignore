@@ -5,3 +5,4 @@ syntax: glob
 __pycache__/*
 dist/*
 fritzconnection.egg-info/*
+*.ipynb*
