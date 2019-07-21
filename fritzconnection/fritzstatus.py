@@ -42,12 +42,8 @@ class FritzStatus(object):
     with the FritzBox fails.
     """
 
-    def __init__(self,
-            fc=None,
-            address=fritzconnection.FRITZ_IP_ADDRESS,
-            port=fritzconnection.FRITZ_TCP_PORT,
-            user=None,
-            password=None):
+    def __init__(self, fc=None, address=None, port=None,
+                       user=None, password=None):
         super(FritzStatus, self).__init__()
         if fc is None:
             fc = fritzconnection.FritzConnection(
@@ -184,10 +180,7 @@ class FritzStatus(object):
 # terminal-output:
 # ---------------------------------------------------------
 
-def print_status(address=fritzconnection.FRITZ_IP_ADDRESS,
-                 port=fritzconnection.FRITZ_TCP_PORT,
-                 user=None,
-                 password=None):
+def print_status(address=None, port=None, user=None, password=None):
     print('\nFritzStatus:')
     print('{:<20}{}'.format('version:', get_version()))
     fs = FritzStatus(address=address, port=port, user=user, password=password)
@@ -211,18 +204,18 @@ def print_status(address=fritzconnection.FRITZ_IP_ADDRESS,
 def _get_cli_arguments():
     parser = argparse.ArgumentParser(description='FritzBox Status')
     parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=fritzconnection.FRITZ_IP_ADDRESS,
+                        nargs='?', default=None, const=None,
                         dest='address',
                         help='ip-address of the FritzBox to connect to. '
                              'Default: %s' % fritzconnection.FRITZ_IP_ADDRESS)
     parser.add_argument('-u', '--username',
-                        nargs='?', default=os.getenv('FRITZ_USERNAME', None),
+                        nargs='?', default=None, const=None,
                         help='Fritzbox authentication username')
     parser.add_argument('-p', '--password',
-                        nargs='?', default=os.getenv('FRITZ_PASSWORD', None),
+                        nargs='?', default=None, const=None,
                         help='Fritzbox authentication password')
     parser.add_argument('--port',
-                        nargs='?', default=fritzconnection.FRITZ_TCP_PORT,
+                        nargs='?', default=None, const=None,
                         dest='port',
                         help='port of the FritzBox to connect to. '
                              'Default: %s' % fritzconnection.FRITZ_TCP_PORT)
