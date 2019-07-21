@@ -549,10 +549,10 @@ def get_cli_arguments():
                         help='Port of the FritzBox to connect to. '
                              'Default: %s' % FRITZ_TCP_PORT)
     parser.add_argument('-u', '--username',
-                        nargs=1, default=os.getenv('FRITZ_USERNAME', ''),
+                        nargs='?', default=os.getenv('FRITZ_USERNAME', None),
                         help='Fritzbox authentication username')
     parser.add_argument('-p', '--password',
-                        nargs=1, default=os.getenv('FRITZ_PASSWORD', ''),
+                        nargs='?', default=os.getenv('FRITZ_PASSWORD', None),
                         help='Fritzbox authentication password')
     parser.add_argument('-r', '--reconnect',
                         action='store_true',
