@@ -19,7 +19,7 @@ try:
 except (ValueError, SystemError, ImportError):
     import fritzconnection
 
-__version__ = '0.6.5'
+__version__ = '0.6.6'
 
 SERVICE = 'WLANConfiguration'
 
@@ -156,10 +156,10 @@ def _get_cli_arguments():
                         help='port of the FritzBox to connect to. '
                              'Default: %s' % fritzconnection.FRITZ_TCP_PORT)
     parser.add_argument('-u', '--username',
-                        nargs=1, default=os.getenv('FRITZ_USERNAME', fritzconnection.FRITZ_USERNAME),
+                        nargs='?', default=os.getenv('FRITZ_USERNAME', fritzconnection.FRITZ_USERNAME),
                         help='Fritzbox authentication username')
     parser.add_argument('-p', '--password',
-                        nargs=1, default=os.getenv('FRITZ_PASSWORD', ''),
+                        nargs='?', default=os.getenv('FRITZ_PASSWORD', ''),
                         help='Fritzbox authentication password')
     parser.add_argument('-s', '--service',
                         nargs=1, default='1,2,3',
