@@ -30,7 +30,7 @@ Source: https://bitbucket.org/kbr/fritzconnection
 Author: Klaus Bremer
 """
 
-__version__ = '0.6'
+__version__ = '0.6.1'
 
 import os, argparse
 import requests
@@ -303,10 +303,6 @@ class FritzConnection(object):
                        port=FRITZ_TCP_PORT,
                        user=FRITZ_USERNAME,
                        password=''):
-        if password and type(password) is list:
-            password = password[0]
-        if user and type(user) is list:
-            user = user[0]
         # The keys of the dictionary are becoming FritzAction instance
         # attributes on calling the FritzSCDPParser.get_actions() method
         # in self._read_services():
