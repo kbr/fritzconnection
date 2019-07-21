@@ -36,10 +36,14 @@ def get_version():
 
 class FritzStatus(object):
     """
-    Class for requsting status-informations:
+    Class for requesting status-informations:
     up, down, ip, activity (bytes per second send/received)
     Every property will raise an IOError if the connection
     with the FritzBox fails.
+
+    Keep in mind, that FritzBoxes may return different informations
+    about the status depending whether this service gets called with or
+    without parameters.
     """
 
     def __init__(self, fc=None, address=None, port=None,
