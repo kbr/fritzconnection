@@ -63,7 +63,7 @@ The latter wrapps the `call_action`-method. For a more complete example look at 
 
 `FritzConnection` does now check for the environment variables `FRITZ_USER` and `FRITZ_PASSWORD` in case that neither user nor password are given.
 
-`FritzHosts` now accepts user and password as keyword-parameters. Keep in mind, that FritzBoxes may return different informations depending whether these are gathered with or without a password.
+`FritzStatus` now accepts user and password as keyword-parameters. Keep in mind, that FritzBoxes may return different informations about the status depending whether these are gathered with or without a password.
 
 
 #### Changed with version 0.6.5:
