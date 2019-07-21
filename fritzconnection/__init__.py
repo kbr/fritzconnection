@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # new since 0.6.5
-package_version = '0.6.5'
+package_version = '0.7.0'
 
 from .fritzconnection import (
     FritzConnection,
