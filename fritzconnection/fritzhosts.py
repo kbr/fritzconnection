@@ -36,12 +36,7 @@ def get_version():
 
 class FritzHosts(object):
 
-    def __init__(self,
-                 fc=None,
-                 address=fritzconnection.FRITZ_IP_ADDRESS,
-                 port=fritzconnection.FRITZ_TCP_PORT,
-                 user=fritzconnection.FRITZ_USERNAME,
-                 password=''):
+    def __init__(self, fc=None, address=None, port=None, user=None, password=None):
         super(FritzHosts, self).__init__()
         if fc is None:
             fc = fritzconnection.FritzConnection(address, port, user, password)
