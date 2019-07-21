@@ -299,10 +299,7 @@ class FritzConnection(object):
     """
     FritzBox-Interface to read status-information and modify settings.
     """
-    def __init__(self, address=FRITZ_IP_ADDRESS,
-                       port=FRITZ_TCP_PORT,
-                       user=None,
-                       password=None):
+    def __init__(self, address=None, port=None, user=None, password=None):
         """
         Initialisation of FritzConnection: reads all data from the box
         and also the api-description (the servicenames and according
@@ -320,6 +317,10 @@ class FritzConnection(object):
         password can be used without using configuration-files or even
         hardcoding.
         """
+        if address is None:
+            address = FRITZ_IP_ADDRESS
+        if port is None:
+            port = FRITZ_TCP_PORT
         if user is None:
             user = os.getenv('FRITZ_USERNAME', FRITZ_USERNAME)
         if password is None:
@@ -540,12 +541,12 @@ def print_api(address=FRITZ_IP_ADDRESS,
 def get_cli_arguments():
     parser = argparse.ArgumentParser(description='FritzBox API')
     parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=os.getenv('FRITZ_IP_ADDRESS', FRITZ_IP_ADDRESS),
+                        nargs='?', default=None, const=None,
                         dest='address',
                         help='Specify ip-address of the FritzBox to connect to.'
                              'Default: %s' % FRITZ_IP_ADDRESS)
     parser.add_argument('--port',
-                        nargs='?', default=os.getenv('FRITZ_TCP_PORT', FRITZ_TCP_PORT),
+                        nargs='?', default=None, const=None,
                         help='Port of the FritzBox to connect to. '
                              'Default: %s' % FRITZ_TCP_PORT)
     parser.add_argument('-u', '--username',
