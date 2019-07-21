@@ -339,6 +339,16 @@ class FritzConnection(object):
         self.services = {}
         self._read_descriptions(password)
 
+    def __repr__(self):
+        """
+        Return a meaningful string if the instance gets printed or
+        should represent itself.
+        """
+        return 'FritzConnection to model {} with ip {}'.format(
+            self.modelname,
+            self.address,
+        )
+
     def _read_descriptions(self, password):
         """
         Read and evaluate the igddesc.xml file
