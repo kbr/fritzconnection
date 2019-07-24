@@ -66,6 +66,13 @@ An API-Call is made by the ``call_action``-method of the FritzConnection-Class. 
 
 The latter wrapps the ``call_action``-method. For a more complete example look at the ``fritzhosts.py`` souce-code.
 
+Changed with version 0.7.0:
+---------------------------
+
+FritzConnection does now check for the environment variables ``FRITZ_USER`` and ``FRITZ_PASSWORD`` in case that neither user nor password are given.
+
+FritzStatus now accepts user and password as keyword-parameters. Keep in mind, that FritzBoxes may return different informations about the status depending whether these are gathered with or without a password.
+
 Changed with version 0.6.5:
 ---------------------------
 

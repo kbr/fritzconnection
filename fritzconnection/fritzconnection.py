@@ -30,7 +30,7 @@ Source: https://bitbucket.org/kbr/fritzconnection
 Author: Klaus Bremer
 """
 
-__version__ = '0.6'
+__version__ = '0.7.0'
 
 import os, argparse
 import requests
@@ -297,16 +297,34 @@ class FritzSCDPParser(FritzXmlParser):
 
 class FritzConnection(object):
     """
-    FritzBox-Interface for status-information
+    FritzBox-Interface to read status-information and modify settings.
     """
-    def __init__(self, address=FRITZ_IP_ADDRESS,
-                       port=FRITZ_TCP_PORT,
-                       user=FRITZ_USERNAME,
-                       password=''):
-        if password and type(password) is list:
-            password = password[0]
-        if user and type(user) is list:
-            user = user[0]
+    def __init__(self, address=None, port=None, user=None, password=None):
+        """
+        Initialisation of FritzConnection: reads all data from the box
+        and also the api-description (the servicenames and according
+        actionnames as well as the parameter-types) that can vary among
+        models and stores these informations as instance-attributes.
+        This can be an expensive operation. Because of this an instance
+        of FritzConnection should be created once and reused in an
+        application. All parameters are optional. But if there is more
+        than one FritzBox in the network, an address (ip as string) must
+        be given, otherwise it is not defined which box may respond. If
+        no user is given the Environment gets checked for a
+        FRITZ_USERNAME setting. If there is no entry in the environment
+        the avm-default-username will be used. If no password is given
+        the Environment gets checked for a FRITZ_PASSWORD setting. So
+        password can be used without using configuration-files or even
+        hardcoding.
+        """
+        if address is None:
+            address = FRITZ_IP_ADDRESS
+        if port is None:
+            port = FRITZ_TCP_PORT
+        if user is None:
+            user = os.getenv('FRITZ_USERNAME', FRITZ_USERNAME)
+        if password is None:
+            password = os.getenv('FRITZ_PASSWORD', '')
         # The keys of the dictionary are becoming FritzAction instance
         # attributes on calling the FritzSCDPParser.get_actions() method
         # in self._read_services():
@@ -321,6 +339,16 @@ class FritzConnection(object):
         self.modelname = None
         self.services = {}
         self._read_descriptions(password)
+
+    def __repr__(self):
+        """
+        Return a meaningful string if the instance gets printed or
+        should represent itself.
+        """
+        return 'FritzConnection to model {} with ip {}'.format(
+            self.modelname,
+            self.address,
+        )
 
     def _read_descriptions(self, password):
         """
@@ -513,19 +541,19 @@ def print_api(address=FRITZ_IP_ADDRESS,
 def get_cli_arguments():
     parser = argparse.ArgumentParser(description='FritzBox API')
     parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=os.getenv('FRITZ_IP_ADDRESS', FRITZ_IP_ADDRESS),
+                        nargs='?', default=None, const=None,
                         dest='address',
                         help='Specify ip-address of the FritzBox to connect to.'
                              'Default: %s' % FRITZ_IP_ADDRESS)
     parser.add_argument('--port',
-                        nargs='?', default=os.getenv('FRITZ_TCP_PORT', FRITZ_TCP_PORT),
+                        nargs='?', default=None, const=None,
                         help='Port of the FritzBox to connect to. '
                              'Default: %s' % FRITZ_TCP_PORT)
     parser.add_argument('-u', '--username',
-                        nargs=1, default=os.getenv('FRITZ_USERNAME', ''),
+                        nargs='?', default=os.getenv('FRITZ_USERNAME', None),
                         help='Fritzbox authentication username')
     parser.add_argument('-p', '--password',
-                        nargs=1, default=os.getenv('FRITZ_PASSWORD', ''),
+                        nargs='?', default=os.getenv('FRITZ_PASSWORD', None),
                         help='Fritzbox authentication password')
     parser.add_argument('-r', '--reconnect',
                         action='store_true',
