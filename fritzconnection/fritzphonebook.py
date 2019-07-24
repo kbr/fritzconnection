@@ -21,7 +21,7 @@ try:
 except (ValueError, SystemError, ImportError):
     import fritzconnection
 
-__version__ = '0.6.1'
+__version__ = '0.7.0'
 
 from lxml import etree
 
@@ -135,12 +135,14 @@ def print_phonebooks(fp):
         )
     print('\n')
 
+
 def _print_names(fp, id, number):
     print('\n{}{}:\n'.format('Names for phone number ', number))
     names = fp.lookup_names(id, number)
     for name in names:
         print('{:<23}'.format(name))
     print('\n')
+
 
 def _print_numbers(fp, id, name):
     print('\n{}{}:\n'.format('Numbers for contact ', name))
@@ -157,20 +159,20 @@ def _print_numbers(fp, id, name):
 def _get_cli_arguments():
     parser = argparse.ArgumentParser(description='FritzBox Phonebook')
     parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=fritzconnection.FRITZ_IP_ADDRESS,
+                        nargs='?', default=None, const=None,
                         dest='address',
                         help='ip-address of the FritzBox to connect to. '
                              'Default: %s' % fritzconnection.FRITZ_IP_ADDRESS)
     parser.add_argument('--port',
-                        nargs='?', default=fritzconnection.FRITZ_TCP_PORT,
+                        nargs='?', default=None, const=None,
                         dest='port',
                         help='port of the FritzBox to connect to. '
                              'Default: %s' % fritzconnection.FRITZ_TCP_PORT)
     parser.add_argument('-u', '--username',
-                        nargs=1, default=fritzconnection.FRITZ_USERNAME,
+                        nargs='?', default=None, const=None,
                         help='Fritzbox authentication username')
     parser.add_argument('-p', '--password',
-                        nargs=1, default='',
+                        nargs='?', default=None, const=None,
                         help='Fritzbox authentication password')
     parser.add_argument('-a', '--all',
                         action='store_true',
@@ -188,13 +190,13 @@ def _get_cli_arguments():
     args = parser.parse_args()
     return args
 
+
 def _print_status(arguments):
     fp = FritzPhonebook(address=arguments.address,
                     port=arguments.port,
                     user=arguments.username,
                     password=arguments.password)
     _print_header(fp)
-    print(arguments.phonebook)
     if arguments.number:
         _print_names(fp, arguments.phonebook, arguments.number)
     elif arguments.name:

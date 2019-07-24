@@ -19,7 +19,7 @@ try:
 except (ValueError, SystemError, ImportError):
     import fritzconnection
 
-__version__ = '0.6.4'
+__version__ = '0.6.4_1'
 
 SERVICE = 'X_AVM-DE_OnTel'
 
@@ -124,7 +124,7 @@ class FritzCallforwarding(object):
 
 
 def _print_header(call_forwarding):
-    print('\nFritzHosts:')
+    print('\FritzCallforwarding:')
     print('{:<30}{}'.format('version:', get_version()))
     print('{:<30}{}'.format('model:', call_forwarding.modelname))
     print('{:<30}{}'.format('ip:', call_forwarding.fritz_connection.address))
@@ -187,23 +187,20 @@ def _print_nums(call_forwarding):
 def _get_cli_arguments():
     parser = argparse.ArgumentParser(description='FritzBox Callforwarding')
     parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=os.getenv('FRITZ_IP_ADDRESS',
-                                                     fritzconnection.FRITZ_IP_ADDRESS),
+                        nargs='?', default=None, const=None,
                         dest='address',
                         help='ip-address of the FritzBox to connect to. '
                              'Default: %s' % fritzconnection.FRITZ_IP_ADDRESS)
     parser.add_argument('--port',
-                        nargs='?', default=os.getenv('FRITZ_TCP_PORT',
-                                                     fritzconnection.FRITZ_TCP_PORT),
+                        nargs='?', default=None, const=None,
                         dest='port',
                         help='port of the FritzBox to connect to. '
                              'Default: %s' % fritzconnection.FRITZ_TCP_PORT)
     parser.add_argument('-u', '--username',
-                        nargs=1, default=os.getenv('FRITZ_USERNAME',
-                                                   fritzconnection.FRITZ_USERNAME),
+                        nargs='?', default=None, const=None,
                         help='Fritzbox authentication username')
     parser.add_argument('-p', '--password', required=True,
-                        nargs=1, default=os.getenv('FRITZ_PASSWORD', ''),
+                        nargs='?', default=None, const=None,
                         help='Fritzbox authentication password')
     parser.add_argument('-a', '--all',
                         action='store_true',

@@ -24,12 +24,19 @@ except (ValueError, SystemError, ImportError):
 from datetime import datetime, timedelta
 from lxml import etree
 
-__version__ = '0.6.5'
+__version__ = '0.7.0'
 
+# calltypes
 ALL_CALL_TYPES = 0
 RECEIVED_CALL_TYPE = 1
 MISSED_CALL_TYPE = 2
 OUT_CALL_TYPE = 3
+
+CALL_TYPES = {
+    RECEIVED_CALL_TYPE: 'in',
+    MISSED_CALL_TYPE: 'missed',
+    OUT_CALL_TYPE: 'out',
+}
 
 # access requires password
 ONTEL_SERVICE = 'X_AVM-DE_OnTel'
@@ -136,9 +143,26 @@ class FritzCall(object):
 # ---------------------------------------------------------
 
 def print_calls(fc, calltype, num):
-    calls = fc.get_calls(calltype)
-    for call in calls:
-        print(call)
+    print(calltype)
+    template = '{:<7}{:<16}{:<16}{:<20}{}'
+    calls = list(fc.get_calls(calltype))
+    stored_numbers = len(calls)
+    print('Numbers in storage:', stored_numbers)
+    print('Entries listed:', min(num, stored_numbers))
+    print(template.format('Type', 'from', 'to', 'date/time', 'duration'))
+    for n, call in enumerate(calls):
+        if n >= num:
+            break
+        calltype = CALL_TYPES.get(call.get('Type'), '-')
+        caller = call.get('Caller')
+        caller = caller.split()[-1] if caller else '-'
+        called = call.get('Called')
+        called = called.split()[-1] if called else '-'
+        date = call.get('Date')
+        if date:
+            date = date.strftime('%Y-%m-%d %H:%M')
+        duration = call.get('Duration')
+        print(template.format(calltype, caller, called, date, duration))
 
 
 # ---------------------------------------------------------
@@ -149,20 +173,20 @@ def print_calls(fc, calltype, num):
 def _get_cli_arguments():
     parser = argparse.ArgumentParser(description='FritzBox Hosts')
     parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=os.getenv('FRITZ_IP_ADDRESS', fritzconnection.FRITZ_IP_ADDRESS),
+                        nargs='?', default=None, const=None,
                         dest='address',
                         help='ip-address of the FritzBox to connect to. '
                              'Default: %s' % fritzconnection.FRITZ_IP_ADDRESS)
     parser.add_argument('--port',
-                        nargs='?', default=os.getenv('FRITZ_TCP_PORT', fritzconnection.FRITZ_TCP_PORT),
+                        nargs='?', default=None, const=None,
                         dest='port',
                         help='port of the FritzBox to connect to. '
                              'Default: %s' % fritzconnection.FRITZ_TCP_PORT)
     parser.add_argument('-u', '--username',
-                        nargs=1, default=os.getenv('FRITZ_USERNAME', fritzconnection.FRITZ_USERNAME),
+                        nargs='?', default=None, const=None,
                         help='Fritzbox authentication username')
     parser.add_argument('-p', '--password',
-                        nargs=1, default=os.getenv('FRITZ_PASSWORD',''),
+                        nargs='?', default=None, const=None,
                         help='Fritzbox authentication password')
     parser.add_argument('-a', '--all',
                         action='store_true',
@@ -177,8 +201,8 @@ def _get_cli_arguments():
     parser.add_argument('-m', '--missed',
                         action='store_true',
                         help='Show missed calls')
-    parser.add_argument('-n', '--num',
-                        nargs=1, default=999,
+    parser.add_argument('-n', '--num', type=int,
+                        nargs='?', default=999, const=999,
                         help='max number of calls')
     args = parser.parse_args()
     return args
