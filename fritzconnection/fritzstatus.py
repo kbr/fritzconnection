@@ -11,7 +11,7 @@ Source: https://bitbucket.org/kbr/fritzconnection
 Author: Klaus Bremer
 """
 
-__version__ = '0.7.0'
+__version__ = '0.7.1'
 
 import argparse
 import collections
@@ -43,7 +43,7 @@ class FritzStatus(object):
 
     Keep in mind, that FritzBoxes may return different informations
     about the status depending whether this service gets called with or
-    without parameters.
+    without a password.
     """
 
     def __init__(self, fc=None, address=None, port=None,
