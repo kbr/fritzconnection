@@ -12,7 +12,7 @@ Source: https://bitbucket.org/kbr/fritzconnection
 Author: Klaus Bremer
 """
 
-__version__ = '0.5.0'
+__version__ = '0.7.3'
 
 import argparse
 try:
@@ -23,9 +23,14 @@ except ImportError:
     # python 3
     import tkinter as tk
     import tkinter.font as tkfont
-from . import fritzconnection
-from . import fritzstatus
-from . import fritztools
+try:
+    from . import fritzconnection
+    from . import fritzstatus
+    from . import fritztools
+except (ValueError, SystemError, ImportError):
+    import fritzconnection
+    import fritzstatus
+    import fritztools
 
 
 class MeterRectangle(object):
