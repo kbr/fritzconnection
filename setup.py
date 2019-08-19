@@ -5,6 +5,15 @@ with open('pypi_description.rst') as file:
     the_long_description = file.read()
 
 
+requires = [
+    'lxml>=3.2.5',
+    'requests>=2.2.0',
+]
+
+tests_require = [
+    'pytest',
+]
+
 setup(
     name = 'fritzconnection',
     version = '0.7.3',
@@ -30,10 +39,10 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords = 'AVM FritzBox',
-    install_requires = [
-        'lxml>=3.2.5',
-        'requests>=2.2.0',
-    ],
+    install_requires = requires,
+    extras_require={
+        'testing': tests_require,
+    },
     entry_points={'console_scripts': [
         'fritzconnection = fritzconnection.fritzconnection:main',
         'fritzhosts = fritzconnection.fritzhosts:main',
