@@ -56,7 +56,14 @@ An API-Call is made by the `call_action`-method of the FritzConnection-Class. Th
     # or more comfortable:
     >>> connection.reconnect()
 
-The latter wrapps the `call_action`-method. For a more complete example look at the `fritzhosts.py` souce-code.
+The latter wrapps the `call_action`-method. For a more complete example look at the `fritzhosts.py` source-code.
+
+
+#### Changed with version 0.8.0:
+
+bugfix how servicenames are extracted from the xml-description files. However, the api has not changed.
+
+The requirements are now fixed for lxml (4.3.4) and requests (2.22.0) as these versions are still supporting python 2.7
 
 #### Changed with version 0.7.1 - 0.7.3:
 
