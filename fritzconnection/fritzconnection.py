@@ -30,7 +30,7 @@ Source: https://bitbucket.org/kbr/fritzconnection
 Author: Klaus Bremer
 """
 
-__version__ = '0.7.0'
+__version__ = '0.8.0'
 
 import os, argparse
 import requests
