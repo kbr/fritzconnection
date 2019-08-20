@@ -174,12 +174,20 @@ class FritzActionArgument(object):
 class FritzService(object):
     """Attribute class for service."""
 
-    def __init__(self, service_type, control_url, scpd_url):
+    def __init__(self, service_type, service_id, control_url, scpd_url):
         self.service_type = service_type
+        self.service_id = service_id
         self.control_url = control_url
         self.scpd_url = scpd_url
         self.actions = {}
-        self.name = ':'.join(service_type.split(':')[-2:])
+
+    @property
+    def name(self):
+        """Returns the servicename in a backward compatible way as:
+        '<name>:<number>'
+        """
+        last_part = self.service_id.split(':')[-1]
+        return ':'.join((last_part[:-1], last_part[-1]))
 
 
 class FritzXmlParser(object):
@@ -216,6 +224,7 @@ class FritzDescParser(FritzXmlParser):
         for node in nodes:
             result.append(FritzService(
                 node.find(self.nodename('serviceType')).text,
+                node.find(self.nodename('serviceId')).text,
                 node.find(self.nodename('controlURL')).text,
                 node.find(self.nodename('SCPDURL')).text))
         return result
