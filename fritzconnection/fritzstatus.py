@@ -144,13 +144,27 @@ class FritzStatus(object):
         )
 
     @property
+    def max_linked_bit_rate(self):
+        """
+        Returns a tuple with the maximun upstream- and downstream-rate
+        of the physical link. The rate is given in bits/sec.
+        """
+        return self._get_max_bit_rate('WANCommonInterfaceConfig')
+
+    @property
     def max_bit_rate(self):
         """
         Returns a tuple with the maximun upstream- and downstream-rate
         of the given connection. The rate is given in bits/sec.
         """
-        status = self.fc.call_action('WANCommonIFC',
-                                     'GetCommonLinkProperties')
+        return self._get_max_bit_rate('WANCommonIFC')
+
+    def _get_max_bit_rate(self, servicename):
+        """
+        internal method to get the upstream and downstream-rates for
+        different services of the WANCommonInterfaceConfig1 ServiceType.
+        """
+        status = self.fc.call_action(servicename, 'GetCommonLinkProperties')
         downstream = status['NewLayer1DownstreamMaxBitRate']
         upstream = status['NewLayer1UpstreamMaxBitRate']
         return upstream, downstream
@@ -162,6 +176,18 @@ class FritzStatus(object):
         """
         upstream, downstream = self.max_bit_rate
         return upstream / 8.0, downstream / 8.0
+
+    @property
+    def str_max_linked_bit_rate(self):
+        """
+        Returns a human readable maximun upstream- and downstream-rate
+        of the given connection. The rate is given in bits/sec.
+        """
+        upstream, downstream = self.max_linked_bit_rate
+        return (
+            fritztools.format_rate(upstream, unit='bits'),
+            fritztools.format_rate(downstream, unit ='bits')
+        )
 
     @property
     def str_max_bit_rate(self):
@@ -186,8 +212,29 @@ class FritzStatus(object):
 
 def print_status(address=None, port=None, user=None, password=None):
     print('\nFritzStatus:')
-    print('{:<20}{}'.format('version:', get_version()))
+    print('{:<22}{}'.format('version:', get_version()))
     fs = FritzStatus(address=address, port=port, user=user, password=password)
+    status_informations = collections.OrderedDict([
+        ('model:', fs.modelname),
+        ('is linked:', fs.is_linked),
+        ('is connected:', fs.is_connected),
+        ('external ip:', fs.external_ip),
+        ('uptime:', fs.str_uptime),
+        ('bytes send:', fs.bytes_sent),
+        ('bytes received:', fs.bytes_received),
+        ('max. bit rate:', fs.str_max_bit_rate),
+        ])
+    try:
+        linked_rate = fs.str_max_linked_bit_rate
+    except fritzconnection.ServiceError:
+        linked_rate = 'password required for information'
+    status_informations['max. linked bit rate:'] = linked_rate
+    for status, info in status_informations.items():
+        print('{:<22}{}'.format(status, info))
+
+    return
+
+
     for status, info in collections.OrderedDict([
         ('model:', fs.modelname),
         ('is linked:', fs.is_linked),
@@ -196,9 +243,10 @@ def print_status(address=None, port=None, user=None, password=None):
         ('uptime:', fs.str_uptime),
         ('bytes send:', fs.bytes_sent),
         ('bytes received:', fs.bytes_received),
-        ('max. bit rate:', fs.str_max_bit_rate)
+        ('max. bit rate:', fs.str_max_bit_rate),
+        ('max. linked bit rate:', fs.str_max_linked_bit_rate),
         ]).items():
-        print('{:<20}{}'.format(status, info))
+        print('{:<22}{}'.format(status, info))
 
 
 # ---------------------------------------------------------
