@@ -93,6 +93,12 @@ class FritzStatus(object):
             'GetExternalIPAddress')['NewExternalIPAddress']
 
     @property
+    def external_ipv6(self):
+        """Returns the external ip-address."""
+        return self.fc.call_action('WANIPConn',
+            'X_AVM_DE_GetExternalIPv6Address')['NewExternalIPv6Address']
+
+    @property
     def uptime(self):
         """uptime in seconds."""
         status = self.fc.call_action('WANIPConn', 'GetStatusInfo')
@@ -225,28 +231,14 @@ def print_status(address=None, port=None, user=None, password=None):
         ('max. bit rate:', fs.str_max_bit_rate),
         ])
     try:
-        linked_rate = fs.str_max_linked_bit_rate
+        information = fs.str_max_linked_bit_rate
     except fritzconnection.ServiceError:
-        linked_rate = 'password required for information'
-    status_informations['max. linked bit rate:'] = linked_rate
-    for status, info in status_informations.items():
-        print('{:<22}{}'.format(status, info))
-
-    return
-
-
-    for status, info in collections.OrderedDict([
-        ('model:', fs.modelname),
-        ('is linked:', fs.is_linked),
-        ('is connected:', fs.is_connected),
-        ('external ip:', fs.external_ip),
-        ('uptime:', fs.str_uptime),
-        ('bytes send:', fs.bytes_sent),
-        ('bytes received:', fs.bytes_received),
-        ('max. bit rate:', fs.str_max_bit_rate),
-        ('max. linked bit rate:', fs.str_max_linked_bit_rate),
-        ]).items():
-        print('{:<22}{}'.format(status, info))
+        information = 'password required for information'
+    except fritzconnection.AuthorizationError as err:
+        information = str(err)
+    status_informations['max. linked bit rate:'] = information
+    for status, information in status_informations.items():
+        print('{:<22}{}'.format(status, information))
 
 
 # ---------------------------------------------------------
