@@ -581,11 +581,11 @@ def get_cli_arguments():
                         help='List actions for the given service: <service>')
     parser.add_argument('-a', '--servicearguments',
                         nargs=1,
-                        help='List arguments for the actions of a'
+                        help='List arguments for the actions of a '
                              'specified service: <service>.')
     parser.add_argument('-A', '--actionarguments',
                         nargs=2,
-                        help='List arguments for the given action of a'
+                        help='List arguments for the given action of a '
                              'specified service: <service> <action>.')
     parser.add_argument('-c', '--complete',
                         action='store_true',
