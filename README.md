@@ -59,15 +59,28 @@ An API-Call is made by the `call_action`-method of the FritzConnection-Class. Th
 The latter wrapps the `call_action`-method. For a more complete example look at the `fritzhosts.py` source-code.
 
 
+#### Changed with version 0.8.1:
+
+FritzStatus: bugfix requiring a password in combination with fritzconnection >= 0.8.0
+
+FritzStatus: added the ``external_ipv6`` attribute
+
+FritzStatus: added the ``max_linked_bit_rate`` attribute for the physical rate. Also added the ``str_max_linked_bit_rate`` attribute for a more readable output. (password must be provided for these infomations)
+
+FritzConnection: added the ``AuthorizationError`` exception.
+
+
 #### Changed with version 0.8.0:
 
 bugfix how servicenames are extracted from the xml-description files. However, the api has not changed.
 
 The requirements are now fixed for lxml (4.3.4) and requests (2.22.0) as these versions are still supporting python 2.7
 
+
 #### Changed with version 0.7.1 - 0.7.3:
 
 bugfixes, no new features or other changes.
+
 
 #### Changed with version 0.7.0:
 
