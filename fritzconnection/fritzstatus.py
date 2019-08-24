@@ -11,7 +11,7 @@ Source: https://bitbucket.org/kbr/fritzconnection
 Author: Klaus Bremer
 """
 
-__version__ = '0.7.1'
+__version__ = '0.8.0'
 
 import argparse
 import collections
@@ -68,7 +68,7 @@ class FritzStatus(object):
     @property
     def is_linked(self):
         """Returns True if the FritzBox is physically linked to the provider."""
-        status = self.fc.call_action('WANCommonInterfaceConfig',
+        status = self.fc.call_action('WANCommonIFC',
                                      'GetCommonLinkProperties')
         return status['NewPhysicalLinkStatus'] == 'Up'
 
@@ -77,25 +77,25 @@ class FritzStatus(object):
         """
         Returns True if the FritzBox has established an internet-connection.
         """
-        status = self.fc.call_action('WANIPConnection', 'GetStatusInfo')
+        status = self.fc.call_action('WANIPConn', 'GetStatusInfo')
         return status['NewConnectionStatus'] == 'Connected'
 
     @property
     def wan_access_type(self):
         """Returns connection-type: DSL, Cable."""
-        return self.fc.call_action('WANCommonInterfaceConfig',
+        return self.fc.call_action('WANCommonIFC',
             'GetCommonLinkProperties')['NewWANAccessType']
 
     @property
     def external_ip(self):
         """Returns the external ip-address."""
-        return self.fc.call_action('WANIPConnection',
+        return self.fc.call_action('WANIPConn',
             'GetExternalIPAddress')['NewExternalIPAddress']
 
     @property
     def uptime(self):
         """uptime in seconds."""
-        status = self.fc.call_action('WANIPConnection', 'GetStatusInfo')
+        status = self.fc.call_action('WANIPConn', 'GetStatusInfo')
         return status['NewUptime']
 
     @property
@@ -107,13 +107,13 @@ class FritzStatus(object):
 
     @property
     def bytes_sent(self):
-        status = self.fc.call_action('WANCommonInterfaceConfig',
+        status = self.fc.call_action('WANCommonIFC',
                                      'GetTotalBytesSent')
         return status['NewTotalBytesSent']
 
     @property
     def bytes_received(self):
-        status = self.fc.call_action('WANCommonInterfaceConfig',
+        status = self.fc.call_action('WANCommonIFC',
                                      'GetTotalBytesReceived')
         return status['NewTotalBytesReceived']
 
@@ -149,7 +149,7 @@ class FritzStatus(object):
         Returns a tuple with the maximun upstream- and downstream-rate
         of the given connection. The rate is given in bits/sec.
         """
-        status = self.fc.call_action('WANCommonInterfaceConfig',
+        status = self.fc.call_action('WANCommonIFC',
                                      'GetCommonLinkProperties')
         downstream = status['NewLayer1DownstreamMaxBitRate']
         upstream = status['NewLayer1UpstreamMaxBitRate']
