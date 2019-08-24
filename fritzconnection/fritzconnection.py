@@ -55,6 +55,7 @@ def get_version():
 class FritzConnectionException(Exception): pass
 class ServiceError(FritzConnectionException): pass
 class ActionError(FritzConnectionException): pass
+class AuthorizationError(FritzConnectionException): pass
 
 
 class FritzAction(object):
@@ -116,7 +117,9 @@ class FritzAction(object):
 
     def execute(self, **kwargs):
         """
-        Calls the FritzBox action and returns a dictionary with the arguments.
+        Calls the FritzBox action and returns a dictionary with the
+        arguments. Raises an AuthorizationError in case a password is
+        required for this request but is missing or wrong.
         """
         headers = self.header.copy()
         headers['soapaction'] = '%s#%s' % (self.service_type, self.name)
@@ -126,6 +129,9 @@ class FritzAction(object):
         if self.password:
             auth=HTTPDigestAuth(self.user, self.password)
         response = requests.post(url, data=data, headers=headers, auth=auth)
+        if response.status_code == 401:
+            # password required but missing or wrong
+            raise AuthorizationError('unauthorized request')
         # lxml needs bytes, therefore response.content (not response.text)
         result = self.parse_response(response.content)
         return result
