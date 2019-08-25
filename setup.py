@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-with open('pypi_description.rst') as file:
+with open('README.rst') as file:
     the_long_description = file.read()
 
 
@@ -14,7 +14,7 @@ setup(
     long_description = the_long_description,
     author = 'Klaus Bremer',
     author_email = 'bremer@bremer-media.de',
-    url = 'https://bitbucket.org/kbr/fritzconnection',
+    url = 'https://github.com/kbr/fritzconnection',
     classifiers = [
         'Development Status :: 4 - Beta',
         'Environment :: Console',
