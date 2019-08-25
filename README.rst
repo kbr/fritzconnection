@@ -124,4 +124,3 @@ On calling unknown services or actions in both cases KeyErrors has been raised. 
     >>> from fritzconnection import ServiceError, ActionError
 
 
-More Information at https://bitbucket.org/kbr/fritzconnection/overview
