@@ -24,7 +24,8 @@ try:
 except (ValueError, SystemError, ImportError):
     import fritzconnection
 
-__version__ = '0.7.0'
+
+__version__ = fritzconnection.get_version()
 
 SERVICE = 'Hosts'
 
