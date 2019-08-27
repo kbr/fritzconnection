@@ -24,7 +24,6 @@ except (ValueError, SystemError, ImportError):
 from datetime import datetime, timedelta
 from lxml import etree
 
-__version__ = '0.7.0'
 
 # calltypes
 ALL_CALL_TYPES = 0
@@ -43,7 +42,7 @@ ONTEL_SERVICE = 'X_AVM-DE_OnTel'
 
 # version-access:
 def get_version():
-    return __version__
+    return fritzconnection.get_version()
 
 
 class FritzCall(object):

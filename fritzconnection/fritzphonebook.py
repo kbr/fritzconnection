@@ -21,8 +21,6 @@ try:
 except (ValueError, SystemError, ImportError):
     import fritzconnection
 
-__version__ = '0.7.0'
-
 from lxml import etree
 
 SERVICE = 'X_AVM-DE_OnTel'
@@ -30,7 +28,7 @@ SERVICE = 'X_AVM-DE_OnTel'
 
 # version-access:
 def get_version():
-    return __version__
+    return fritzconnection.get_version()
 
 
 class FritzPhonebook(object):

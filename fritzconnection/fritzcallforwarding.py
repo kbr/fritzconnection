@@ -19,14 +19,13 @@ try:
 except (ValueError, SystemError, ImportError):
     import fritzconnection
 
-__version__ = '0.6.4_1'
 
 SERVICE = 'X_AVM-DE_OnTel'
 
 
+# version-access:
 def get_version():
-    """Get the version of the module."""
-    return __version__
+    return fritzconnection.get_version()
 
 
 class FritzCallforwarding(object):

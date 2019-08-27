@@ -27,5 +27,6 @@ from .fritzstatus import (
 )
 from .fritzwlan import FritzWLAN
 
+
 # same as fritzconnection core module:
 package_version = get_version()

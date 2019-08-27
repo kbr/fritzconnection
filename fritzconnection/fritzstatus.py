@@ -11,8 +11,6 @@ Source: https://bitbucket.org/kbr/fritzconnection
 Author: Klaus Bremer
 """
 
-__version__ = '0.8.1'
-
 import argparse
 import collections
 import os
@@ -31,7 +29,7 @@ except (ValueError, SystemError, ImportError):
 
 # version-access:
 def get_version():
-    return __version__
+    return fritzconnection.get_version()
 
 
 class FritzStatus(object):

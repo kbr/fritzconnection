@@ -12,7 +12,6 @@ Source: https://bitbucket.org/kbr/fritzconnection
 Author: Klaus Bremer
 """
 
-__version__ = '0.7.3'
 
 import argparse
 try:
@@ -31,6 +30,11 @@ except (ValueError, SystemError, ImportError):
     import fritzconnection
     import fritzstatus
     import fritztools
+
+
+# version-access:
+def get_version():
+    return fritzconnection.get_version()
 
 
 class MeterRectangle(object):

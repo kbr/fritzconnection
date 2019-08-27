@@ -19,13 +19,12 @@ try:
 except (ValueError, SystemError, ImportError):
     import fritzconnection
 
-__version__ = '0.6.6'
 
 SERVICE = 'WLANConfiguration'
 
 # version-access:
 def get_version():
-    return __version__
+    return fritzconnection.get_version()
 
 
 class FritzWLAN(object):

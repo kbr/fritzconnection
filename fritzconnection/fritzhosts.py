@@ -25,14 +25,12 @@ except (ValueError, SystemError, ImportError):
     import fritzconnection
 
 
-__version__ = fritzconnection.get_version()
-
 SERVICE = 'Hosts'
 
 
 # version-access:
 def get_version():
-    return __version__
+    return fritzconnection.get_version()
 
 
 class FritzHosts(object):
