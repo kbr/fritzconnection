@@ -67,6 +67,18 @@ An API-Call is made by the ``call_action``-method of the FritzConnection-Class. 
 The latter wrapps the ``call_action``-method. For a more complete example look at the ``fritzhosts.py`` souce-code.
 
 
+Changed with version 0.8.2:
+---------------------------
+
+- unified version numbering of the modules.
+- ServiceError, ActionError and AuthorizationError are also importable from the package.
+- some code cleanup.
+
+Changes in the development process: .hgignore removed and .gitignore added, changes in setup.py, readme changed to restructured text.
+
+As Atlassian has announced to drop support for mercurial on bitbucket und will remove the according repositories (in June 2020), development of fritzconnection has converted from ``hg`` to ``git`` and the repository has been transfered to github. Unfortunately the issue- and discussion-history will be lost this way (even by keeping the new git-repository at bitbucket).
+
+
 Changed with version 0.8.1:
 ---------------------------
 
@@ -86,10 +98,12 @@ bugfix how servicenames are extracted from the xml-description files. However, t
 
 The requirements are now fixed for lxml (4.3.4) and requests (2.22.0) as these versions are still supporting python 2.7
 
+
 Changed with version 0.7.1 - 0.7.3:
 -----------------------------------
 
 bugfixes, no new features or other changes.
+
 
 Changed with version 0.7.0:
 ---------------------------
@@ -97,6 +111,7 @@ Changed with version 0.7.0:
 FritzConnection does now check for the environment variables ``FRITZ_USER`` and ``FRITZ_PASSWORD`` in case that neither user nor password are given.
 
 FritzStatus now accepts user and password as keyword-parameters. Keep in mind, that FritzBoxes may return different informations about the status depending whether these are gathered with or without a password.
+
 
 Changed with version 0.6.5:
 ---------------------------
@@ -108,6 +123,7 @@ There is a new attribute *package_version*:
     0.6.5
 
 Because every module of the fritzconnection-package has it's own version, version-history of the package gets confusing over time. From now on every change of the content of the package is indicated by the the package-version. Every unchanged module keeps it's version. So i.e. the recent package-version is 0.6.5 but the fritzconnection-module is still in version 0.6 cause nothing has changed in this module since then.
+
 
 Changed with version 0.6:
 -------------------------
