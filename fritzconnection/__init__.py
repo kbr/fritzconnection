@@ -7,6 +7,9 @@ from .fritzconnection import (
     print_servicenames,
     print_api,
     get_version,
+    ServiceError,
+    ActionError,
+    AuthorizationError,
 )
 from . fritzcall import FritzCall
 from . fritzcallforwarding import (
