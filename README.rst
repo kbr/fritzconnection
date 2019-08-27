@@ -3,8 +3,6 @@
 fritzconnection
 ===============
 
-.. image:: https://img.shields.io/pypi/v/fritzconnection.svg
-    :target: https://pypi.org/project/fritzconnection/
 
 .. image::
     https://img.shields.io/pypi/pyversions/fritzconnection.svg
