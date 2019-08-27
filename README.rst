@@ -3,6 +3,19 @@
 fritzconnection
 ===============
 
+.. image:: https://img.shields.io/pypi/v/fritzconnection.svg
+    :target: https://pypi.org/project/fritzconnection/
+
+.. image::
+    https://img.shields.io/pypi/pyversions/fritzconnection.svg
+    :alt: Python versions
+    :target: https://pypi.org/project/fritzconnection/
+
+.. image::
+    https://img.shields.io/pypi/l/fritzconnection.svg
+    :target: https://pypi.org/project/fritzconnection/
+
+
 Python-Tool to communicate with the AVM FritzBox.
 Uses the TR-064 protocol.
 
@@ -76,7 +89,7 @@ Changed with version 0.8.2:
 
 Changes in the development process: .hgignore removed and .gitignore added, changes in setup.py, readme changed to restructured text.
 
-As Atlassian has announced to drop support for mercurial on bitbucket und will remove the according repositories (in June 2020), development of fritzconnection has converted from ``hg`` to ``git`` and the repository has been transfered to github. Unfortunately the issue- and discussion-history will be lost this way (even by keeping the new git-repository at bitbucket).
+As Atlassian has announced to drop support for mercurial on ``bitbucket`` und will remove the according repositories (in June 2020), development of fritzconnection has converted from ``hg`` to ``git`` and the repository has been transfered to ``github``. Unfortunately the issue- and discussion-history will be lost this way (even by keeping the new git-repository at bitbucket).
 
 
 Changed with version 0.8.1:
@@ -84,7 +97,7 @@ Changed with version 0.8.1:
 
 FritzStatus: bugfix requiring a password in combination with fritzconnection >= 0.8.0
 
-FritzStatus: added the ``external_ipv6``` attribute
+FritzStatus: added the ``external_ipv6`` attribute
 
 FritzStatus: added the ``max_linked_bit_rate`` attribute for the physical rate. Also added the ``str_max_linked_bit_rate`` attribute for a more readable output. (password must be provided for these infomations)
 
