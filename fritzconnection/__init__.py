@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-# new since 0.6.5
-package_version = '0.8.1'
 
 from .fritzconnection import (
     FritzConnection,
     FritzInspection,
     print_servicenames,
     print_api,
+    get_version,
 )
 from . fritzcall import FritzCall
 from . fritzcallforwarding import (
@@ -27,3 +26,6 @@ from .fritzstatus import (
     print_status,
 )
 from .fritzwlan import FritzWLAN
+
+# same as fritzconnection core module:
+package_version = get_version()
