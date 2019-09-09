@@ -484,7 +484,7 @@ class FritzConnection(object):
         case the service_name does not end with an identifier the id
         ':1' will get added by default.
         """
-        if not ':' in service_name:
+        if ':' not in service_name:
             service_name += ':1'
         action = self._get_action(service_name, action_name)
         return action.execute(**kwargs)
