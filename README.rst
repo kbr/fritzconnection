@@ -78,6 +78,13 @@ An API-Call is made by the ``call_action``-method of the FritzConnection-Class. 
 The latter wrapps the ``call_action``-method. For a more complete example look at the ``fritzhosts.py`` souce-code.
 
 
+Changed with version 0.8.3:
+---------------------------
+
+- bugfix in tests (new in 0.8.0)
+- code cleanup in fritzconnection
+
+
 Changed with version 0.8.2:
 ---------------------------
 
