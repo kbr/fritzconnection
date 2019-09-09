@@ -7,7 +7,7 @@ fritzstatus.py
 Modul to read status-informations from an AVM FritzBox.
 
 License: MIT https://opensource.org/licenses/MIT
-Source: https://bitbucket.org/kbr/fritzconnection
+Source: https://github.com/kbr/fritzconnection
 Author: Klaus Bremer
 """
 

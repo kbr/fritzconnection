@@ -8,7 +8,7 @@ Implement a tkinter-based grafic interface to view basic status- and
 traffic-informations.
 
 License: MIT https://opensource.org/licenses/MIT
-Source: https://bitbucket.org/kbr/fritzconnection
+Source: https://github.com/kbr/fritzconnection
 Author: Klaus Bremer
 """
 

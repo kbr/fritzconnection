@@ -9,7 +9,7 @@ Older versions of FritzOS lists only up to 16 entries.
 For newer versions this limitation is gone.
 
 License: MIT https://opensource.org/licenses/MIT
-Source: https://bitbucket.org/kbr/fritzconnection
+Source: https://github.com/kbr/fritzconnection
 Author: Klaus Bremer
 """
 

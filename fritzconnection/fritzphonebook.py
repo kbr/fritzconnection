@@ -6,7 +6,7 @@ fritzphonebook.py
 Utility module for FritzConnection to access phone books.
 
 License: MIT https://opensource.org/licenses/MIT
-Source: https://bitbucket.org/kbr/fritzconnection
+Source: https://github.com/kbr/fritzconnection
 Author: Klaus Bremer, David M. Straub
 """
 

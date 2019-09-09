@@ -4,7 +4,7 @@
 fritzwlan.py
 
 Utility modul for FritzConnection to list the known WLAN connections.
-Based on fritzhosts from Klaus Bremer https://bitbucket.org/kbr/fritzconnection
+Based on fritzhosts from Klaus Bremer https://github.com/kbr/fritzconnection
 License: MIT https://opensource.org/licenses/MIT
 Author: Bernd Strebel
 """

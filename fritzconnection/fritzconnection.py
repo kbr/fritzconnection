@@ -25,7 +25,7 @@ default or have multiple boxes i.e. for multiple WLAN access points).
 Also you have to send the password to get the complete api.
 
 License: MIT https://opensource.org/licenses/MIT
-Source: https://bitbucket.org/kbr/fritzconnection
+Source: https://github.com/kbr/fritzconnection
 Author: Klaus Bremer
 """
 
