@@ -37,7 +37,7 @@ Author: Klaus Bremer
 # pylint: disable=c-extension-no-member  # don't freak out because of lxml
 
 
-__version__ = '0.8.2_1'
+__version__ = '0.8.3'
 
 import argparse
 import os
