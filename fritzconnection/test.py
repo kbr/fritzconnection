@@ -70,6 +70,7 @@ class FritzSCDPTestParser(FritzSCDPParser):
     def __init__(self, *args, **kwargs):
         self.service = FritzService(
                     'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1',
+                    'urn:upnp-org:serviceId:WANCommonIFC1',
                     '/upnp/control/WANCommonIFC1',
                     '/igdicfgSCPD.xml'
                     )
@@ -82,7 +83,7 @@ class TestFritzSCDPParser(unittest.TestCase):
         self.fp = FritzSCDPTestParser()
 
     def test_get_service_name(self):
-        self.assertEqual('WANCommonInterfaceConfig:1', self.fp.service.name)
+        self.assertEqual('WANCommonIFC:1', self.fp.service.name)
 
     def test_read_state_variables(self):
         """Parse the stateVariables and check for a single value."""
