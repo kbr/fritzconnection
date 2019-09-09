@@ -28,8 +28,14 @@ License: MIT https://opensource.org/licenses/MIT
 Source: https://bitbucket.org/kbr/fritzconnection
 Author: Klaus Bremer
 """
+
 # module level pylint settings:
+# this is done here and not in a configuration file
+# so that it is clear by reading the code, which errors are silenced
+# or marked as not relevant.
 # pylint: disable=useless-object-inheritance  # for python2 compatibility
+# pylint: disable=c-extension-no-member  # don't freak out because of lxml
+
 
 __version__ = '0.8.2_1'
 
@@ -117,6 +123,10 @@ class FritzAction(object):
 
     @property
     def info(self):
+        """
+        Returns a list of tuples with the parameter-names, the according
+        direction (in/out) and the data type of the action.
+        """
         return [self.arguments[argument].info for argument in self.arguments]
 
     def _body_builder(self, kwargs):
@@ -144,6 +154,10 @@ class FritzAction(object):
         arguments. Raises an AuthorizationError in case a password is
         required for this request but is missing or wrong.
         """
+        # self.address, self.port, self.password and self.user
+        # are injected from the parser and FritzConnection as
+        # action_parameters.
+        # pylint: disable=no-member
         headers = self.header.copy()
         headers['soapaction'] = '%s#%s' % (self.service_type, self.name)
         data = self.envelope.strip() % self._body_builder(kwargs)
@@ -191,17 +205,20 @@ class FritzAction(object):
 
 class FritzActionArgument(object):
     """Attribute class for arguments."""
+    # pylint: disable=too-few-public-methods
     name = ''
     direction = ''
     data_type = ''
 
     @property
     def info(self):
-        return (self.name, self.direction, self.data_type)
+        """Returns all attributes as tuple"""
+        return self.name, self.direction, self.data_type
 
 
 class FritzService(object):
     """Attribute class for service."""
+    # pylint: disable=too-few-public-methods
 
     def __init__(self, service_type, service_id, control_url, scpd_url):
         self.service_type = service_type
@@ -221,6 +238,7 @@ class FritzService(object):
 
 class FritzXmlParser(object):
     """Base class for parsing fritzbox-xml-files."""
+    # pylint: disable=too-few-public-methods
 
     def __init__(self, address, port, filename=None):
         """Loads and parses an xml-file from a FritzBox."""
@@ -484,6 +502,11 @@ class FritzConnection(object):
 # ---------------------------------------------------------
 
 class FritzInspection(object):
+    """
+    Class for cli use to inspect available services and according
+    actions of the given device (the Fritz!Box).
+    """
+    # pylint: disable=invalid-name  # self.fc is ok.
 
     def __init__(self,
                  address=FRITZ_IP_ADDRESS,
@@ -499,9 +522,11 @@ class FritzInspection(object):
         return servicename
 
     def get_servicenames(self):
+        """Returns all known service names as alphabetically sorted list."""
         return sorted(self.fc.services.keys())
 
     def get_actionnames(self, servicename):
+        """Returns a sorted list of the action names for the given service."""
         servicename = self._get_full_servicename(servicename)
         try:
             service = self.fc.services[servicename]
@@ -510,22 +535,28 @@ class FritzInspection(object):
         return sorted(service.actions.keys())
 
     def view_header(self):
+        """Send module version and Fritz!Box model name to stdout."""
         print('\nFritzConnection:')
         print('{:<20}{}'.format('version:', get_version()))
         print('{:<20}{}'.format('model:', self.fc.modelname))
 
     def view_servicenames(self):
+        """Send all known service names to stdout."""
         print('Servicenames:')
         for name in self.get_servicenames():
             print('{:20}{}'.format('', name))
 
     def view_actionnames(self, servicename):
+        """Send all action names of the given service to stdout."""
         print('\n{:<20}{}'.format('Servicename:', servicename))
         print('Actionnames:')
         for name in self.get_actionnames(servicename):
             print('{:20}{}'.format('', name))
 
     def view_actionarguments(self, servicename, actionname):
+        """
+        Send all action arguments of the given action and service to stdout.
+        """
         servicename = self._get_full_servicename(servicename)
         print('\n{:<20}{}'.format('Servicename:', servicename))
         print('{:<20}{}'.format('Actionname:', actionname))
@@ -533,6 +564,10 @@ class FritzInspection(object):
         self._view_arguments('{:20}{}', servicename, actionname)
 
     def view_servicearguments(self, servicename):
+        """
+        Send all action names and the corresponding parameters of the
+        given service to stdout.
+        """
         servicename = self._get_full_servicename(servicename)
         print('\n{:<20}{}'.format('Servicename:', servicename))
         actionnames = self.get_actionnames(servicename)
@@ -541,11 +576,13 @@ class FritzInspection(object):
             self._view_arguments('{:24}{}', servicename, actionname)
 
     def _view_arguments(self, fs, servicename, actionname):
+        """Send all parameters for a given action and service to stdout."""
         for argument in sorted(
                 self.fc.get_action_arguments(servicename, actionname)):
             print(fs.format('', argument))
 
     def view_complete(self):
+        """Send the complete API of the device to stdout."""
         print('FritzBox API:')
         for servicename in self.get_servicenames():
             self.view_servicearguments(servicename)
@@ -559,18 +596,20 @@ def print_servicenames(address=FRITZ_IP_ADDRESS,
                        port=FRITZ_TCP_PORT,
                        user=FRITZ_USERNAME,
                        password=''):
-    fi = FritzInspection(address, port, user, password)
-    fi.view_header()
-    fi.view_servicenames()
+    """Wrapper for FritzInspection to report all service names."""
+    inspector = FritzInspection(address, port, user, password)
+    inspector.view_header()
+    inspector.view_servicenames()
 
 
 def print_api(address=FRITZ_IP_ADDRESS,
               port=FRITZ_TCP_PORT,
               user=FRITZ_USERNAME,
               password=''):
-    fi = FritzInspection(address, port, user, password)
-    fi.view_header()
-    fi.view_complete()
+    """Wrapper for FritzInspection to report the complete api."""
+    inspector = FritzInspection(address, port, user, password)
+    inspector.view_header()
+    inspector.view_complete()
 
 
 # ---------------------------------------------------------
@@ -578,6 +617,10 @@ def print_api(address=FRITZ_IP_ADDRESS,
 # ---------------------------------------------------------
 
 def get_cli_arguments():
+    """
+    Returns a NameSpace object from the ArgumentParser parsing the given
+    command line arguments.
+    """
     parser = argparse.ArgumentParser(description='FritzBox API')
     parser.add_argument('-i', '--ip-address',
                         nargs='?', default=None, const=None,
@@ -618,24 +661,28 @@ def get_cli_arguments():
     args = parser.parse_args()
     return args
 
+
 def main():
+    """CLI entry point."""
     args = get_cli_arguments()
-    fi = FritzInspection(args.address, args.port, args.username, args.password)
-    fi.view_header()
+    inspector = FritzInspection(
+        args.address, args.port, args.username, args.password)
+    inspector.view_header()
     if args.services:
-        fi.view_servicenames()
+        inspector.view_servicenames()
     elif args.serviceactions:
-        fi.view_actionnames(args.serviceactions[0])
+        inspector.view_actionnames(args.serviceactions[0])
     elif args.servicearguments:
-        fi.view_servicearguments(args.servicearguments[0])
+        inspector.view_servicearguments(args.servicearguments[0])
     elif args.actionarguments:
-        fi.view_actionarguments(args.actionarguments[0],
-                                args.actionarguments[1])
+        inspector.view_actionarguments(args.actionarguments[0],
+                                       args.actionarguments[1])
     elif args.complete:
-        fi.view_complete()
+        inspector.view_complete()
     elif args.reconnect:
-        fi.fc.reconnect()
+        inspector.fc.reconnect()
     print()  # print an empty line
+
 
 if __name__ == '__main__':
     main()
