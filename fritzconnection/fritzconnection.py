@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -29,10 +28,13 @@ License: MIT https://opensource.org/licenses/MIT
 Source: https://bitbucket.org/kbr/fritzconnection
 Author: Klaus Bremer
 """
+# module level pylint settings:
+# pylint: disable=useless-object-inheritance  # for python2 compatibility
 
-__version__ = '0.8.2'
+__version__ = '0.8.2_1'
 
-import os, argparse
+import argparse
+import os
 import requests
 from requests.auth import HTTPDigestAuth
 
@@ -47,16 +49,37 @@ FRITZ_TR64_DESC_FILE = 'tr64desc.xml'
 FRITZ_USERNAME = 'dslf-config'
 
 
-# version-access:
 def get_version():
+    """returns the module version (aka. package version since 0.8.2)"""
     return __version__
 
 
-class FritzConnectionException(Exception): pass
-class ServiceError(FritzConnectionException): pass
-class ActionError(FritzConnectionException): pass
-class AuthorizationError(FritzConnectionException): pass
+# ---------------------------------------------------------
+# Module specific exceptions:
+# ---------------------------------------------------------
 
+class FritzConnectionException(Exception):
+    """Base Exception for communication errors with the Fritz!Box"""
+
+
+class ServiceError(FritzConnectionException):
+    """Exception raised by calling nonexisting services."""
+
+
+class ActionError(FritzConnectionException):
+    """Exception raised by calling a nonexisting action for a given service."""
+
+
+class AuthorizationError(FritzConnectionException):
+    """
+    Exception raised by calling a service that requires a password
+    without a password or a wrong one.
+    """
+
+
+# ---------------------------------------------------------
+# The core classes of fritzconnection:
+# ---------------------------------------------------------
 
 class FritzAction(object):
     """
@@ -101,7 +124,7 @@ class FritzAction(object):
         Helper method to construct the appropriate SOAP-body to call a
         FritzBox-Service.
         """
-        p = {
+        parameter = {
             'action_name': self.name,
             'service_type': self.service_type,
             'arguments': '',
@@ -111,8 +134,8 @@ class FritzAction(object):
                 self.argument_template % {'name': k, 'value': v}
                 for k, v in kwargs.items()
             ]
-            p['arguments'] = ''.join(arguments)
-        body = self.body_template.strip() % p
+            parameter['arguments'] = ''.join(arguments)
+        body = self.body_template.strip() % parameter
         return body
 
     def execute(self, **kwargs):
@@ -127,7 +150,7 @@ class FritzAction(object):
         url = 'http://%s:%s%s' % (self.address, self.port, self.control_url)
         auth = None
         if self.password:
-            auth=HTTPDigestAuth(self.user, self.password)
+            auth = HTTPDigestAuth(self.user, self.password)
         response = requests.post(url, data=data, headers=headers, auth=auth)
         if response.status_code == 401:
             # password required but missing or wrong
@@ -305,7 +328,7 @@ class FritzSCDPParser(FritzXmlParser):
         argument.name = argument_node.find(self.nodename('name')).text
         argument.direction = argument_node.find(self.nodename('direction')).text
         rsv = argument_node.find(self.nodename('relatedStateVariable')).text
-        # TODO: track malformed xml-nodes (i.e. misspelled)
+        # track malformed xml-nodes? (i.e. misspelled)
         argument.data_type = self.state_variables.get(rsv, None)
         return argument
 
@@ -462,10 +485,11 @@ class FritzConnection(object):
 
 class FritzInspection(object):
 
-    def __init__(self, address=FRITZ_IP_ADDRESS,
-                       port=FRITZ_TCP_PORT,
-                       user=FRITZ_USERNAME,
-                       password=''):
+    def __init__(self,
+                 address=FRITZ_IP_ADDRESS,
+                 port=FRITZ_TCP_PORT,
+                 user=FRITZ_USERNAME,
+                 password=''):
         self.fc = FritzConnection(address, port, user, password)
 
     @staticmethod
@@ -518,7 +542,7 @@ class FritzInspection(object):
 
     def _view_arguments(self, fs, servicename, actionname):
         for argument in sorted(
-            self.fc.get_action_arguments(servicename, actionname)):
+                self.fc.get_action_arguments(servicename, actionname)):
             print(fs.format('', argument))
 
     def view_complete(self):
