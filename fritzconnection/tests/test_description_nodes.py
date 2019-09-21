@@ -19,7 +19,7 @@ import pytest
 IGDDESC_FILE = Path(__file__).parent / 'xml' / 'igddesc.xml'
 
 
-from ..fritzconnection.fritzconnection import (
+from ..core.fritzconnection import (
     SpecVersion,
     Service,
     ServiceList,

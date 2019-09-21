@@ -4,7 +4,7 @@ Tests for the main Description node and the ServiceManager
 
 from pathlib import Path
 import pytest
-from ..fritzconnection.fritzconnection import (
+from ..core.fritzconnection import (
     ServiceManager,
     ServiceError,
 )
