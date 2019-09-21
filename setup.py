@@ -7,7 +7,7 @@ with open('README.rst') as file:
 
 setup(
     name = 'fritzconnection',
-    version = '0.8.2',
+    version = '1.0a1',
     packages = find_packages(),
     license = 'MIT',
     description = 'Communicate with the AVM FritzBox',
@@ -22,17 +22,15 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords = 'AVM FritzBox',
     install_requires = [
-        'lxml==4.3.4',
-        'requests==2.22.0',
+        'lxml>=4.3.4',
+        'requests>=2.22.0',
     ],
     entry_points={'console_scripts': [
         'fritzconnection = fritzconnection.fritzconnection:main',
