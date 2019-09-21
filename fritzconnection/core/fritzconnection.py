@@ -25,7 +25,7 @@ FRITZ_USERNAME = 'dslf-config'
 
 
 def get_version():
-    """returns the module version (aka. package version since 0.8.2)"""
+    """returns the module version"""
     return __version__
 
 
@@ -67,7 +67,8 @@ class AbstractDescriptionNode:
 
     def process_node(self, node):
         """
-        Default node processing: if node-name in self.sequences then it is a child-node with subnodes
+        Default node processing: if node-name in self.sequences then it
+        is a child-node with subnodes
         """
         name = self.node_name(node)
         if name in self.sequences:
