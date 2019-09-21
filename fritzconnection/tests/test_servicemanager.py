@@ -10,8 +10,8 @@ from ..core.fritzconnection import (
 )
 
 
-IGDDESC_FILE = Path(__file__).parent / 'xml' / 'igddesc.xml'
-TR64DESC_FILE = Path(__file__).parent / 'xml' / 'tr64desc.xml'
+IGDDESC_FILE = Path(__file__).parent/'xml'/'igddesc.xml'
+TR64DESC_FILE = Path(__file__).parent/'xml'/'tr64desc.xml'
 
 
 @pytest.fixture(scope="module")
@@ -126,4 +126,10 @@ def test_get_service_by_name_failure(service_manager):
     # this should not work: expect ServiceError
     with pytest.raises(ServiceError):
         service = service_manager.get_service(name)
+
+def _test_get_service_action(service_manager):
+    """test to get an action from a service"""
+    name = 'WANIPConn1'
+    service_manager.scan()
+    service = service_manager.get_service(name)
 

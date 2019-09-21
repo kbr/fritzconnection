@@ -37,6 +37,10 @@ class FritzConnectionException(Exception):
     """Base Exception for communication errors with the Fritz!Box"""
 
 
+class ActionError(FritzConnectionException):
+    """Exception raised by calling nonexisting actions."""
+
+
 class ServiceError(FritzConnectionException):
     """Exception raised by calling nonexisting services."""
 
@@ -128,6 +132,12 @@ class StateVariable(AbstractDescriptionNode):
     """
     collects 'name', 'datatype' and 'defaultValue' or 'allowedValueList'
     of action parameter data.
+    A StateVariable instance also known its tag_attributes, which is a dictionary: i.e. given the tag <stateVariable sendEvents="no"> then the value "no" can accessed by:
+
+    >>> sv = StateVariable(root)
+    >>> sv.tag_attributes['sendEvents']
+    'no'
+
     """
 
     sequences = {
@@ -213,6 +223,40 @@ class Action(AbstractDescriptionNode):
             self.arguments = {
                 argument.name: argument for argument in self.argumentList[0]
             }
+
+
+class ActionList(AbstractDescriptionNode):
+    """
+    Class for collecting the Actions.
+
+    The action objects are accessible by the attribute 'actions' which
+    is a dictionary.
+
+    """
+
+    sequences = {'action': Action}
+    actions = {}
+
+    def __init__(self, root):
+        super().__init__(root)
+        if self.action:
+            self.actions = {action.name: action for action in self.action}
+
+    def __len__(self):
+        return len(self.actions)
+
+    def __iter__(self):
+        return iter(self.action)
+
+    def get_action(self, name):
+        """
+        Returns the Action with the given name or raises an ActionError.
+        """
+        try:
+            return self.actions[name]
+        except KeyError:
+            message = f'unknown Action: {name}'
+            raise ActionError(message)
 
 
 

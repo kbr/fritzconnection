@@ -15,7 +15,7 @@ from lxml import etree
 import pytest
 
 
-IGDDESC_FILE = Path(__file__).parent / 'xml' / 'igdconnSCPD.xml'
+IGDDESC_FILE = Path(__file__).parent/'xml'/'igdconnSCPD.xml'
 
 
 from ..core.fritzconnection import (
@@ -26,6 +26,8 @@ from ..core.fritzconnection import (
     Argument,
     ArgumentList,
     Action,
+    ActionList,
+    ActionError,
 )
 
 
@@ -254,3 +256,88 @@ def test_Action_minimal_inp(root=action_minimal_input):
     """test for empty arguments dictionary"""
     ac = Action(root)
     assert len(ac.arguments) == 0
+
+
+action_list_inp = parse_xml("""
+    <actionList>
+        <action>
+            <name>SetConnectionType</name>
+            <argumentList>
+                <argument>
+                    <name>NewConnectionType</name>
+                    <direction>in</direction>
+                    <relatedStateVariable>ConnectionType</relatedStateVariable>
+                </argument>
+            </argumentList>
+        </action>
+        <action>
+            <name>GetConnectionTypeInfo</name>
+            <argumentList>
+                <argument>
+                    <name>NewConnectionType</name>
+                    <direction>out</direction>
+                    <relatedStateVariable>ConnectionType</relatedStateVariable>
+                </argument>
+                <argument>
+                    <name>NewPossibleConnectionTypes</name>
+                    <direction>out</direction>
+                    <relatedStateVariable>PossibleConnectionTypes</relatedStateVariable>
+                </argument>
+            </argumentList>
+        </action>
+        <action>
+            <name>GetStatusInfo</name>
+            <argumentList>
+                <argument>
+                    <name>NewConnectionStatus</name>
+                    <direction>out</direction>
+                    <relatedStateVariable>ConnectionStatus</relatedStateVariable>
+                </argument>
+                <argument>
+                    <name>NewLastConnectionError</name>
+                    <direction>out</direction>
+                    <relatedStateVariable>LastConnectionError</relatedStateVariable>
+                </argument>
+                <argument>
+                    <name>NewUptime</name>
+                    <direction>out</direction>
+                    <relatedStateVariable>Uptime</relatedStateVariable>
+                </argument>
+            </argumentList>
+        </action>
+    </actionList>
+""")
+
+def test_ActionList_len(root=action_list_inp):
+    """find the number of Actions of an actionList"""
+    al = ActionList(root)
+    assert len(al) == 3
+
+@pytest.mark.parametrize(
+    "root, name", [
+        (action_list_inp, 'SetConnectionType'),
+        (action_list_inp, 'GetConnectionTypeInfo'),
+        (action_list_inp, 'GetStatusInfo'),
+    ]
+)
+def test_ActionList_find_action(root, name):
+    """find the Actions of an actionList"""
+    al = ActionList(root)
+    action = al.get_action(name)
+    assert action.name == name
+
+def test_ActionList_ActionError(root=action_list_inp):
+    """test for ActionError on invalid name"""
+    name = 'weird_action_name'
+    al = ActionList(root)
+    # this should not work: expect ServiceError
+    with pytest.raises(ActionError):
+        action = al.get_action(name)
+
+def test_ActionList_is_iterator(root=action_list_inp):
+    """test whether ActionList is an iterable."""
+    names = ('SetConnectionType', 'GetConnectionTypeInfo', 'GetStatusInfo')
+    al = ActionList(root)
+    for action in al:
+        assert action.name in names
+
