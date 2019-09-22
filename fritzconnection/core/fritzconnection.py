@@ -45,352 +45,44 @@ class ServiceError(FritzConnectionException):
     """Exception raised by calling nonexisting services."""
 
 
-# ---------------------------------------------------------
-# Nodes and Components
-# name conventions adapted from the description files
-# ---------------------------------------------------------
-
-class AbstractDescriptionNode:
-    """
-    Abstract class for scanning all childs of a given node and storing
-    the according information as instance attributes: the tag-names are
-    the attribute names and the content (node.text) is stored as the
-    value.
-    """
-
-    sequences = {}
-    tag_attributes = {}
-
-    def __init__(self, root):
-        super().__init__()
-        for name in self.sequences:
-            setattr(self, name, list())
-        self.tag_attributes.update(root.attrib)
-        for node in root:
-            self.process_node(node)
-
-    def process_node(self, node):
-        """
-        Default node processing: if node-name in self.sequences then it
-        is a child-node with subnodes
-        """
-        name = self.node_name(node)
-        if name in self.sequences:
-            sequence = getattr(self, name)
-            sequence.append(self.sequences[name](node))
-        else:
-            try:
-                setattr(self, name, node.text.strip())
-            except TypeError:
-                # can happen on none-text nodes like comments
-                # ignore this
-                pass
-
-    @staticmethod
-    def node_name(node):
-        """
-        Strips the namespace from the node-tag and returns this as
-        node-name.
-        """
-        if isinstance(node.tag, str):
-            return node.tag.split('}')[-1]
-        return node.tag
-
-
-class SpecVersion(AbstractDescriptionNode):
-    """
-    Specification version node holding the description file
-    specification version from the schema device or service
-    informations.
-    """
-
-    @property
-    def version(self):
-        return f'{self.major}.{self.minor}'
-
-
-# scpd-section ----------------------------------
-
-class AllowedValueList(AbstractDescriptionNode):
-    """stores a list of allowed values."""
-
-    sequences = {'values': None}
-
-    def process_node(self, node):
-        """
-        node can be a repeated allowedValue tag without subnodes.
-        Therefor the tag.text has to be collected here.
-        """
-        self.values.append(node.text.strip())
-
-
-class AllowedValueRange(AbstractDescriptionNode):
-    """stores attributes of an allowed range"""
-
-
-class StateVariable(AbstractDescriptionNode):
-    """
-    collects 'name', 'datatype' and 'defaultValue' or 'allowedValueList'
-    of action parameter data.
-    A StateVariable instance also known its tag_attributes, which is a dictionary: i.e. given the tag <stateVariable sendEvents="no"> then the value "no" can accessed by:
-
-    >>> sv = StateVariable(root)
-    >>> sv.tag_attributes['sendEvents']
-    'no'
-
-    """
-
-    sequences = {
-        'allowedValueList': AllowedValueList,
-        'allowedValueRange': AllowedValueRange,
-    }
-
-    @property
-    def type(self):
-        """convenient access to dataType."""
-        return self.dataType
-
-    @property
-    def default(self):
-        """Returns the default-value or None."""
-        try:
-            return self.defaultValue
-        except AttributeError:
-            return None
-
-    @property
-    def allowed_values(self):
-        """
-        Returns a list of allowed values. Returns an empty list if there
-        are no allowed values.
-        """
-        return self.allowedValueList
-
-    @property
-    def allowed_value_range(self):
-        """
-        Returns a dictionary with informations about the allowed value
-        range. Keys can be 'minimum', 'maximum' and 'step', depending on
-        the stateVariable.
-        """
-        try:
-            return self.allowedValueRange[0].__dict__
-        except IndexError:
-            return None
-
-
-class Argument(AbstractDescriptionNode):
-    """
-    Collects 'name' and 'direction' of the argument. Also the
-    'relatedStateVariable' which is the name of a StateVariable instance
-    describing the type of the argument.
-    """
-
-    @property
-    def state_variable_name(self):
-        """more pythonic name for 'relatedStateVariable'."""
-        return self.relatedStateVariable
-
-
-class ArgumentList(AbstractDescriptionNode):
-    """list of Arguments. No more instance attributes."""
-
-    sequences = {'argument': Argument}
-
-    def __len__(self):
-        return len(self.argument)
-
-    def __iter__(self):
-        return iter(self.argument)
-
-
-class Action(AbstractDescriptionNode):
-    """
-    Action class with 'name' and 'argumentList'. Arguments are optional,
-    so the 'argumentList' can be empty.
-
-    An Action also has direct access to its 'arguments'. This is a
-    dictionary with the argument names as keys and the Argument
-    instances as values.
-    """
-
-    sequences = {'argumentList': ArgumentList}
-    arguments = {}
-
-    def __init__(self, root):
-        super().__init__(root)
-        if self.argumentList:
-            self.arguments = {
-                argument.name: argument for argument in self.argumentList[0]
-            }
-
-
-class ActionList(AbstractDescriptionNode):
-    """
-    Class for collecting the Actions.
-
-    The action objects are accessible by the attribute 'actions' which
-    is a dictionary.
-
-    """
-
-    sequences = {'action': Action}
-    actions = {}
-
-    def __init__(self, root):
-        super().__init__(root)
-        if self.action:
-            self.actions = {action.name: action for action in self.action}
-
-    def __len__(self):
-        return len(self.actions)
-
-    def __iter__(self):
-        return iter(self.action)
-
-    def get_action(self, name):
-        """
-        Returns the Action with the given name or raises an ActionError.
-        """
-        try:
-            return self.actions[name]
-        except KeyError:
-            message = f'unknown Action: {name}'
-            raise ActionError(message)
-
-
-
-# desc-section ----------------------------------
-
-class Service(AbstractDescriptionNode):
-    """
-    Service node holding all informations about a service as instance
-    attributes, i.e.:
-
-    'SCPDURL': '/igddslSCPD.xml',
-    'controlURL': '/igdupnp/control/WANDSLLinkC1',
-    'eventSubURL': '/igdupnp/control/WANDSLLinkC1',
-    'serviceId': 'urn:upnp-org:serviceId:WANDSLLinkC1',
-    'serviceType': 'urn:schemas-upnp-org:service:WANDSLLinkConfig:1'
-
-    The service.name is the last part of the attribute 'serviceID', i.e.
-    'WANDSLLinkC1'
-
-    """
-
-    @property
-    def name(self):
-        return self.serviceId.split(':')[-1]
-
-
-class ServiceList(AbstractDescriptionNode):
-    """Collection of Service objects."""
-
-    sequences = {'service': Service}
-
-    def __len__(self):
-        return len(self.service)
-
-    def __iter__(self):
-        return iter(self.service)
-
-
-class Device(AbstractDescriptionNode):
-    """
-    A router device for a collection of services. Can also have a
-    collection of sub-devices.
-    """
-
-    sequences = {'serviceList': ServiceList, 'deviceList': None}
-
-    @property
-    def services(self):
-        if self.serviceList:
-            return self.serviceList[0]
-        return self.serviceList
-
-    @property
-    def devices(self):
-        if self.deviceList:
-            return self.deviceList[0]
-        return self.deviceList
-
-    @property
-    def modelname(self):
-        return self.modelName
-
-    def collect_services(self):
-        """
-        Returns a dictionary with the services of this device and
-        all nested devices. The keys are the servicenames and the
-        service instances are the values.
-        """
-        services = {service.name: service for service in self.services}
-        for device in self.devices:
-            services.update(device.collect_services())
-        return services
-
-
-class DeviceList(AbstractDescriptionNode):
-    """Collection of Device objects."""
-
-    sequences = {'device': Device}
-
-    def __len__(self):
-        return len(self.device)
-
-    def __iter__(self):
-        return iter(self.device)
-
-Device.sequences['deviceList'] = DeviceList
-
-
-class Description(AbstractDescriptionNode):
-    """
-    Root class for a given description information like igddesc.xml or
-    tr64desc.xml
-
-    Instances have the attributes:
-
-    - device: Device instance of the root device
-    - specVersion: for a SpecVersion instance
-    - specification: for easy access of the SpecVersion version
-    - presentation_url: to access the box (http://fritz.box)
-    - namespace: xmlns value from the root node
-    """
-
-    sequences = {'specVersion': SpecVersion, 'device': Device}
-
-    def __init__(self, root):
-        self.namespace = etree.QName(root.tag).namespace
-        super().__init__(root)
-
-    @property
-    def specification(self):
-        return self.specVersion[0].version
-
-    @property
-    def modelname(self):
-        return self.device[0].modelname
-
-    def collect_services(self):
-        """
-        Returns a dictionary with the services of the root-device and
-        all nested devices. The keys are the servicenames and the
-        service instances are the values.
-        """
-        services = {}
-        for device in self.device:
-            services.update(device.collect_services())
-        return services
-
 
 # ---------------------------------------------------------
 # ServiceManager:
 # separate class for better testing
 # ---------------------------------------------------------
 
-class ServiceManager:
+class DeviceManager:
+    """
+    Knows all data about the device and the sub-devices, including the
+    available services.
+    """
+
+    def __init__(self):
+        self.descriptions = []
+        self.services = {}
+
+    def add_description(self, source):
+        """
+        Adds description data about the devices and the according
+        services. 'source' is a string with the xml-data, like the
+        content of an igddesc- or tr64desc-file.
+        """
+        tree = etree.parse(source)
+        root = tree.getroot()
+        self.descriptions.append(Description(root))
+
+    def scan(self):
+        """
+        Scans all available services defined by the description files.
+        Must get called after all xml-descriptions are added.
+        """
+        for description in self.descriptions:
+            self.services.update(description.services)
+
+
+
+
+class x_ServiceManager:
     """
     Class for accessing all services given by Description objects.
 
