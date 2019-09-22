@@ -42,7 +42,7 @@ def description():
 
 @pytest.fixture(scope="module")
 def scpd():
-    with open(IGDDESC_FILE) as fobj:
+    with open(IGDSCPD_FILE) as fobj:
         root = parse_xml(fobj.read())
         return Scpd(root)
 
@@ -467,4 +467,23 @@ def test_ActionList_iter(root=action_list_inp):
     for n, _ in enumerate(al, 1):
         pass
     assert items == n
+
+
+# Node: Scpd ------------------------------------
+
+def test_scpd_namespace(scpd):
+    assert scpd.namespace == "urn:schemas-upnp-org:service-1-0"
+
+def test_scpd_spec_version(scpd):
+    assert scpd.spec_version == '1.0'
+
+@pytest.mark.parametrize(
+    "name", ['SetConnectionType', 'GetExternalIPAddress', 'X_AVM_DE_GetIPv6DNSServer']
+)
+def test_scpd_find_action(name, scpd):
+    """test to find actions by name."""
+    # first: access without KeyError:
+    action = scpd.actions[name]
+    # now check for same names:
+    assert action.name == name
 

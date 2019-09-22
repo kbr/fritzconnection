@@ -6,6 +6,25 @@ from lxml import etree
 
 
 # ---------------------------------------------------------
+# decorator instead of a metaclass
+# ---------------------------------------------------------
+
+def sequencer(sequence_name):
+    """
+    Class decorator extending a list node to an object that has a length
+    and is iterable. 'sequence_name' is the name of the list-like
+    attribute.
+    """
+
+    def _sequencer(cls):
+        cls.__len__ = lambda self: len(getattr(self, sequence_name))
+        cls.__iter__ = lambda self: iter(getattr(self, sequence_name))
+        return cls
+
+    return _sequencer
+
+
+# ---------------------------------------------------------
 # Nodes and Components
 # name conventions adapted from the description files
 # ---------------------------------------------------------
@@ -32,7 +51,7 @@ class AbstractDescriptionNode:
     def process_node(self, node):
         """
         Default node processing: if node-name in self.sequences then it
-        is a child-node with subnodes
+        is a child-node with subnodes.
         """
         name = self.node_name(node)
         if name in self.sequences:
@@ -84,16 +103,11 @@ class Service(AbstractDescriptionNode):
         return self.serviceId.split(':')[-1]
 
 
+@sequencer('service')
 class ServiceList(AbstractDescriptionNode):
     """Storage for Service objects"""
 
     sequences = {'service': Service}
-
-    def __len__(self):
-        return len(self.service)
-
-    def __iter__(self):
-        return iter(self.service)
 
 
 class Device(AbstractDescriptionNode):
@@ -146,16 +160,11 @@ class Device(AbstractDescriptionNode):
         return services
 
 
+@sequencer('device')
 class DeviceList(AbstractDescriptionNode):
     """Collection of Device objects."""
 
     sequences = {'device': Device}
-
-    def __len__(self):
-        return len(self.device)
-
-    def __iter__(self):
-        return iter(self.device)
 
 # backward declaration/injection of the deviceList
 Device.sequences['deviceList'] = DeviceList
@@ -232,6 +241,7 @@ class StateVariable(AbstractDescriptionNode):
     }
 
 
+@sequencer('stateVariable')
 class ServiceStateTable(AbstractDescriptionNode):
     """
     Collection of StateVariables. Is iterable and can access the
@@ -246,12 +256,6 @@ class ServiceStateTable(AbstractDescriptionNode):
             sv.name: sv for sv in self.stateVariable
         }
 
-    def __len__(self):
-        return len(self.stateVariable)
-
-    def __iter__(self):
-        return iter(self.stateVariable)
-
 
 class Argument(AbstractDescriptionNode):
     """
@@ -260,16 +264,11 @@ class Argument(AbstractDescriptionNode):
     """
 
 
+@sequencer('argument')
 class ArgumentList(AbstractDescriptionNode):
     """Sequence of Arguments."""
 
     sequences = {'argument': Argument}
-
-    def __len__(self):
-        return len(self.argument)
-
-    def __iter__(self):
-        return iter(self.argument)
 
 
 class Action(AbstractDescriptionNode):
@@ -291,16 +290,11 @@ class Action(AbstractDescriptionNode):
             }
 
 
+@sequencer('action')
 class ActionList(AbstractDescriptionNode):
     """Sequence of Actions."""
 
     sequences = {'action': Action}
-
-    def __len__(self):
-        return len(self.action)
-
-    def __iter__(self):
-        return iter(self.action)
 
 
 class Scpd(AbstractDescriptionNode):
@@ -312,10 +306,15 @@ class Scpd(AbstractDescriptionNode):
     """
 
     sequences = {'specVersion': SpecVersion, 'actionList': ActionList}
+    actions = {}
 
     def __init__(self, root):
         self.namespace = etree.QName(root.tag).namespace
         super().__init__(root)
+        if self.actionList:
+            self.actions = {
+                action.name: action for action in self.actionList[0]
+            }
 
     @property
     def spec_version(self):
