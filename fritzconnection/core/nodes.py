@@ -177,11 +177,15 @@ class Description(AbstractDescriptionNode):
 
     Instances have the attributes:
 
-    - device: Device instance of the root device
+    - root_device: Device instance of the root device
     - specVersion: for a SpecVersion instance
     - specification: for easy access of the SpecVersion version
     - presentation_url: to access the box (http://fritz.box)
     - namespace: xmlns value from the root node
+
+    All available services are collected in the 'services' attribute
+    which is a dictionary with the service names as keys and the service
+    objects as values.
     """
 
     sequences = {'specVersion': SpecVersion, 'device': Device}
@@ -284,7 +288,6 @@ class Action(AbstractDescriptionNode):
     def __init__(self, root):
         super().__init__(root)
         if self.argumentList:
-            # has at least one entry
             self.arguments = {
                 arg.name: arg for arg in self.argumentList[0]
             }
