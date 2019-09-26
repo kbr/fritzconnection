@@ -70,7 +70,7 @@ Inspect the API:
 An API-Call is made by the ``call_action``-method of the FritzConnection-Class. This method takes the ``servicename``, the ``actionname`` and optional arguments as parameter and may return a dictionary with the results (as described in the TR-064 protocoll description). A simple example is to reconnect for a new external ip:
 
     >>> from fritzconnection import FritzConnection
-    >>> connection = FritzConnection(address="fb_ipadress", user="usernam", password='passw')
+    >>> connection = FritzConnection(address="fb_ipadress", user="usernam", password='your_password')
     >>> connection.call_action('WANIPConnection', 'ForceTermination')
     # or more comfortable:
     >>> connection.reconnect()
