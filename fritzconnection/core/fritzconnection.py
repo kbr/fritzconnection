@@ -8,6 +8,7 @@ __version__ = '1.0_alpha_1'
 
 
 import os
+import re
 import string
 
 import requests
@@ -93,6 +94,14 @@ class DeviceManager:
         for description in self.descriptions:
             self.services.update(description.services)
 
+    def load_service_descriptions(self, address, port):
+        """
+        Triggers the load of the scpd files of the services, so they
+        known their actions.
+        """
+        for service in self.services.values():
+            service.load_scpd(address, port)
+
 
 # ---------------------------------------------------------
 # Connector:
@@ -104,20 +113,28 @@ class Soaper:
     Class that handles the soap based communication with the FritzBox.
     """
 
-    header = {
+    headers = {
         'soapaction': '',
         'content-type': 'text/xml',
         'charset': 'utf-8'
     }
 
-    envelope = """
+    envelope = re.sub(r'\s +', '', """
         <?xml version="1.0" encoding="utf-8"?>
         <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
                     xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">{body}
-        </s:Envelope>""".strip()
+        </s:Envelope>""")
+
+    body_template = re.sub(r'\s +', '', """
+        <s:Body>
+        <u:{action_name} xmlns:u="{service_type}">{arguments}
+        </u:{action_name}>
+        </s:Body>
+        """)
 
     argument_template = "<s:{name}>{value}</s:{name}>"
     method = 'post'
+
 
     def __init__(self, address, port, user, password):
         self.address = address
@@ -126,19 +143,40 @@ class Soaper:
         self.password = password
 
     def get_body(self, service, action_name, arguments):
-        body = f'<s:Body>'\
-               f'<u:{action_name} xmlns:u="{service.serviceType}">{arguments}'\
-               f'</u:{action_name}></s:Body>'
-        return body.strip()
+        """Returns the body by template substitution."""
+        return self.body_template.format(
+            service_type=service.serviceType,
+            action_name=action_name,
+            arguments=arguments
+        )
 
     def execute(self, service, action_name, arguments):
-        header = self.header.copy()
-        header['soapaction'] = f'{service.serviceType}#{action_name}'
+        """
+        Builds the soap request and returns the response as dictionary.
+        Numeric and boolean values are converted from strings to Python
+        datatypes.
+        """
+        headers = self.headers.copy()
+        headers['soapaction'] = f'{service.serviceType}#{action_name}'
         arguments = ''.join(self.argument_template.format(name=k, value=v)
                             for k, v in arguments.items())
         body = self.get_body(service, action_name, arguments)
         envelope = self.envelope.format(body=body)
-        return envelope
+        protocol = 'http'
+        url = f'{protocol}://{self.address}:{self.port}{service.controlURL}'
+        auth = None
+        if self.password:
+            auth = HTTPDigestAuth(self.user, self.password)
+        response = requests.post(url, data=envelope, headers=headers, auth=auth)
+        return self.parse_response(response, service, action_name)
+
+    def parse_response(self, response, service, action_name):
+        """
+        Extracts all known parameters of the given action from the response and returns this as a dictionary with the out-parameter names as keys and the corresponding response as values.
+        """
+        action = service
+        root = etree.fromstring(response.content)
+        return root
 
 
 
