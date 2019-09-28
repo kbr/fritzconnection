@@ -37,7 +37,7 @@ Author: Klaus Bremer
 # pylint: disable=c-extension-no-member  # don't freak out because of lxml
 
 
-__version__ = '0.8.3'
+__version__ = '0.8.4'
 
 import argparse
 import os
@@ -494,7 +494,7 @@ class FritzConnection(object):
         Terminate the connection and reconnects with a new ip.
         Will raise a KeyError if this command is unknown (by any means).
         """
-        self.call_action('WANIPConnection', 'ForceTermination')
+        self.call_action('WANIPConn', 'ForceTermination')
 
 
 # ---------------------------------------------------------

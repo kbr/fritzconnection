@@ -65,18 +65,28 @@ Quickstart:
 Inspect the API:
 
     >>> import fritzconnection as fc
-    >>> fc.print_api(password='your_password')
+    >>> fc.print_api(address=<ip-address>, password=<the password>)
+
+Both parameters ``address`` and ``password`` are optional. If there is more than one Fritz!Box in the network, an address must be provided, because otherwise it's undefined which box will respond. Also most services are only accessible by providing a password.
 
 An API-Call is made by the ``call_action``-method of the FritzConnection-Class. This method takes the ``servicename``, the ``actionname`` and optional arguments as parameter and may return a dictionary with the results (as described in the TR-064 protocoll description). A simple example is to reconnect for a new external ip:
 
     >>> from fritzconnection import FritzConnection
     >>> connection = FritzConnection()
-    >>> connection.call_action('WANIPConnection', 'ForceTermination')
+    >>> connection.call_action('WANIPConn', 'ForceTermination')
     # or more comfortable:
     >>> connection.reconnect()
 
 The latter wrapps the ``call_action``-method. For a more complete example look at the ``fritzhosts.py`` souce-code.
 
+
+
+
+Changed with version 0.8.4:
+---------------------------
+
+- bugfix in connection.reconnect(). This bug has been introduced with version 0.8. For versions 0.8 to 0.8.3 'reconnect' requires a password because of a changed service call.
+- documentation updated.
 
 Changed with version 0.8.3:
 ---------------------------
