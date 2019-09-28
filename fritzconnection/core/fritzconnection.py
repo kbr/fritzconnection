@@ -15,6 +15,10 @@ from requests.auth import HTTPDigestAuth
 
 from lxml import etree
 
+from .nodes import (
+    Description,
+)
+
 
 # FritzConnection defaults:
 FRITZ_IP_ADDRESS = '169.254.1.1'
@@ -61,6 +65,16 @@ class DeviceManager:
         self.descriptions = []
         self.services = {}
 
+    @property
+    def modelname(self):
+        """
+        Take the root-device of the first description and return the
+        according modelname. This is the name of the Fritz!Box itself.
+        Will raise an IndexError if the method is called before
+        descriptions are added.
+        """
+        return self.descriptions[0].device_model_name
+
     def add_description(self, source):
         """
         Adds description data about the devices and the according
@@ -78,6 +92,7 @@ class DeviceManager:
         """
         for description in self.descriptions:
             self.services.update(description.services)
+
 
 
 
