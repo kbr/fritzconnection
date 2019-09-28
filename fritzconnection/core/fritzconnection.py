@@ -51,7 +51,7 @@ class ServiceError(FritzConnectionException):
 
 
 # ---------------------------------------------------------
-# ServiceManager:
+# DeviceManager:
 # separate class for better testing
 # ---------------------------------------------------------
 
@@ -94,80 +94,54 @@ class DeviceManager:
             self.services.update(description.services)
 
 
+# ---------------------------------------------------------
+# Connector:
+# handles the soap based connection to the FritzBox
+# ---------------------------------------------------------
 
-
-
-class x_ServiceManager:
+class Soaper:
     """
-    Class for accessing all services given by Description objects.
-
-    Also the ServiceManager is an iterator for all Service objects.
-
-    A Fritz!Box may provide more than one description file. Every file
-    is represented by a Description object.
+    Class that handles the soap based communication with the FritzBox.
     """
 
-    def __init__(self):
-        self.descriptions = []
-        self.services = {}
+    header = {
+        'soapaction': '',
+        'content-type': 'text/xml',
+        'charset': 'utf-8'
+    }
+
+    envelope = """
+        <?xml version="1.0" encoding="utf-8"?>
+        <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                    xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">{body}
+        </s:Envelope>""".strip()
+
+    argument_template = "<s:{name}>{value}</s:{name}>"
+    method = 'post'
+
+    def __init__(self, address, port, user, password):
+        self.address = address
+        self.port = port
+        self.user = user
+        self.password = password
+
+    def get_body(self, service, action_name, arguments):
+        body = f'<s:Body>'\
+               f'<u:{action_name} xmlns:u="{service.serviceType}">{arguments}'\
+               f'</u:{action_name}></s:Body>'
+        return body.strip()
+
+    def execute(self, service, action_name, arguments):
+        header = self.header.copy()
+        header['soapaction'] = f'{service.serviceType}#{action_name}'
+        arguments = ''.join(self.argument_template.format(name=k, value=v)
+                            for k, v in arguments.items())
+        body = self.get_body(service, action_name, arguments)
+        envelope = self.envelope.format(body=body)
+        return envelope
 
 
-    @property
-    def modelname(self):
-        """
-        Take the root-device of the first description and return the
-        according modelname. This is the name of the Fritz!Box itself.
-        Will raise an IndexError if the method is called before
-        descriptions are added.
-        """
-        return self.descriptions[0].modelname
 
-    def add_xml_description(self, source):
-        """
-        Expects the xml-source of a description file.
-        'source' must be a file like object.
-        Creates a new Description instance with this source and adds the
-        instance to self.descriptions.
-        """
-        tree = etree.parse(source)
-        root = tree.getroot()
-        self.descriptions.append(Description(root))
-
-    def scan(self):
-        """
-        Scans all available services defined by the description files.
-        Must get called after all xml-descriptions are added.
-        """
-        for description in self.descriptions:
-            self.services.update(description.collect_services())
-
-    def get_service(self, name):
-        """
-        Returns a service instance with the given name or raises a
-        ServiceError.
-        """
-        name = self.normalize_name(name)
-        try:
-            return self.services[name]
-        except KeyError:
-            message = f'unknown Service "{name}"'
-            raise ServiceError(message)
-
-    @staticmethod
-    def normalize_name(name):
-        """
-        Servicenames are of the form '<name><digit>' like
-        'WLANConfiguration1'. For backward-compatibility also the forms
-        '<name>' without a digit and '<name>:<digit>' are allowed.
-        In case of a missing digit a '1' will get appended to the name,
-        in case of a colon the colon gets removed.
-        """
-        if ':' in name:
-            name, number = name.split(':', 1)
-            return name + number
-        if name[-1] not in string.digits:
-            return name + '1'
-        return name
 
 
 # ---------------------------------------------------------
@@ -176,8 +150,7 @@ class x_ServiceManager:
 
 class FritzConnection:
 
-    def __init__(self, address=None, port=None, user=None, password=None,
-                 fobj=None):
+    def __init__(self, address=None, port=None, user=None, password=None):
         """
         Initialisation of FritzConnection: reads all data from the box
         and also the api-description (the servicenames and according
@@ -194,10 +167,6 @@ class FritzConnection:
         the Environment gets checked for a FRITZ_PASSWORD setting. So
         password can be used without using configuration-files or even
         hardcoding.
-
-        For testing only: 'fobj' is a file like object with description
-        informations.
-
         """
         if address is None:
             address = FRITZ_IP_ADDRESS
@@ -212,27 +181,58 @@ class FritzConnection:
         self.port = port
         self.user = user
         self.password = password
-        self.service_manager = self._get_service_manager(fobj)
+        self.soaper = Soaper(address, port, user, password)
+        self.device_manager =  DeviceManager()
 
-    def _get_service_manager(self, fobj):
+        descriptions = [FRITZ_IGD_DESC_FILE]
+        if self.password:
+            descriptions.append(FRITZ_TR64_DESC_FILE)
+        for description in descriptions:
+            source = f'http://{self.address}:{self.port}/{description}'
+            try:
+                self.device_manager.add_description(source)
+            except OSError:
+                # resource not available: ignore this
+                pass
+        self.device_manager.scan()
+
+    def __repr__(self):
+        """Return a readable representation"""
+        return f'{self.device_manager.modelname} at ip {self.address}'
+
+    @staticmethod
+    def normalize_name(name):
+        if ':' in name:
+            name, number = name.split(':', 1)
+            name = name + number
+        elif name[-1] not in string.digits:
+            name = name + '1'
+        return name
+
+    # -------------------------------------------
+    # public api:
+    # -------------------------------------------
+
+    def call_action(self, service_name, action_name, *,
+                    arguments=None, **kwargs):
         """
-        Returns a ServiceManager instance with the Fritz!Box API
-        descriptions and access methods.
+        Executes the given action of the given service. Both parameters
+        are required. Arguments are optional and can be provided as a
+        dictionary given to 'arguments' or as single keyword parameters.
+        If the service_name does not end with a number (like 1), a 1
+        gets added by default. If the serve_name ends with a colon and a
+        number, the colon gets removed. So i.e. WLANConfiguration
+        expands to WLANConfiguration1 and WLANConfiguration:2 converts
+        to WLANConfiguration2.
+        Invalid service names or action names will raise a ServiceError
+        resp. an ActionError.
         """
-        service_manager = ServiceManager()
-        if not fobj:
-            sources = self._get_description_sources()
-        elif isinstance(fobj, list):
-            sources = fobj
-        else:
-            sources = [fobj]
-        for source in sources:
-            print(source)
-            service_manager.add_xml_description(source)
-        service_manager.scan()
-        return service_manager
-
-    def _get_description_sources(self):
-        pass
-
+        arguments = arguments if arguments else dict()
+        arguments.update(kwargs)
+        service_name = self.normalize_name(service_name)
+        try:
+            service = self.device_manager.services[service_name]
+        except KeyError:
+            raise ServiceError(f'unknown service: "{service_name}"')
+        return self.soaper.execute(service, action_name, arguments)
 

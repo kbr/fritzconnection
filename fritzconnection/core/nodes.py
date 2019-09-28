@@ -98,9 +98,15 @@ class Service(AbstractDescriptionNode):
     SCPDURL: /igdconnSCPD.xml
     """
 
+    scpd = None
+
     @property
     def name(self):
         return self.serviceId.split(':')[-1]
+
+    @property
+    def actions(self):
+        pass
 
 
 @sequencer('service')
