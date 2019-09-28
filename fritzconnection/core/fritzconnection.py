@@ -266,14 +266,13 @@ class FritzConnection:
         """
         Executes the given action of the given service. Both parameters
         are required. Arguments are optional and can be provided as a
-        dictionary given to 'arguments' or as single keyword parameters.
+        dictionary given to 'arguments' or as separate keyword parameters.
         If the service_name does not end with a number (like 1), a 1
-        gets added by default. If the serve_name ends with a colon and a
+        gets added by default. If the service_name ends with a colon and a
         number, the colon gets removed. So i.e. WLANConfiguration
         expands to WLANConfiguration1 and WLANConfiguration:2 converts
         to WLANConfiguration2.
-        Invalid service names or action names will raise a ServiceError
-        resp. an ActionError.
+        Invalid service names will raise a ServiceError and invalid action names will raise an ActionError.
         """
         arguments = arguments if arguments else dict()
         arguments.update(kwargs)
