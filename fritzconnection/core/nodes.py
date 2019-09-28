@@ -68,8 +68,8 @@ class AbstractDescriptionNode:
     @staticmethod
     def node_name(node):
         """
-        Strips the namespace from the node-tag and returns this as
-        node-name.
+        Strips the namespace from the node-tag and returns the remaining
+        part as node-name.
         """
         if isinstance(node.tag, str):
             return node.tag.split('}')[-1]
@@ -90,7 +90,7 @@ class SpecVersion(AbstractDescriptionNode):
 
 class Service(AbstractDescriptionNode):
     """
-    Storage for service attributes:
+    Storage for service attributes, like:
     serviceType: urn:schemas-upnp-org:service:WANIPConnection:1
     serviceId: urn:upnp-org:serviceId:WANIPConn1
     controlURL: /igdupnp/control/WANIPConn1
@@ -121,7 +121,7 @@ class Device(AbstractDescriptionNode):
     modelName: FRITZ!Box 7590
     modelNumber: avm
     modelURL: http://www.avm.de
-    UDN: uuid:75802409-bccb-40e7-8e6c-989BCB2B93B0
+    UDN: uuid:<a unique id here>
 
     Stores also Services in the serviceList and sub-devices in the
     deviceList. deviceList is a forward declaration not known by Python.
