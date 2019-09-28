@@ -172,11 +172,20 @@ class Soaper:
 
     def parse_response(self, response, service, action_name):
         """
-        Extracts all known parameters of the given action from the response and returns this as a dictionary with the out-parameter names as keys and the corresponding response as values.
+        Extracts all known parameters of the given action from the
+        response and returns this as a dictionary with the out-parameter
+        names as keys and the corresponding response as values.
         """
-        action = service
+        result = dict()
+        action = service.actions[action_name]
         root = etree.fromstring(response.content)
-        return root
+        for argument in action.arguments:
+            try:
+                value = root.find(f'.//{argument}').text
+            except AttributeError:
+                continue
+            result[argument] = value
+        return result
 
 
 
@@ -233,6 +242,7 @@ class FritzConnection:
                 # resource not available: ignore this
                 pass
         self.device_manager.scan()
+        self.device_manager.load_service_descriptions(address, port)
 
     def __repr__(self):
         """Return a readable representation"""

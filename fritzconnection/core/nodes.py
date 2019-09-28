@@ -106,7 +106,15 @@ class Service(AbstractDescriptionNode):
 
     @property
     def actions(self):
-        pass
+        return self.scpd.actions
+
+    def load_scpd(self, address, port):
+        """Loads the scpd data"""
+        protocol = 'http'
+        url = f'{protocol}://{address}:{port}{self.SCPDURL}'
+        tree = etree.parse(url)
+        root = tree.getroot()
+        self.scpd = Scpd(root)
 
 
 @sequencer('service')
