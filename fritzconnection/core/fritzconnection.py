@@ -108,6 +108,15 @@ class DeviceManager:
 # handles the soap based connection to the FritzBox
 # ---------------------------------------------------------
 
+def boolean_convert(value):
+    """Converts a string like '1' or '0' to a boolean value"""
+    try:
+        return bool(int(value))
+    except ValueError:
+        # should not happen: leave value as is
+        return value
+
+
 class Soaper:
     """
     Class that handles the soap based communication with the FritzBox.
@@ -135,6 +144,12 @@ class Soaper:
     argument_template = "<s:{name}>{value}</s:{name}>"
     method = 'post'
 
+    conversion_table = {
+        'boolean': boolean_convert,
+        'ui1': int,
+        'ui2': int,
+        'ui4': int,
+    }
 
     def __init__(self, address, port, user, password):
         self.address = address
@@ -179,16 +194,21 @@ class Soaper:
         result = dict()
         action = service.actions[action_name]
         root = etree.fromstring(response.content)
-        for argument in action.arguments:
+        for argument_name in action.arguments:
             try:
-                value = root.find(f'.//{argument}').text
+                value = root.find(f'.//{argument_name}').text
             except AttributeError:
                 continue
-            result[argument] = value
+            state_variable_name = \
+                action.arguments[argument_name].relatedStateVariable
+            state_variable = service.state_variables[state_variable_name]
+            data_type = state_variable.dataType
+            try:
+                value = self.conversion_table[data_type](value)
+            except KeyError:
+                pass
+            result[argument_name] = value
         return result
-
-
-
 
 
 # ---------------------------------------------------------

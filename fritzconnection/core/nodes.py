@@ -1,5 +1,10 @@
 """
 Nodes for desc- and scpd-informations.
+
+This module is part of the FritzConnection package.
+https://github.com/kbr/fritzconnection
+License: MIT - USAGE IS FREE OF CHARGE AND ENTIRELY AT OWN RISK!
+Author: Klaus Bremer
 """
 
 from lxml import etree
@@ -60,7 +65,7 @@ class AbstractDescriptionNode:
         else:
             try:
                 setattr(self, name, node.text.strip())
-            except TypeError:
+            except (AttributeError, TypeError):
                 # can happen on none-text nodes like comments
                 # ignore this
                 pass
@@ -108,6 +113,10 @@ class Service(AbstractDescriptionNode):
     def actions(self):
         return self.scpd.actions
 
+    @property
+    def state_variables(self):
+        return self.scpd.state_variables
+
     def load_scpd(self, address, port):
         """Loads the scpd data"""
         protocol = 'http'
@@ -138,7 +147,9 @@ class Device(AbstractDescriptionNode):
     UDN: uuid:<a unique id here>
 
     Stores also Services in the serviceList and sub-devices in the
-    deviceList. deviceList is a forward declaration not known by Python.
+    deviceList. 'deviceList' is None because of a circular dependency
+    and set later at import time (a deviceList stores devices and
+    a device has a deviceList for storing subdevices).
     """
 
     sequences = {'serviceList': ServiceList, 'deviceList': None}
@@ -180,7 +191,7 @@ class DeviceList(AbstractDescriptionNode):
 
     sequences = {'device': Device}
 
-# backward declaration/injection of the deviceList
+# backward declaration/injection of the DeviceList
 Device.sequences['deviceList'] = DeviceList
 
 
@@ -320,10 +331,17 @@ class Scpd(AbstractDescriptionNode):
     namespace, specVersion and an actionList with all available Actions.
     The Actions can also be accessed by name by the 'actions' attribute
     (which is a dictionary).
+    This class also hold a dictionary of StateVariable instances with
+    the names of the StateVariables as keys.
     """
 
-    sequences = {'specVersion': SpecVersion, 'actionList': ActionList}
+    sequences = {
+        'specVersion': SpecVersion,
+        'actionList': ActionList,
+        'serviceStateTable': ServiceStateTable,
+    }
     actions = {}
+    state_variables = {}
 
     def __init__(self, root):
         self.namespace = etree.QName(root.tag).namespace
@@ -332,6 +350,8 @@ class Scpd(AbstractDescriptionNode):
             self.actions = {
                 action.name: action for action in self.actionList[0]
             }
+        if self.serviceStateTable:
+            self.state_variables = self.serviceStateTable[0].state_variables
 
     @property
     def spec_version(self):

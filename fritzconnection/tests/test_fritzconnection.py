@@ -3,6 +3,7 @@ import pytest
 
 from ..core.fritzconnection import (
     FritzConnection,
+    boolean_convert,
 )
 
 
@@ -20,3 +21,16 @@ from ..core.fritzconnection import (
 def test_normalize_name(name, expected):
     result = FritzConnection.normalize_name(name)
     assert result == expected
+
+@pytest.mark.parametrize(
+    "value, expected_result", [
+        ('0', False),
+        ('1', True),
+        ('2', True),
+        ('x', 'x'),
+        ('3.1', '3.1'),
+    ]
+)
+def test_boolean_convert(value, expected_result):
+    result = boolean_convert(value)
+    assert result == expected_result

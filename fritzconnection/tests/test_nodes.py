@@ -487,3 +487,25 @@ def test_scpd_find_action(name, scpd):
     # now check for same names:
     assert action.name == name
 
+def test_scpd_stateTable_len(scpd):
+    """test to find the ServiceStateTable and the number of entries."""
+    table = scpd.serviceStateTable[0]
+    assert len(table) == 30
+
+@pytest.mark.parametrize(
+    "stateVariable_name, dataType", [
+        ('PossibleConnectionTypes', 'string'),
+        ('Uptime', 'ui4'),
+        ('ExternalPort', 'ui2'),
+        ('PrefixLength', 'ui1'),
+        ('RSIPAvailable', 'boolean'),
+    ]
+)
+def test_scpd_find_datatypes(stateVariable_name, dataType, scpd):
+    """
+    test to find a stateVariable by name and access the according
+    dataType.
+    """
+    state_variable = scpd.state_variables[stateVariable_name]
+    assert state_variable.name == stateVariable_name
+    assert state_variable.dataType == dataType
