@@ -7,6 +7,7 @@ requires Python >= 3.6
 __version__ = '1.0_alpha_1'
 
 
+import datetime
 import os
 import re
 import string
@@ -108,6 +109,14 @@ class DeviceManager:
 # handles the soap based connection to the FritzBox
 # ---------------------------------------------------------
 
+def datetime_convert(value):
+    """Converts string in ISO 8601 format to datetime-object."""
+    try:
+        return datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S')
+    except ValueError:
+        return value
+
+
 def boolean_convert(value):
     """Converts a string like '1' or '0' to a boolean value"""
     try:
@@ -115,6 +124,11 @@ def boolean_convert(value):
     except ValueError:
         # should not happen: leave value as is
         return value
+
+
+def uuid_convert(value):
+    """Strips the leading 'uuid:' part from the string."""
+    return value.split(':')[-1]
 
 
 class Soaper:
@@ -145,7 +159,10 @@ class Soaper:
     method = 'post'
 
     conversion_table = {
+        'datetime': datetime_convert,
         'boolean': boolean_convert,
+        'uuid': uuid_convert,
+        'i4': int,
         'ui1': int,
         'ui2': int,
         'ui4': int,
@@ -202,7 +219,7 @@ class Soaper:
             state_variable_name = \
                 action.arguments[argument_name].relatedStateVariable
             state_variable = service.state_variables[state_variable_name]
-            data_type = state_variable.dataType
+            data_type = state_variable.dataType.lower()
             try:
                 value = self.conversion_table[data_type](value)
             except KeyError:
@@ -249,7 +266,7 @@ class FritzConnection:
         self.user = user
         self.password = password
         self.soaper = Soaper(address, port, user, password)
-        self.device_manager =  DeviceManager()
+        self.device_manager = DeviceManager()
 
         descriptions = [FRITZ_IGD_DESC_FILE]
         if self.password:
@@ -286,16 +303,20 @@ class FritzConnection:
         """
         Executes the given action of the given service. Both parameters
         are required. Arguments are optional and can be provided as a
-        dictionary given to 'arguments' or as separate keyword parameters.
+        dictionary given to 'arguments' or as separate keyword
+        parameters. If 'arguments' if given additional
+        keyword-parameters as further arguments are ignored.
         If the service_name does not end with a number (like 1), a 1
         gets added by default. If the service_name ends with a colon and a
         number, the colon gets removed. So i.e. WLANConfiguration
         expands to WLANConfiguration1 and WLANConfiguration:2 converts
         to WLANConfiguration2.
-        Invalid service names will raise a ServiceError and invalid action names will raise an ActionError.
+        Invalid service names will raise a ServiceError and invalid
+        action names will raise an ActionError.
         """
         arguments = arguments if arguments else dict()
-        arguments.update(kwargs)
+        if not arguments:
+            arguments.update(kwargs)
         service_name = self.normalize_name(service_name)
         try:
             service = self.device_manager.services[service_name]
