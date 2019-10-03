@@ -207,9 +207,15 @@ class Soaper:
         Extracts all known parameters of the given action from the
         response and returns this as a dictionary with the out-parameter
         names as keys and the corresponding response as values.
+        Will raise an ActionError on unknown action_name.
         """
         result = dict()
-        action = service.actions[action_name]
+        try:
+            action = service.actions[action_name]
+        except KeyError:
+            raise ActionError(
+                f'unknown action for service "{service.name}": "{action_name}"'
+            )
         root = etree.fromstring(response.content)
         for argument_name in action.arguments:
             try:
@@ -323,4 +329,10 @@ class FritzConnection:
         except KeyError:
             raise ServiceError(f'unknown service: "{service_name}"')
         return self.soaper.execute(service, action_name, arguments)
+
+    def reconnect(self):
+        """
+        Terminate the connection and reconnects with a new ip.
+        """
+        self.call_action('WANIPConn1', 'ForceTermination')
 
