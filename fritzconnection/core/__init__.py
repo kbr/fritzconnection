@@ -2,7 +2,7 @@
 
 from .fritzconnection import FritzConnection
 from .exceptions import (
-    FritzConnectionException
+    FritzConnectionException,
     FritzActionError,
     FritzArgumentError,
     FritzActionFailedError,

@@ -4,7 +4,7 @@ __version__ = '1.0_alpha_1'
 
 from .core import (
     FritzConnection,
-    FritzConnectionException
+    FritzConnectionException,
     FritzActionError,
     FritzArgumentError,
     FritzActionFailedError,

@@ -4,9 +4,7 @@ from pathlib import Path
 import pytest
 from lxml import etree
 
-from ..core.devices import (
-    DeviceManager,
-)
+from ..core.devices import DeviceManager
 
 
 IGDDESC_FILE = Path(__file__).parent/'xml'/'igddesc.xml'

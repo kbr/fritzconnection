@@ -1,6 +1,12 @@
 """
-fritzconnection 1.0
-requires Python >= 3.6
+fritzconnection.py
+
+Module to communicate with the AVM Fritz!Box.
+
+This module is part of the FritzConnection package.
+https://github.com/kbr/fritzconnection
+License: MIT - tldr: USAGE IS FREE AND ENTIRELY AT OWN RISK!
+Author: Klaus Bremer
 """
 
 
