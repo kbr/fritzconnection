@@ -5,6 +5,40 @@ This module is part of the FritzConnection package.
 https://github.com/kbr/fritzconnection
 License: MIT - tldr: USAGE IS FREE AND ENTIRELY AT OWN RISK!
 Author: Klaus Bremer
+
+
+Exception Inheritance:
+----------------------
+
+FritzConnectionException
+                |
+                |--> ActionError --> FritzActionError
+                |--> ServiceError --> FritzServiceError
+                |
+                |--> FritzArgumentError
+                |       |
+                |       |--> FritzArgumentValueError
+                |               |
+                |               |--> FritzArgumentStringToShortError
+                |               |--> FritzArgumentStringToLongError
+                |               |--> FritzArgumentCharacterError
+                |
+                |--> FritzInternalError
+                |       |
+                |       |--> FritzActionFailedError
+                |       |--> FritzOutOfMemoryError
+                |
+                |--> FritzSecurityError
+                |
+                |-->|--> FritzLookUpError
+                |   |
+KeyError -------+-->|
+                |
+                |
+                |-->|--> FritzArrayIndexError
+                    |
+IndexError -------->|
+
 """
 
 
@@ -12,11 +46,25 @@ class FritzConnectionException(Exception):
     """Base Exception for communication errors with the Fritz!Box"""
 
 
-class FritzServiceError(FritzConnectionException):
+class ActionError(FritzConnectionException):
+    """
+    Exception raised by calling nonexisting actions.
+    Legathy Exception. Use FritzActionError instead.
+    """
+
+
+class ServiceError(FritzConnectionException):
+    """
+    Exception raised by calling nonexisting services.
+    Legathy Exception. Use FritzServiceError instead.
+    """
+
+
+class FritzServiceError(ServiceError):
     """Exception raised by calling nonexisting services."""
 
 
-class FritzActionError(FritzConnectionException):
+class FritzActionError(ActionError):
     """Exception raised by calling nonexisting actions."""
 
 
@@ -74,7 +122,7 @@ class FritzSecurityError(FritzConnectionException):
     """Authorization error or wrong security context."""
 
 
-class FritzLookupError(FritzConnectionException, KeyError):
+class FritzLookUpError(FritzConnectionException, KeyError):
     """
     Lookup for id or entry in existing internal array failed.
     Inherits from KeyError.
@@ -90,20 +138,7 @@ class FritzArrayIndexError(FritzConnectionException, IndexError):
     """
 
 
-class ActionError(FritzActionError):
-    """
-    Exception raised by calling nonexisting actions.
-    Legathy Exception. Use FritzActionError instead.
-    """
-
-
-class ServiceError(FritzServiceError):
-    """
-    Exception raised by calling nonexisting services.
-    Legathy Exception. Use FritzServiceError instead.
-    """
-
-
+# Collection of error codes and corresponding exceptions:
 FRITZ_ERRORS = {
     '401': FritzActionError,
     '402': FritzArgumentError,
@@ -112,10 +147,9 @@ FRITZ_ERRORS = {
     '603': FritzOutOfMemoryError,
     '606': FritzSecurityError,
     '713': FritzArrayIndexError,
-    '714': FritzLookupError,
+    '714': FritzLookUpError,
     '801': FritzArgumentStringToShortError,
     '802': FritzArgumentStringToLongError,
     '803': FritzArgumentCharacterError,
     '820': FritzInternalError,
 }
-

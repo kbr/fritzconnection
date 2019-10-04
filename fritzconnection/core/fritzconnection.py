@@ -17,7 +17,10 @@ from requests.auth import HTTPDigestAuth
 
 from lxml import etree
 
-from .exceptions import FRITZ_ERRORS
+from .exceptions import (
+    FritzConnectionException,
+    FRITZ_ERRORS,
+)
 
 from .nodes import (
     Description,
@@ -127,10 +130,10 @@ def raise_fritzconnection_error(response):
             error_code = text
         parts.append(f'{tag}: {text}')
     message = '\n'.join(parts)
-    try:
-        raise FRITZ_ERRORS[error_code](message)
-    except KeyError:
-        raise FritzConnectionException(message)
+    # try except KeyError not possible,
+    # because one raised Exception may inherit from KeyError.
+    exception = FRITZ_ERRORS.get(error_code, FritzConnectionException)
+    raise exception(message)
 
 
 class Soaper:
