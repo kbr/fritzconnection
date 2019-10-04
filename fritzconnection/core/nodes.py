@@ -256,7 +256,9 @@ class StateVariable(AbstractDescriptionNode):
     """
     collects 'name', 'dataType' and 'defaultValue' or 'allowedValueList'
     of action parameter data.
-    A StateVariable instance also known its tag_attributes, which is a dictionary: i.e. given the tag <stateVariable sendEvents="no"> then the value "no" can accessed by:
+    A StateVariable instance also known its tag_attributes, which is a
+    dictionary: i.e. given the tag <stateVariable sendEvents="no"> then
+    the value "no" can accessed by:
 
     >>> sv = StateVariable(root)
     >>> sv.tag_attributes['sendEvents']
