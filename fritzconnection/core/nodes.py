@@ -3,7 +3,7 @@ Nodes for desc- and scpd-informations.
 
 This module is part of the FritzConnection package.
 https://github.com/kbr/fritzconnection
-License: MIT - USAGE IS FREE OF CHARGE AND ENTIRELY AT OWN RISK!
+License: MIT - tldr: USAGE IS FREE AND ENTIRELY AT OWN RISK!
 Author: Klaus Bremer
 """
 
