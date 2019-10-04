@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from lxml import etree
 
-from ..core.fritzconnection import (
+from ..core.devices import (
     DeviceManager,
 )
 

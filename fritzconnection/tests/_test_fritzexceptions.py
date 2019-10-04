@@ -19,7 +19,7 @@ from ..core.exceptions import (
     FritzInternalError,
 )
 
-from ..core.fritzconnection import raise_fritzconnection_error
+from ..core.soaper import raise_fritzconnection_error
 
 
 content_template = """<?xml version="1.0"?>\n<s:Envelope

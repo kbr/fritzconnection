@@ -3,9 +3,8 @@
 
 from .core.fritzconnection import (
     FritzConnection,
-    get_version,
 )
 
+__version__ = '1.0_alpha_1'
 
-# same as in fritzconnection core module:
-package_version = get_version()
+package_version = __version__
