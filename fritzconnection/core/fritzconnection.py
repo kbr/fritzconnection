@@ -48,23 +48,20 @@ class FritzConnection:
         if password is None:
             password = os.getenv('FRITZ_PASSWORD', '')
 
-        self.address = address
-        self.port = port
-        self.user = user
-        self.password = password
         self.soaper = Soaper(address, port, user, password)
         self.device_manager = DeviceManager()
 
         descriptions = [FRITZ_IGD_DESC_FILE]
-        if self.password:
+        if password:
             descriptions.append(FRITZ_TR64_DESC_FILE)
         for description in descriptions:
-            source = f'http://{self.address}:{self.port}/{description}'
+            source = f'http://{address}:{port}/{description}'
             try:
                 self.device_manager.add_description(source)
             except OSError:
                 # resource not available: ignore this
                 pass
+
         self.device_manager.scan()
         self.device_manager.load_service_descriptions(address, port)
 

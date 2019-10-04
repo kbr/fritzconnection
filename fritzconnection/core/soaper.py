@@ -4,7 +4,6 @@ import re
 
 import requests
 from requests.auth import HTTPDigestAuth
-
 from lxml import etree
 
 from .exceptions import (
@@ -12,10 +11,6 @@ from .exceptions import (
     FRITZ_ERRORS,
 )
 
-# ---------------------------------------------------------
-# Soaper:
-# handles the soap based connection to the FritzBox
-# ---------------------------------------------------------
 
 def datetime_convert(value):
     """Converts string in ISO 8601 format to datetime-object."""
@@ -55,7 +50,7 @@ def raise_fritzconnection_error(response):
             error_code = text
         parts.append(f'{tag}: {text}')
     message = '\n'.join(parts)
-    # try except KeyError not possible,
+    # try except:KeyError not possible,
     # because one raised Exception may inherit from KeyError.
     exception = FRITZ_ERRORS.get(error_code, FritzConnectionException)
     raise exception(message)
@@ -77,13 +72,15 @@ class Soaper:
         <?xml version="1.0" encoding="utf-8"?>
         <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
                     xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">{body}
-        </s:Envelope>""")
+        </s:Envelope>
+        """)
 
     body_template = re.sub(r'\s +', '', """
         <s:Body>
         <u:{action_name} xmlns:u="{service_type}">{arguments}
         </u:{action_name}>
-        </s:Body>""")
+        </s:Body>
+        """)
 
     argument_template = "<s:{name}>{value}</s:{name}>"
     method = 'post'
@@ -159,4 +156,3 @@ class Soaper:
                 pass
             result[argument_name] = value
         return result
-
