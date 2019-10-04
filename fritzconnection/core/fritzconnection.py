@@ -43,13 +43,112 @@ class FritzConnectionException(Exception):
     """Base Exception for communication errors with the Fritz!Box"""
 
 
-class ActionError(FritzConnectionException):
+class FritzServiceError(FritzConnectionException):
+    """Exception raised by calling nonexisting services."""
+
+
+class FritzActionError(FritzConnectionException):
     """Exception raised by calling nonexisting actions."""
 
 
-class ServiceError(FritzConnectionException):
-    """Exception raised by calling nonexisting services."""
+class FritzArgumentError(FritzConnectionException):
+    """Exception raised by invalid arguments."""
 
+
+class FritzArgumentValueError(FritzArgumentError):
+    """
+    Exception raised by arguments with invalid values.
+    Inherits from the more generic FritzArgumentError.
+    """
+
+
+class FritzArgumentStringToShortError(FritzArgumentValueError):
+    """
+    Exception raised by arguments with invalid string length.
+    Inherits from the more generic FritzArgumentValueError.
+    """
+
+
+class FritzArgumentStringToLongError(FritzArgumentValueError):
+    """
+    Exception raised by arguments with invalid string length.
+    Inherits from the more generic FritzArgumentValueError.
+    """
+
+
+class FritzArgumentCharacterError(FritzArgumentValueError):
+    """
+    Exception raised by arguments with invalid characters.
+    Inherits from the more generic FritzArgumentValueError.
+    """
+
+
+class FritzInternalError(FritzConnectionException):
+    """Exception raised by panic in the box."""
+
+
+class FritzActionFailedError(FritzInternalError):
+    """
+    Exception raised by box unable to run the action.
+    Inherits from the more generic FritzInternalError.
+    """
+
+
+class FritzOutOfMemoryError(FritzInternalError):
+    """
+    Exception raised by memory shortage of the box.
+    Inherits from the more generic FritzInternalError.
+    """
+
+
+class FritzSecurityError(FritzConnectionException):
+    """Authorization error or wrong security context."""
+
+
+class FritzLookupError(FritzConnectionException, KeyError):
+    """
+    Lookup for id or entry in existing internal array failed.
+    Inherits from KeyError.
+    So KeyError can also be used for exception handling.
+    """
+
+
+class FritzArrayIndexError(FritzConnectionException, IndexError):
+    """
+    Addressing an entry in an internal array by index failed.
+    Inherits from IndexError.
+    So IndexError can also be used for exception handling.
+    """
+
+
+class ActionError(FritzActionError):
+    """
+    Exception raised by calling nonexisting actions.
+    Legathy Exception. Use FritzActionError instead.
+    """
+
+
+class ServiceError(FritzServiceError):
+    """
+    Exception raised by calling nonexisting services.
+    Legathy Exception. Use FritzServiceError instead.
+    """
+
+
+FRITZ_ERRORS = {
+    '401': FritzActionError,
+    '402': FritzArgumentError,
+    '501': FritzActionFailedError,
+    '600': FritzArgumentValueError,
+    '603': FritzOutOfMemoryError,
+    '606': FritzSecurityError,
+    '713': FritzArrayIndexError,
+    '714': FritzLookupError,
+    '801': FritzArgumentStringToShortError,
+    '802': FritzArgumentStringToLongError,
+    '803': FritzArgumentCharacterError,
+    '820': FritzInternalError,
+}
 
 
 # ---------------------------------------------------------
@@ -105,7 +204,7 @@ class DeviceManager:
 
 
 # ---------------------------------------------------------
-# Connector:
+# Soaper:
 # handles the soap based connection to the FritzBox
 # ---------------------------------------------------------
 
@@ -131,9 +230,34 @@ def uuid_convert(value):
     return value.split(':')[-1]
 
 
+def raise_fritzconnection_error(response, action_name):
+    """
+    Handles all responses with a status codes other than 200.
+    Will raise a FritzConnectionException or a subclass.
+    """
+    parts = []
+    error_code = None
+    root = etree.fromstring(response.content)
+    detail = root.find('.//detail')
+    for node in detail.iterdescendants():
+        tag = node.tag.split('}')[-1]
+        text = node.text.strip()
+        if tag == 'errorCode':
+            error_code = text
+        parts.append(f'{tag}: {text}')
+    if error_code == '401':
+        parts.append(f'Action Name: {action_name}')
+    message = '\n'.join(parts)
+    try:
+        raise FRITZ_ERRORS[error_code](message)
+    except KeyError:
+        raise FritzConnectionException(message)
+
+
 class Soaper:
     """
-    Class that handles the soap based communication with the FritzBox.
+    Class making the soap on its own to communicate with the FritzBox.
+    Instead of ham, spam and eggs, it's hopelessly addicted to soap.
     """
 
     headers = {
@@ -152,8 +276,7 @@ class Soaper:
         <s:Body>
         <u:{action_name} xmlns:u="{service_type}">{arguments}
         </u:{action_name}>
-        </s:Body>
-        """)
+        </s:Body>""")
 
     argument_template = "<s:{name}>{value}</s:{name}>"
     method = 'post'
@@ -200,6 +323,8 @@ class Soaper:
         if self.password:
             auth = HTTPDigestAuth(self.user, self.password)
         response = requests.post(url, data=envelope, headers=headers, auth=auth)
+        if response.status_code != 200:
+            raise_fritzconnection_error(response, action_name)
         return self.parse_response(response, service, action_name)
 
     def parse_response(self, response, service, action_name):
@@ -210,12 +335,7 @@ class Soaper:
         Will raise an ActionError on unknown action_name.
         """
         result = dict()
-        try:
-            action = service.actions[action_name]
-        except KeyError:
-            raise ActionError(
-                f'unknown action for service "{service.name}": "{action_name}"'
-            )
+        action = service.actions[action_name]
         root = etree.fromstring(response.content)
         for argument_name in action.arguments:
             try:
@@ -310,7 +430,7 @@ class FritzConnection:
         Executes the given action of the given service. Both parameters
         are required. Arguments are optional and can be provided as a
         dictionary given to 'arguments' or as separate keyword
-        parameters. If 'arguments' if given additional
+        parameters. If 'arguments' is given additional
         keyword-parameters as further arguments are ignored.
         If the service_name does not end with a number (like 1), a 1
         gets added by default. If the service_name ends with a colon and a
@@ -327,7 +447,7 @@ class FritzConnection:
         try:
             service = self.device_manager.services[service_name]
         except KeyError:
-            raise ServiceError(f'unknown service: "{service_name}"')
+            raise FritzServiceError(f'unknown service: "{service_name}"')
         return self.soaper.execute(service, action_name, arguments)
 
     def reconnect(self):
@@ -335,4 +455,3 @@ class FritzConnection:
         Terminate the connection and reconnects with a new ip.
         """
         self.call_action('WANIPConn1', 'ForceTermination')
-
