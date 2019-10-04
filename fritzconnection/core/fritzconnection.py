@@ -75,6 +75,10 @@ class FritzConnection:
         """Return a readable representation"""
         return f'{self.device_manager.modelname} at ip {self.soaper.address}'
 
+    @property
+    def services(self):
+        return self.device_manager.services
+
     @staticmethod
     def normalize_name(name):
         if ':' in name:

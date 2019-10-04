@@ -42,15 +42,28 @@ class FritzInspection:
     def view_servicenames(self):
         """Send all known service names to stdout."""
         print('Servicenames:')
-        for service_name in self.fc.device_manager.services:
-            print('{:20}{}'.format('', name))
+        for service_name in self.fc.services:
+            print('{:20}{}'.format('', service_name))
 
-    def view_actionnames(self, servicename):
+    def view_actionnames(self, service_name, view_arguments=False):
         """Send all action names of the given service to stdout."""
-        print('\n{:<20}{}'.format('Servicename:', servicename))
+        print('\n{:<20}{}'.format('Servicename:', service_name))
         print('Actionnames:')
-        for name in self.get_actionnames(servicename):
-            print('{:20}{}'.format('', name))
+        try:
+            service = self.fc.services[service_name]
+        except KeyError as err:
+            print(f'Error: Invalid Servicename {err}')
+        else:
+            for action_name in service.actions:
+                print('{:20}{}'.format('', action_name))
+                if view_arguments:
+                    action = service.actions[action_name]
+                    for argument in sorted(action.arguments.keys()):
+                        print('{:24}- {}'.format('', argument))
+                    print()
+
+
+
 
 
 def get_cli_arguments():
@@ -110,8 +123,8 @@ def main():
         inspector.view_servicenames()
     elif args.serviceactions:
         inspector.view_actionnames(args.serviceactions[0])
-#     elif args.servicearguments:
-#         inspector.view_servicearguments(args.servicearguments[0])
+    elif args.servicearguments:
+        inspector.view_actionnames(args.servicearguments[0], view_arguments=True)
 #     elif args.actionarguments:
 #         inspector.view_actionarguments(args.actionarguments[0],
 #                                        args.actionarguments[1])
