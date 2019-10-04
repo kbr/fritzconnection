@@ -111,7 +111,7 @@ def uuid_convert(value):
     return value.split(':')[-1]
 
 
-def raise_fritzconnection_error(response, action_name):
+def raise_fritzconnection_error(response):
     """
     Handles all responses with a status codes other than 200.
     Will raise a FritzConnectionException or a subclass.
@@ -126,8 +126,6 @@ def raise_fritzconnection_error(response, action_name):
         if tag == 'errorCode':
             error_code = text
         parts.append(f'{tag}: {text}')
-    if error_code == '401':
-        parts.append(f'Action Name: {action_name}')
     message = '\n'.join(parts)
     try:
         raise FRITZ_ERRORS[error_code](message)
@@ -205,7 +203,7 @@ class Soaper:
             auth = HTTPDigestAuth(self.user, self.password)
         response = requests.post(url, data=envelope, headers=headers, auth=auth)
         if response.status_code != 200:
-            raise_fritzconnection_error(response, action_name)
+            raise_fritzconnection_error(response)
         return self.parse_response(response, service, action_name)
 
     def parse_response(self, response, service, action_name):
