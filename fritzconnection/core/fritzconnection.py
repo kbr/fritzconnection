@@ -5,7 +5,7 @@ Module to communicate with the AVM Fritz!Box.
 
 This module is part of the FritzConnection package.
 https://github.com/kbr/fritzconnection
-License: MIT - tldr: USAGE IS FREE AND ENTIRELY AT OWN RISK!
+License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
 
@@ -73,7 +73,7 @@ class FritzConnection:
 
     def __repr__(self):
         """Return a readable representation"""
-        return f'{self.device_manager.modelname} at ip {self.address}'
+        return f'{self.device_manager.modelname} at ip {self.soaper.address}'
 
     @staticmethod
     def normalize_name(name):

@@ -1,3 +1,11 @@
+"""
+soaper.py
+
+This module is part of the FritzConnection package.
+https://github.com/kbr/fritzconnection
+License: MIT (https://opensource.org/licenses/MIT)
+Author: Klaus Bremer
+"""
 
 import datetime
 import re
@@ -51,7 +59,7 @@ def raise_fritzconnection_error(response):
         parts.append(f'{tag}: {text}')
     message = '\n'.join(parts)
     # try except:KeyError not possible,
-    # because one raised Exception may inherit from KeyError.
+    # because one of the raised Exceptions may inherit from KeyError.
     exception = FRITZ_ERRORS.get(error_code, FritzConnectionException)
     raise exception(message)
 

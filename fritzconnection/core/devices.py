@@ -1,3 +1,12 @@
+"""
+devices.py
+
+This module is part of the FritzConnection package.
+https://github.com/kbr/fritzconnection
+License: MIT (https://opensource.org/licenses/MIT)
+Author: Klaus Bremer
+"""
+
 
 from lxml import etree
 from .nodes import Description

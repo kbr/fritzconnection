@@ -1,6 +1,12 @@
 # import shortcuts
 
-from .fritzconnection import FritzConnection
+from .fritzconnection import (
+    FritzConnection,
+    FRITZ_IP_ADDRESS,
+    FRITZ_TCP_PORT,
+    FRITZ_USERNAME,
+)
+
 from .exceptions import (
     FritzConnectionException,
     FritzActionError,

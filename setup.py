@@ -33,13 +33,13 @@ setup(
         'requests>=2.22.0',
     ],
     entry_points={'console_scripts': [
-        'fritzconnection = fritzconnection.fritzconnection:main',
-        'fritzhosts = fritzconnection.fritzhosts:main',
-        'fritzwlan = fritzconnection.fritzwlan:main',
-        'fritzmonitor = fritzconnection.fritzmonitor:main',
-        'fritzstatus = fritzconnection.fritzstatus:main',
-        'fritzphonebook = fritzconnection.fritzphonebook:main',
-        'fritzcallforwarding = fritzconnection.fritzcallforwarding:main',
-        'fritzcall = fritzconnection.fritzcall:main',
+        'fritzconnection = fritzconnection.cli.fritzinspection:main',
+#         'fritzhosts = fritzconnection.fritzhosts:main',
+#         'fritzwlan = fritzconnection.fritzwlan:main',
+#         'fritzmonitor = fritzconnection.fritzmonitor:main',
+#         'fritzstatus = fritzconnection.fritzstatus:main',
+#         'fritzphonebook = fritzconnection.fritzphonebook:main',
+#         'fritzcallforwarding = fritzconnection.fritzcallforwarding:main',
+#         'fritzcall = fritzconnection.fritzcall:main',
     ]}
 )

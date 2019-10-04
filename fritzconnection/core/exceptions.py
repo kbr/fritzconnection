@@ -3,7 +3,7 @@ fritzconnection specific exceptions.
 
 This module is part of the FritzConnection package.
 https://github.com/kbr/fritzconnection
-License: MIT - tldr: USAGE IS FREE AND ENTIRELY AT OWN RISK!
+License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 
 

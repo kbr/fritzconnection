@@ -1,6 +1,6 @@
 # import shortcuts
 
-__version__ = '1.0_alpha_1'
+__version__ = '1.0a1'
 
 from .core import (
     FritzConnection,
