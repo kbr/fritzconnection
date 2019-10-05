@@ -14,6 +14,7 @@ import os
 import string
 
 from .devices import DeviceManager
+from .exceptions import FritzServiceError
 from .soaper import Soaper
 
 

@@ -11,7 +11,10 @@ Author: Klaus Bremer
 
 import time
 
-from ..core.fritzconnection import FritzConnection
+from ..core import (
+    FritzConnection,
+    FritzServiceError,
+)
 from .fritztools import format_num, format_rate
 
 
@@ -25,8 +28,13 @@ class FritzStatus(object):
                        user=None, password=None):
         super().__init__()
         self.fc = fc if fc else FritzConnection(address, port, user, password)
-        self.last_bytes_sent = self.bytes_sent
-        self.last_bytes_received = self.bytes_received
+        # depending on the model (i.e. a repeater) some services
+        # may not be available. Don't let FritzStatus crash at init.
+        try:
+            self.last_bytes_sent = self.bytes_sent
+            self.last_bytes_received = self.bytes_received
+        except FritzServiceError:
+            pass
         self.last_traffic_call = time.time()
 
     @property

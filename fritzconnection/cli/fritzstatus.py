@@ -17,6 +17,8 @@ from ..lib.fritzstatus import FritzStatus
 from ..core import (
     FRITZ_IP_ADDRESS,
     FRITZ_TCP_PORT,
+    FritzServiceError,
+    FritzActionError,
 )
 
 
@@ -25,16 +27,20 @@ def print_status(address=None, port=None, user=None, password=None):
     fs = FritzStatus(address=address, port=port, user=user, password=password)
     print(f'FritzStatus for {fs.fc}:\n')
     status_informations = [
-        ('is linked', fs.is_linked),
-        ('is connected', fs.is_connected),
-        ('external ip (v4)', fs.external_ip),
-        ('external ip (v6)', fs.external_ipv6),
-        ('uptime', fs.str_uptime),
-        ('bytes send', fs.bytes_sent),
-        ('bytes received', fs.bytes_received),
-        ('max. bit rate', fs.str_max_bit_rate),
+        ('is linked', 'is_linked'),
+        ('is connected', 'is_connected'),
+        ('external ip (v4)', 'external_ip'),
+        ('external ip (v6)', 'external_ipv6'),
+        ('uptime', 'str_uptime'),
+        ('bytes send', 'bytes_sent'),
+        ('bytes received', 'bytes_received'),
+        ('max. bit rate', 'str_max_bit_rate'),
     ]
-    for status, information in status_informations:
+    for status, attribute in status_informations:
+        try:
+            information = getattr(fs, attribute)
+        except (FritzServiceError, FritzActionError):
+            information = f'unsupported attribute "{attribute}"'
         print(f'    {status:20}: {information}')
 
 
