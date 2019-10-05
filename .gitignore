@@ -6,3 +6,4 @@ build/*
 dist/*
 fritzconnection.egg-info/*
 *.ipynb*
+lib_
