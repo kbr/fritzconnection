@@ -63,6 +63,31 @@ class FritzInspection:
                     print()
 
 
+    def view_actionarguments(self, service_name, action_name):
+        """Send all action names of the given service to stdout."""
+        try:
+            service = self.fc.services[service_name]
+        except KeyError as err:
+            print(f'Error: Invalid Servicename {err}')
+            return
+        try:
+            action = service.actions[action_name]
+        except KeyError as err:
+            print(f'Error: Invalid Actionname {err}')
+            return
+        print('\n{:<20}{}'.format('Service:', service_name))
+        print('{:<20}{}'.format('Action:', action_name))
+        print('Parameters:\n')
+        print('    {:30}{:14}{}\n'.format('Name', 'direction', 'data type'))
+        for argument in action.arguments.values():
+            if argument.direction == 'in':
+                direction = '-> in'
+            else:
+                direction = '   out ->'
+            var = service.state_variables.get(argument.relatedStateVariable, '')
+            line = f'    {argument.name:30}{direction:14}{var.dataType}'
+            print(line)
+
 
 
 
@@ -104,11 +129,9 @@ def get_cli_arguments():
     parser.add_argument('-A', '--actionarguments',
                         nargs=2,
                         help='List arguments for the given action of a '
-                             'specified service: <service> <action>.')
-    parser.add_argument('-c', '--complete',
-                        action='store_true',
-                        help='List all services with actionnames and arguments.'
-                        )
+                             'specified service: <service> <action>. '
+                             'Lists also direction and data type of the '
+                             'arguments.')
     args = parser.parse_args()
     return args
 
@@ -125,13 +148,11 @@ def main():
         inspector.view_actionnames(args.serviceactions[0])
     elif args.servicearguments:
         inspector.view_actionnames(args.servicearguments[0], view_arguments=True)
-#     elif args.actionarguments:
-#         inspector.view_actionarguments(args.actionarguments[0],
-#                                        args.actionarguments[1])
-#     elif args.complete:
-#         inspector.view_complete()
-#     elif args.reconnect:
-#         inspector.fc.reconnect()
+    elif args.actionarguments:
+        inspector.view_actionarguments(args.actionarguments[0],
+                                       args.actionarguments[1])
+    elif args.reconnect:
+        inspector.fc.reconnect()
     print()  # print an empty line
 
 
