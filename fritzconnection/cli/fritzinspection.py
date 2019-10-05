@@ -29,11 +29,7 @@ class FritzInspection:
     """
     # pylint: disable=invalid-name  # self.fc is ok.
 
-    def __init__(self,
-                 address=FRITZ_IP_ADDRESS,
-                 port=FRITZ_TCP_PORT,
-                 user=FRITZ_USERNAME,
-                 password=''):
+    def __init__(self, address, port, user, password):
         self.fc = FritzConnection(address, port, user, password)
 
     def view_header(self):
