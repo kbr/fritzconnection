@@ -37,7 +37,7 @@ setup(
 #         'fritzhosts = fritzconnection.fritzhosts:main',
 #         'fritzwlan = fritzconnection.fritzwlan:main',
 #         'fritzmonitor = fritzconnection.fritzmonitor:main',
-#         'fritzstatus = fritzconnection.fritzstatus:main',
+         'fritzstatus = fritzconnection.cli.fritzstatus:main',
 #         'fritzphonebook = fritzconnection.fritzphonebook:main',
 #         'fritzcallforwarding = fritzconnection.fritzcallforwarding:main',
 #         'fritzcall = fritzconnection.fritzcall:main',

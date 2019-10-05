@@ -79,6 +79,10 @@ class FritzConnection:
     def services(self):
         return self.device_manager.services
 
+    @property
+    def modelname(self):
+        return self.device_manager.modelname
+
     @staticmethod
     def normalize_name(name):
         if ':' in name:
