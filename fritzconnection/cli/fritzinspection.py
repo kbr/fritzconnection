@@ -17,7 +17,6 @@ from ..core import (
     FritzConnection,
     FRITZ_IP_ADDRESS,
     FRITZ_TCP_PORT,
-    FRITZ_USERNAME,
 )
 from .. import package_version
 
