@@ -34,7 +34,7 @@ setup(
     ],
     entry_points={'console_scripts': [
         'fritzconnection = fritzconnection.cli.fritzinspection:main',
-#         'fritzhosts = fritzconnection.fritzhosts:main',
+        'fritzhosts = fritzconnection.cli.fritzhosts:main',
 #         'fritzwlan = fritzconnection.fritzwlan:main',
 #         'fritzmonitor = fritzconnection.fritzmonitor:main',
          'fritzstatus = fritzconnection.cli.fritzstatus:main',
