@@ -6,6 +6,10 @@ https://github.com/kbr/fritzconnection
 License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
+# node construction works by adding attributes dynamically,
+# so don't let pylint freak out:
+# pylint: disable=no-member
+
 
 from lxml import etree
 
