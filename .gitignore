@@ -8,3 +8,6 @@ fritzconnection.egg-info/*
 *.ipynb*
 lib_
 .vscode/*
+bin
+include
+lib
