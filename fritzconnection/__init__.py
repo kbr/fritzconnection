@@ -5,6 +5,7 @@ __version__ = '1.0a1'
 from .core import (
     FritzConnection,
     FritzConnectionException,
+    FritzServiceError,
     FritzActionError,
     FritzArgumentError,
     FritzActionFailedError,
