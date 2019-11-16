@@ -50,7 +50,6 @@ class AbstractDescriptionNode:
     tag_attributes = {}
 
     def __init__(self, root):
-        super().__init__()
         for name in self.sequences:
             setattr(self, name, list())
         self.tag_attributes.update(root.attrib)
