@@ -11,3 +11,4 @@ lib_
 bin
 include
 lib
+.tox
