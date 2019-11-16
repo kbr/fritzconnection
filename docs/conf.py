@@ -19,14 +19,19 @@
 
 # -- Project information -----------------------------------------------------
 
+import fritzconnection
+from datetime import date
+
 project = 'fritzconnection'
-copyright = '2019, Klaus Bremer'
+copyright = '2008 - {}, Klaus Bremer'.format(date.today().year)
 author = 'Klaus Bremer'
 
 # The short X.Y version
-version = '0.7.0'
+#version = '0.7.0'
+version = fritzconnection.__version__
 # The full version, including alpha/beta/rc tags
-release = '0.7.0'
+release = '.'.join(version.split('.')[:-1])
+
 
 
 # -- General configuration ---------------------------------------------------

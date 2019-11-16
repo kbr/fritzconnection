@@ -13,3 +13,4 @@ Additional authors having contributed to this project:
 * `David Straub <https://bitbucket.org/DavidMStraub>`_
 * `Bernd Strebel <https://bitbucket.org/bstrebel>`_
 * Julian Tatsch
+
