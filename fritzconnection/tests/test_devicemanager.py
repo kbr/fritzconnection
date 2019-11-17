@@ -2,7 +2,7 @@ from io import StringIO
 from pathlib import Path
 
 import pytest
-from lxml import etree
+from xml.etree import ElementTree as etree
 
 from ..core.devices import DeviceManager
 

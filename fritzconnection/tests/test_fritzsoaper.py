@@ -48,15 +48,22 @@ from ..core.soaper import (
 )
 
 
-content_template = """<?xml version="1.0"?>\n<s:Envelope
-xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"
-s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-<s:Body>\n<s:Fault>\n<faultcode>s:Client</faultcode>
-<faultstring>UPnPError</faultstring>
-<detail>\n<UPnPError xmlns="urn:schemas-upnp-org:control-1-0">
-<errorCode>{error_code}</errorCode>
-<errorDescription>Invalid Action</errorDescription>
-</UPnPError>\n</detail>\n</s:Fault>\n</s:Body>\n</s:Envelope>"""
+content_template = """
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <s:Body>
+    <s:Fault>
+      <faultcode>s:Client</faultcode>
+      <faultstring>UPnPError</faultstring>
+      <detail>
+        <UPnPError xmlns="urn:schemas-upnp-org:control-1-0">
+          <errorCode>{error_code}</errorCode>
+          <errorDescription>Invalid Action</errorDescription>
+        </UPnPError>
+      </detail>
+    </s:Fault>
+  </s:Body>
+</s:Envelope>
+"""
 
 
 class Response:

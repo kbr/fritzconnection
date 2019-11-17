@@ -11,7 +11,7 @@ Author: Klaus Bremer
 # pylint: disable=no-member
 
 
-from lxml import etree
+from xml.etree import ElementTree as etree
 
 
 # ---------------------------------------------------------
@@ -219,7 +219,6 @@ class Description(AbstractDescriptionNode):
     sequences = {'specVersion': SpecVersion, 'device': Device}
 
     def __init__(self, root):
-        self.namespace = etree.QName(root.tag).namespace
         super().__init__(root)
         self.root_device = self.device[0]
         self.services = self.root_device.collect_services()
@@ -349,7 +348,6 @@ class Scpd(AbstractDescriptionNode):
     state_variables = {}
 
     def __init__(self, root):
-        self.namespace = etree.QName(root.tag).namespace
         super().__init__(root)
         if self.actionList:
             self.actions = {

@@ -8,7 +8,7 @@ Author: Klaus Bremer
 """
 
 
-from lxml import etree
+from xml.etree import ElementTree as etree
 from .nodes import Description
 
 
