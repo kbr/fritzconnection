@@ -14,3 +14,4 @@ lib
 .tox
 .coverage
 .coveralls.yml
+.Python
