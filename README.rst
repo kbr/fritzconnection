@@ -22,12 +22,6 @@ Installation:
 
     pip install fritzconnection
 
-Dependencies
-------------
-
-fritzconnection requires the python modules ``lxml`` and ``requests``:
-
-    pip install lxml requests
 
 Available Modules, Commands and Tools
 -------------------------------------
