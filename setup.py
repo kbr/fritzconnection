@@ -29,8 +29,8 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords = 'AVM FritzBox',
+    python_requires = ">= 3.6",
     install_requires = [
-        'lxml>=4.3.4',
         'requests>=2.22.0',
     ],
     entry_points={'console_scripts': [
