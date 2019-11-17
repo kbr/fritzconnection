@@ -61,7 +61,7 @@ def raise_fritzconnection_error(response):
     root = etree.fromstring(response.content)
     detail = root.find('.//detail')
     children = detail.iter()
-    next(children) # skip detail
+    next(children) # skip detail itself
     for node in children:
         tag = localname(node)
         text = node.text.strip()
