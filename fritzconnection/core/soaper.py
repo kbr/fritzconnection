@@ -12,13 +12,21 @@ import re
 
 import requests
 from requests.auth import HTTPDigestAuth
-from lxml import etree
+from xml.etree import ElementTree as etree
 
 from .exceptions import (
     FritzConnectionException,
     FRITZ_ERRORS,
 )
 
+SOAP_NS = "http://schemas.xmlsoap.org/soap/envelope/"
+NS_REGEX = re.compile("({(?P<namespace>.*)})?(?P<localname>.*)")
+
+def localname(node):
+    if callable(node.tag):
+        return "comment"
+    m = NS_REGEX.match(node.tag)
+    return m.group('localname')
 
 def datetime_convert(value):
     """Converts string in ISO 8601 format to datetime-object."""
@@ -51,8 +59,8 @@ def raise_fritzconnection_error(response):
     error_code = None
     root = etree.fromstring(response.content)
     detail = root.find('.//detail')
-    for node in detail.iterdescendants():
-        tag = node.tag.split('}')[-1]
+    for node in detail.iter():
+        tag = localname(node)
         text = node.text.strip()
         if tag == 'errorCode':
             error_code = text

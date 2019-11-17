@@ -11,3 +11,6 @@ lib_
 bin
 include
 lib
+.tox
+.coverage
+.coveralls.yml

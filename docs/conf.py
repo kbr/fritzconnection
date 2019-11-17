@@ -23,7 +23,7 @@ import fritzconnection
 from datetime import date
 
 project = 'fritzconnection'
-copyright = '2008 - {}, Klaus Bremer'.format(date.today().year)
+copyright = '2013 - {}, Klaus Bremer'.format(date.today().year)
 author = 'Klaus Bremer'
 
 # The short X.Y version
