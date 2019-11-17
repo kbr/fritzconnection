@@ -12,3 +12,4 @@ bin
 include
 lib
 .tox
+.coverage
