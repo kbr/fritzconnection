@@ -3,7 +3,7 @@ from io import StringIO
 from pathlib import Path
 
 import pytest
-from lxml import etree
+from xml.etree import ElementTree as etree
 
 from ..core.nodes import (
     SpecVersion,
@@ -173,9 +173,6 @@ def test_Device_model_name(root=device_short_inp):
 
 # Node: Description -----------------------------
 
-def test_Description_namespace(description):
-    """test for main device name"""
-    assert description.namespace == 'urn:schemas-upnp-org:device-1-0'
 
 def test_Description_spec_version(description):
     """test for specVersion"""
@@ -471,8 +468,6 @@ def test_ActionList_iter(root=action_list_inp):
 
 # Node: Scpd ------------------------------------
 
-def test_scpd_namespace(scpd):
-    assert scpd.namespace == "urn:schemas-upnp-org:service-1-0"
 
 def test_scpd_spec_version(scpd):
     assert scpd.spec_version == '1.0'
