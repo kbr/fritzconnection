@@ -114,4 +114,34 @@ def test_boolean_convert(value, expected_result):
     assert result == expected_result
 
 
+long_error = """
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <s:Body>
+    <s:Fault>
+      <faultcode> s:Client </faultcode>
+      <faultstring>
+UPnPError </faultstring>
+      <detail>
+        <UPnPError xmlns="urn:schemas-upnp-org:control-1-0">
+          <errorCode> 401 </errorCode>
+          <errorDescription> Invalid Action </errorDescription>
+        </UPnPError>
+      </detail>
+    </s:Fault>
+  </s:Body>
+</s:Envelope>
+"""
 
+
+def test_long_error_message():
+    response = Response()
+    response.content = long_error.encode()
+    with pytest.raises(ActionError) as exc:
+        raise_fritzconnection_error(response)
+
+    assert exc.value.args[0] == "\n".join(
+        ["UPnPError: ",
+         "errorCode: 401",
+         "errorDescription: Invalid Action",
+         ]
+    )
