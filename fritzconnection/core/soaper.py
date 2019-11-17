@@ -58,13 +58,10 @@ def raise_fritzconnection_error(response):
     parts = []
     error_code = None
     root = etree.fromstring(response.content)
-    detail = root.find('.//detail')
-    for node in detail.iter():
-        tag = localname(node)
-        text = node.text.strip()
-        if tag == 'errorCode':
-            error_code = text
-        parts.append(f'{tag}: {text}')
+    node = root.find('.//{urn:schemas-upnp-org:control-1-0}errorCode')
+    tag = localname(node)
+    error_code = node.text.strip()
+    parts.append(f'{tag}: {error_code}')
     message = '\n'.join(parts)
     # try except:KeyError not possible,
     # because one of the raised Exceptions may inherit from KeyError.
