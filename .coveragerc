@@ -6,3 +6,6 @@ omit =
     */tests/*
     */test_*
     *conftest.py
+    */cli/*
+    *fritzhosts.py
+    *fritzstatus.py

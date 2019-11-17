@@ -13,3 +13,4 @@ include
 lib
 .tox
 .coverage
+.coveralls.yml
