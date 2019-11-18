@@ -53,16 +53,19 @@ def uuid_convert(value):
 def raise_fritzconnection_error(response):
     """
     Handles all responses with a status codes other than 200.
-    Will raise a FritzConnectionException or a subclass.
+    Will raise the relevant FritzConnectionException with
+    the error code and description if available
     """
     parts = []
     error_code = None
     root = etree.fromstring(response.content)
     detail = root.find('.//detail')
-    for node in detail.iter():
+    children = detail.iter()
+    next(children) # skip detail itself
+    for node in children:
         tag = localname(node)
         text = node.text.strip()
-        if tag == 'errorCode':
+        if tag == "errorCode":
             error_code = text
         parts.append(f'{tag}: {text}')
     message = '\n'.join(parts)

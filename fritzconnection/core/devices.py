@@ -7,9 +7,19 @@ License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
 
-
+import requests
 from xml.etree import ElementTree as etree
+
 from .nodes import Description
+from .exceptions import FritzConnectionException
+
+
+def get_content_from(url):
+    conn = requests.get(url)
+    ct = conn.headers.get("Content-type")
+    if ct == "text/html":
+        raise FritzConnectionException("Unable to login into device to get configuration information.")
+    return conn.text
 
 
 class DeviceManager:
@@ -38,6 +48,9 @@ class DeviceManager:
         services. 'source' is a string with the xml-data, like the
         content of an igddesc- or tr64desc-file.
         """
+        if isinstance(source, str):
+            if source.startswith("http://") or source.startswith("https://"):
+                source = get_content_from(source)
         tree = etree.parse(source)
         root = tree.getroot()
         self.descriptions.append(Description(root))
