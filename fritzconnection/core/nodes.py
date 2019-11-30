@@ -11,7 +11,7 @@ Author: Klaus Bremer
 # pylint: disable=no-member
 
 
-from xml.etree import ElementTree as etree
+from .utils import get_xml_root
 
 
 # ---------------------------------------------------------
@@ -124,8 +124,7 @@ class Service(AbstractDescriptionNode):
         """Loads the scpd data"""
         protocol = 'http'
         url = f'{protocol}://{address}:{port}{self.SCPDURL}'
-        tree = etree.parse(url)
-        root = tree.getroot()
+        root = get_xml_root(url)
         self.scpd = Scpd(root)
 
 
