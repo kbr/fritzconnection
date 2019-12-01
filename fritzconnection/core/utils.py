@@ -1,10 +1,22 @@
 """
-Common objects for other core-modules.
+Common functions for other core-modules.
 """
-import requests
-from xml.etree import ElementTree as etree
 
+import re
+import requests
+
+from xml.etree import ElementTree as etree
 from .exceptions import FritzConnectionException
+
+
+NS_REGEX = re.compile("({(?P<namespace>.*)})?(?P<localname>.*)")
+
+
+def localname(node):
+    if callable(node.tag):
+        return "comment"
+    m = NS_REGEX.match(node.tag)
+    return m.group('localname')
 
 
 def get_content_from(url):

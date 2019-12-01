@@ -18,15 +18,11 @@ from .exceptions import (
     FritzConnectionException,
     FRITZ_ERRORS,
 )
+from .utils import localname
+
 
 SOAP_NS = "http://schemas.xmlsoap.org/soap/envelope/"
-NS_REGEX = re.compile("({(?P<namespace>.*)})?(?P<localname>.*)")
 
-def localname(node):
-    if callable(node.tag):
-        return "comment"
-    m = NS_REGEX.match(node.tag)
-    return m.group('localname')
 
 def datetime_convert(value):
     """Converts string in ISO 8601 format to datetime-object."""
