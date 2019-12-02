@@ -97,7 +97,9 @@ class Argument:
 
 @processor
 class ArgumentList:
-
+    """
+    Collects the arguments for an action.
+    """
     def __init__(self, arguments):
         self._arguments = arguments
 
@@ -149,7 +151,8 @@ class ActionList:
 
 class ValueSequencer:
     """
-    Descriptor storing a value set as attribute in a given sequence.
+    Descriptor storing a value (assigned as attribute value) in a given
+    sequence.
     """
     def __init__(self, sequence_name):
         self.sequence_name = sequence_name
@@ -204,22 +207,26 @@ class ServiceStateTable:
         return state_variable
 
 
-@processor
 class Scpd:
     """
     Provides informations about the Service Control Point Definitions
     for every Service. Every Service has one instance of this class for
     accessing the description of it's own actions and the according
     parameters.
+    Root class for processing the content of an scpd-file.
     """
-    def __init__(self):
+    def __init__(self, root):
+        """
+        Starts interpreting the scpd-data. 'root' must be an xml.Element
+        objects as returned from 'utils.get_xml_root'.
+        """
         self._actions = list()
         self._state_variables = list()
 
         self.specVersion = SpecVersion()
         self.actionList = ActionList(self._actions)
         self.serviceStateTable = ServiceStateTable(self._state_variables)
-
+        process_node(self, root)
 
     @property
     def spec_version(self):
@@ -344,9 +351,12 @@ class Description:
     """
     Root class for a given description information as the content from
     the files igddesc.xml or tr64desc.xml.
-    Public api given by the corresponding marked properties.
     """
     def __init__(self, root):
+        """
+        Starts data-processing. 'root' must be an xml.Element object as
+        returned from 'utils.get_xml_root'.
+        """
         self.device = Device()
         self.specVersion = SpecVersion()
         self.systemVersion = SystemVersion()

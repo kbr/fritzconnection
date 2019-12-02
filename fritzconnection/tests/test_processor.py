@@ -31,9 +31,7 @@ def igdconn_scpd_source(datadir):
 
 @pytest.fixture()
 def scpd_instance(igdconn_scpd_source):
-    s = Scpd()
-    s(igdconn_scpd_source)
-    return s
+    return Scpd(igdconn_scpd_source)
 
 
 @pytest.mark.parametrize(
