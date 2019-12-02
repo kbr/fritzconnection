@@ -31,6 +31,20 @@ class DeviceManager:
         """
         return self.descriptions[0].device_model_name
 
+    @property
+    def system_version(self):
+        """
+        Returns a tuple with version, display and buildnumber from the
+        first description providing this informations. Returns None if
+        no system informations are available.
+        """
+        version = None
+        for description in self.descriptions:
+            version = description.system_version
+            if version:
+                return version
+        return None
+
     def add_description(self, source):
         """
         Adds description data about the devices and the according

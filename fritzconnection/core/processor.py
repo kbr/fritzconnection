@@ -419,6 +419,23 @@ class Description:
         return self.systemVersion.version
 
     @property
+    def system_buildnumber(self):
+        """
+        Returns the buildnumber or None. This information is only
+        available by the 'tr64desc.xml' file.
+        """
+        return self.systemVersion.Buildnumber
+
+
+    @property
+    def system_display(self):
+        """
+        Returns the system display-string or None. This information is
+        only available by the 'tr64desc.xml' file.
+        """
+        return self.systemVersion.Display
+
+    @property
     def services(self):
         """
         Returns dictionary with the known services as values and the

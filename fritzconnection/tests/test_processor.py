@@ -159,6 +159,11 @@ def test_system_version_tr64(tr64desc_source):
     assert d.system_version == '7.10'
 
 
+def test_system_buildnumber_tr64(tr64desc_source):
+    d = Description(tr64desc_source)
+    assert d.system_buildnumber == '67453'
+
+
 def test_scpd_specversion(scpd_instance):
     assert scpd_instance.spec_version == '1.0'
 
