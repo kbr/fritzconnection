@@ -7,7 +7,7 @@ License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
 
-from .nodes import Description
+from .processor import Description
 from .utils import get_xml_root
 
 

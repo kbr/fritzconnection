@@ -8,7 +8,10 @@ License: MIT (https://opensource.org/licenses/MIT)
 Names partly violate PEP8 representing node-names from xml description files.
 """
 
-from .utils import localname
+from .utils import (
+    localname,
+    get_xml_root,
+)
 
 
 def process_node(obj, root):
@@ -31,7 +34,11 @@ def process_node(obj, root):
             attr(node)
         else:
             # node is an attribute: set value
-            setattr(obj, node_name, node.text.strip())
+            if isinstance(node.text, str):
+                value = node.text.strip()
+            else:
+                value = node.text
+            setattr(obj, node_name, value)
 
 
 def processor(cls):
@@ -261,12 +268,44 @@ class Service:
         self.controlURL = None
         self.eventSubURL = None
         self.SCPDURL = None
+        self._scpd = None
+        self._actions = None
+        self._state_variables = None
 
     @property
     def name(self):
         if self.serviceId:
             return self.serviceId.split(':')[-1]
         return None
+
+    @property
+    def actions(self):
+        """
+        Returns all known actions of this service as a dictionary.
+        Action names are keys, the action objects are the values. Caches
+        the dictionary once retrieved from _scpd.
+        """
+        if self._actions is None:
+            self._actions = self._scpd.actions
+        return self._actions
+
+    @property
+    def state_variables(self):
+        """
+        Returns all known stateVariables of this service as a
+        dictionary. Names are keys, the stateVariables objects are the
+        values. Caches the dictionary once retrieved from _scpd.
+        """
+        if self._state_variables is None:
+            self._state_variables = self._scpd.actions
+        return self._state_variables
+
+    def load_scpd(self, address, port):
+        """Loads the scpd data"""
+        protocol = 'http'
+        url = f'{protocol}://{address}:{port}{self.SCPDURL}'
+        root = get_xml_root(url)
+        self._scpd = Scpd(root)
 
 
 @processor
