@@ -13,31 +13,31 @@ from .utils import localname
 
 def process_node(obj, root):
     """
-    Take an object and a root of nodes. Nodes with the same name as an
-    instance-attribute of 'obj' are set as values for the corresponding
-    instance-attribute. If the attribute is a callable, processing the
-    node gets delegated to the callable (which in turn calls
-    process_node).
+    Take an object and a root of nodes. The node.text of nodes with the
+    same name as an instance-attribute of 'obj' are set as values for
+    the corresponding instance-attribute. If the attribute is a
+    callable, processing the node gets delegated to the callable (which
+    in turn calls process_node).
     """
     for node in root:
         node_name = localname(node)
         try:
             attr = getattr(obj, node_name)
         except AttributeError:
-            # ignore node
+            # ignore unknown nodes
             continue
         if callable(attr):
-            # delegate further processing to callable
+            # attribute is a callable: delegate further
             attr(node)
         else:
-            # set attribute value
+            # node is an attribute: set value
             setattr(obj, node_name, node.text.strip())
 
 
 def processor(cls):
     """
     Class decorator to add the functionality of calling 'process_node'
-    if a class instance gets invoked as a callable.
+    on invoking an instance as a callable.
     """
     cls.__call__ = lambda obj, root: process_node(obj, root)
     return cls
