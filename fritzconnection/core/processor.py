@@ -57,6 +57,7 @@ class SpecVersion:
     informations.
     """
     def __init__(self):
+        # attributes are case sensitive node names:
         self.major = None
         self.minor = None
 
@@ -72,6 +73,7 @@ class SystemVersion:
     Information is just provided by the 'tr64desc.xml' file.
     """
     def __init__(self):
+        # attributes are case sensitive node names
         self.HW = None
         self.Major = None
         self.Minor = None
@@ -97,6 +99,7 @@ class Argument:
     attributes.
     """
     def __init__(self):
+        # attributes are case sensitive node names
         self.name = None
         self.direction = None
         self.relatedStateVariable = None
@@ -110,6 +113,7 @@ class ArgumentList:
     def __init__(self, arguments):
         self._arguments = arguments
 
+    # case sensitive node
     @property
     def argument(self):
         argument = Argument()
@@ -123,9 +127,10 @@ class Action:
     Every Action has a name and a list of arguments.
     """
     def __init__(self):
-        self.name = None
         self._arguments = list()
         self._arguments_storage = None
+        # attributes are case sensitive node names:
+        self.name = None
         self.argumentList = ArgumentList(self._arguments)
 
     @property
@@ -149,6 +154,7 @@ class ActionList:
     def __init__(self, actions):
         self.actions = actions
 
+    # case sensitive node
     @property
     def action(self):
         action = Action()
@@ -177,6 +183,7 @@ class ValueSequencer:
 class ValueRange:
 
     def __init__(self):
+        # attributes are case sensitive node names:
         self.minimum = None
         self.maximum = None
         self.step = None
@@ -188,9 +195,11 @@ class StateVariable:
     Represents a stateVariable with the attributes name, dataType,
     defaultValue, allowedValueList and allowedValueRange.
     """
+    # case sensitive node
     allowedValue = ValueSequencer('allowed_values')
 
     def __init__(self):
+        # attributes are case sensitive node names:
         self.name = None
         self.dataType = None
         self.defaultValue = None
@@ -207,6 +216,7 @@ class ServiceStateTable:
     def __init__(self, state_variables):
         self._state_variables = state_variables
 
+    # case sensitive node
     @property
     def stateVariable(self):
         state_variable = StateVariable()
@@ -230,9 +240,12 @@ class Scpd:
         self._actions = list()
         self._state_variables = list()
 
+        # attributes are case sensitive node names:
         self.specVersion = SpecVersion()
         self.actionList = ActionList(self._actions)
         self.serviceStateTable = ServiceStateTable(self._state_variables)
+
+        # start node processing:
         process_node(self, root)
 
     @property
@@ -263,14 +276,15 @@ class Service:
     Class describing a service.
     """
     def __init__(self):
+        self._scpd = None
+        self._actions = None
+        self._state_variables = None
+        # attributes are case sensitive node names:
         self.serviceType = None
         self.serviceId = None
         self.controlURL = None
         self.eventSubURL = None
         self.SCPDURL = None
-        self._scpd = None
-        self._actions = None
-        self._state_variables = None
 
     @property
     def name(self):
@@ -318,6 +332,7 @@ class ServiceList:
         # services is a reference to the parent device services attribute.
         self._services = services
 
+    # case sensitive node
     @property
     def service(self):
         """
@@ -341,6 +356,7 @@ class DeviceList:
         # devices is a reference to the parent device devices attribute.
         self._devices = devices
 
+    # case sensitive node
     @property
     def device(self):
         """
@@ -363,6 +379,9 @@ class Device:
     All instance attributes are public for read only use.
     """
     def __init__(self):
+        self._services = list()
+        self.devices = list()
+        # attributes are case sensitive node names:
         self.deviceType = None
         self.friendlyName = None
         self.manufacturer = None
@@ -372,9 +391,8 @@ class Device:
         self.modelNumber = None
         self.modelURL = None
         self.UDN = None
+        self.UPC = None
         self.presentationURL = None
-        self._services = list()
-        self.devices = list()
         self.serviceList = ServiceList(self._services)
         self.deviceList = DeviceList(self.devices)
 
@@ -396,9 +414,12 @@ class Description:
         Starts data-processing. 'root' must be an xml.Element object as
         returned from 'utils.get_xml_root'.
         """
+        # attributes are case sensitive node names:
         self.device = Device()
         self.specVersion = SpecVersion()
         self.systemVersion = SystemVersion()
+
+        # start node processing:
         process_node(self, root)
 
     @property
@@ -425,7 +446,6 @@ class Description:
         available by the 'tr64desc.xml' file.
         """
         return self.systemVersion.Buildnumber
-
 
     @property
     def system_display(self):
