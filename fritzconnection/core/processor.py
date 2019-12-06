@@ -4,15 +4,23 @@ processor.py
 This module is part of the FritzConnection package.
 https://github.com/kbr/fritzconnection
 License: MIT (https://opensource.org/licenses/MIT)
+Author: Klaus Bremer
 
 Names partly violate PEP8 representing node-names from xml description files.
 """
 
 from .utils import (
-    localname,
     get_xml_root,
+    localname,
 )
 
+
+__all__ = ['Description']
+
+
+# ---------------------------------------------------------
+# processor, decorator and descriptors here:
+# ---------------------------------------------------------
 
 def process_node(obj, root):
     """
@@ -49,6 +57,51 @@ def processor(cls):
     cls.__call__ = lambda obj, root: process_node(obj, root)
     return cls
 
+
+class ValueSequencer:
+    """
+    Data descriptor storing a value (assigned as attribute value) in a
+    given sequence.
+    """
+    def __init__(self, sequence_name):
+        self.sequence_name = sequence_name
+
+    def __get__(self, obj, objtype):
+        # kind of set only attribute
+        return NotImplemented
+
+    def __set__(self, obj, value):
+        sequence = getattr(obj, self.sequence_name)
+        sequence.append(value)
+
+
+class InstanceAttributeFactory:
+    """
+    Non data descriptor returning instances of klass and registering
+    these instances in the _storage attribute of the calling instance.
+    """
+    def __init__(self, klass):
+        self.klass = klass
+
+    def __get__(self, obj, objtype):
+        instance = self.klass()
+        obj._storage.append(instance)
+        return instance
+
+
+class Storage:
+    """
+    Baseclass for classes working with InstanceAttributeFactory.
+    """
+    def __init__(self, storage):
+        self._storage = storage
+
+
+# ---------------------------------------------------------
+# Node- and root-classes. Root classes are entry-points.
+# Root classes are Scpd and Description.
+# Description is the only public class.
+# ---------------------------------------------------------
 
 @processor
 class SpecVersion:
@@ -106,19 +159,12 @@ class Argument:
 
 
 @processor
-class ArgumentList:
+class ArgumentList(Storage):
     """
     Collects the arguments for an action.
     """
-    def __init__(self, arguments):
-        self._arguments = arguments
-
     # case sensitive node
-    @property
-    def argument(self):
-        argument = Argument()
-        self._arguments.append(argument)
-        return argument
+    argument = InstanceAttributeFactory(Argument)
 
 
 @processor
@@ -146,37 +192,13 @@ class Action:
 
 
 @processor
-class ActionList:
+class ActionList(Storage):
     """
     Collection of actions of a service.
     The Action instances are stored in the Scpd.actions attribute.
     """
-    def __init__(self, actions):
-        self.actions = actions
-
     # case sensitive node
-    @property
-    def action(self):
-        action = Action()
-        self.actions.append(action)
-        return action
-
-
-class ValueSequencer:
-    """
-    Descriptor storing a value (assigned as attribute value) in a given
-    sequence.
-    """
-    def __init__(self, sequence_name):
-        self.sequence_name = sequence_name
-
-    def __get__(self, obj, objtype):
-        # kind of set only attribute
-        return NotImplemented
-
-    def __set__(self, obj, value):
-        sequence = getattr(obj, self.sequence_name)
-        sequence.append(value)
+    action = InstanceAttributeFactory(Action)
 
 
 @processor
@@ -209,19 +231,12 @@ class StateVariable:
 
 
 @processor
-class ServiceStateTable:
+class ServiceStateTable(Storage):
     """
     Collection of stateVariables.
     """
-    def __init__(self, state_variables):
-        self._state_variables = state_variables
-
     # case sensitive node
-    @property
-    def stateVariable(self):
-        state_variable = StateVariable()
-        self._state_variables.append(state_variable)
-        return state_variable
+    stateVariable = InstanceAttributeFactory(StateVariable)
 
 
 class Scpd:
@@ -323,50 +338,13 @@ class Service:
 
 
 @processor
-class ServiceList:
+class ServiceList(Storage):
     """
     Collection of Service instances for a device.
     The service instances are stored in the device.services attribute.
     """
-    def __init__(self, services):
-        # services is a reference to the parent device services attribute.
-        self._services = services
-
     # case sensitive node
-    @property
-    def service(self):
-        """
-        Internal property. Creates a new Service instance, stores this
-        in the services attribute of the parent-device and returns the
-        instance.
-        """
-        service = Service()
-        self._services.append(service)
-        return service
-
-
-@processor
-class DeviceList:
-    """
-    Collection of sub-devices of a device.
-    The Device instances are stored in the device.devices attribute of
-    the parent device.
-    """
-    def __init__(self, devices):
-        # devices is a reference to the parent device devices attribute.
-        self._devices = devices
-
-    # case sensitive node
-    @property
-    def device(self):
-        """
-        Internal property. Creates a new Device instance, stores this
-        in the devices attribute of the parent-device and returns the
-        instance.
-        """
-        device = Device()
-        self._devices.append(device)
-        return device
+    service = InstanceAttributeFactory(Service)
 
 
 @processor
@@ -402,6 +380,17 @@ class Device:
         for device in self.devices:
             services.update(device.services)
         return services
+
+
+@processor
+class DeviceList(Storage):
+    """
+    Collection of sub-devices of a device.
+    The Device instances are stored in the device.devices attribute of
+    the parent device.
+    """
+    # case sensitive node
+    device = InstanceAttributeFactory(Device)
 
 
 class Description:
