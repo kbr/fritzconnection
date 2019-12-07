@@ -1,62 +1,40 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 fritzstatus.py
 
 Modul to read status-informations from an AVM FritzBox.
 
-License: MIT https://opensource.org/licenses/MIT
-Source: https://github.com/kbr/fritzconnection
+This module is part of the FritzConnection package.
+https://github.com/kbr/fritzconnection
+License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
 
-import argparse
-import collections
-import os
 import time
 
-# tiny hack to run this as a package but also from the command line. In
-# the latter case ValueError is raised from python 2.7 and SystemError
-# from Python 3.5 and ImportError from Python 3.6
-try:
-    from . import fritzconnection
-    from . import fritztools
-except (ValueError, SystemError, ImportError):
-    import fritzconnection
-    import fritztools
-
-
-# version-access:
-def get_version():
-    return fritzconnection.get_version()
+from ..core import (
+    FritzConnection,
+    FritzServiceError,
+)
+from .fritztools import format_num, format_rate
 
 
 class FritzStatus(object):
     """
     Class for requesting status-informations:
     up, down, ip, activity (bytes per second send/received)
-    Every property will raise an IOError if the connection
-    with the FritzBox fails.
-
-    Keep in mind, that FritzBoxes may return different informations
-    about the status depending whether this service gets called with or
-    without a password.
     """
 
     def __init__(self, fc=None, address=None, port=None,
                        user=None, password=None):
-        super(FritzStatus, self).__init__()
-        if fc is None:
-            fc = fritzconnection.FritzConnection(
-                address=address,
-                port=port,
-                user=user,
-                password=password,
-            )
-        self.fc = fc
-        self.last_bytes_sent = self.bytes_sent
-        self.last_bytes_received = self.bytes_received
+        super().__init__()
+        self.fc = fc if fc else FritzConnection(address, port, user, password)
+        # depending on the model (i.e. a repeater) some services
+        # may not be available. Don't let FritzStatus crash at init.
+        try:
+            self.last_bytes_sent = self.bytes_sent
+            self.last_bytes_received = self.bytes_received
+        except FritzServiceError:
+            pass
         self.last_traffic_call = time.time()
 
     @property
@@ -77,12 +55,6 @@ class FritzStatus(object):
         """
         status = self.fc.call_action('WANIPConn', 'GetStatusInfo')
         return status['NewConnectionStatus'] == 'Connected'
-
-    @property
-    def wan_access_type(self):
-        """Returns connection-type: DSL, Cable."""
-        return self.fc.call_action('WANCommonIFC',
-            'GetCommonLinkProperties')['NewWANAccessType']
 
     @property
     def external_ip(self):
@@ -143,8 +115,8 @@ class FritzStatus(object):
         """Returns a tuple of human readable transmission rates in bytes."""
         upstream, downstream = self.transmission_rate
         return (
-            fritztools.format_num(upstream),
-            fritztools.format_num(downstream)
+            format_num(upstream),
+            format_num(downstream)
         )
 
     @property
@@ -189,8 +161,8 @@ class FritzStatus(object):
         """
         upstream, downstream = self.max_linked_bit_rate
         return (
-            fritztools.format_rate(upstream, unit='bits'),
-            fritztools.format_rate(downstream, unit ='bits')
+            format_rate(upstream, unit='bits'),
+            format_rate(downstream, unit ='bits')
         )
 
     @property
@@ -201,80 +173,10 @@ class FritzStatus(object):
         """
         upstream, downstream = self.max_bit_rate
         return (
-            fritztools.format_rate(upstream, unit='bits'),
-            fritztools.format_rate(downstream, unit ='bits')
+            format_rate(upstream, unit='bits'),
+            format_rate(downstream, unit ='bits')
         )
 
     def reconnect(self):
         """Makes a reconnection with a new external ip."""
         self.fc.reconnect()
-
-
-# ---------------------------------------------------------
-# terminal-output:
-# ---------------------------------------------------------
-
-def print_status(address=None, port=None, user=None, password=None):
-    print('\nFritzStatus:')
-    print('{:<22}{}'.format('version:', get_version()))
-    fs = FritzStatus(address=address, port=port, user=user, password=password)
-    status_informations = collections.OrderedDict([
-        ('model:', fs.modelname),
-        ('is linked:', fs.is_linked),
-        ('is connected:', fs.is_connected),
-        ('external ip:', fs.external_ip),
-        ('uptime:', fs.str_uptime),
-        ('bytes send:', fs.bytes_sent),
-        ('bytes received:', fs.bytes_received),
-        ('max. bit rate:', fs.str_max_bit_rate),
-        ])
-    try:
-        information = fs.str_max_linked_bit_rate
-    except fritzconnection.ServiceError:
-        information = 'password required for information'
-    except fritzconnection.AuthorizationError as err:
-        information = str(err)
-    status_informations['max. linked bit rate:'] = information
-    for status, information in status_informations.items():
-        print('{:<22}{}'.format(status, information))
-
-
-# ---------------------------------------------------------
-# cli-section:
-# ---------------------------------------------------------
-
-def _get_cli_arguments():
-    parser = argparse.ArgumentParser(description='FritzBox Status')
-    parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=None, const=None,
-                        dest='address',
-                        help='ip-address of the FritzBox to connect to. '
-                             'Default: %s' % fritzconnection.FRITZ_IP_ADDRESS)
-    parser.add_argument('-u', '--username',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication username')
-    parser.add_argument('-p', '--password',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication password')
-    parser.add_argument('--port',
-                        nargs='?', default=None, const=None,
-                        dest='port',
-                        help='port of the FritzBox to connect to. '
-                             'Default: %s' % fritzconnection.FRITZ_TCP_PORT)
-    args = parser.parse_args()
-    return args
-
-
-def _print_status(arguments):
-    print_status(
-        address=arguments.address,
-        port=arguments.port,
-        user=arguments.username,
-        password=arguments.password,
-    )
-
-def main():
-    _print_status(_get_cli_arguments())
-
-if __name__ == '__main__':
-    main()

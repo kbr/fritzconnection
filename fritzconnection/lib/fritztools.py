@@ -1,13 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import division
-
-
 """
-helper functions.
-
+Some helper functions for more readable bits and bytes.
 """
+
 
 def format_num(num, unit='bytes'):
     """
@@ -22,10 +16,10 @@ def format_num(num, unit='bytes'):
     for dimension in (unit, 'K', 'M', 'G', 'T'):
         if num < 1024:
             if dimension == unit:
-                return '%3.1f %s' % (num, dimension)
-            return '%3.1f %s%s' % (num, dimension, extension)
+                return f'{num:3.1f} {dimension}'
+            return f'{num:3.1f} {dimension}{extension}'
         num /= 1024
-    return '%3.1f P%s' % (num, extension)
+    return f'{num:3.1f} P{extension}'
 
 
 def format_rate(num, unit='bytes'):

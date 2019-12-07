@@ -6,3 +6,12 @@ build/*
 dist/*
 fritzconnection.egg-info/*
 *.ipynb*
+lib_
+.vscode/*
+bin
+include
+lib
+.tox
+.coverage
+.coveralls.yml
+.Python
