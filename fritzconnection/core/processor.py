@@ -326,7 +326,7 @@ class Service:
         values. Caches the dictionary once retrieved from _scpd.
         """
         if self._state_variables is None:
-            self._state_variables = self._scpd.actions
+            self._state_variables = self._scpd.state_variables
         return self._state_variables
 
     def load_scpd(self, address, port):
