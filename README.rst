@@ -15,7 +15,7 @@ fritzconnection
 
 
 Python-Tool to communicate with the AVM FritzBox.
-Uses the TR-064 protocol.
+Uses the TR-064 protocol over Upnp.
 
 Installation:
 -------------
@@ -23,45 +23,25 @@ Installation:
     pip install fritzconnection
 
 
-Available Modules, Commands and Tools
--------------------------------------
-
-``fritzconnection.py`` makes the SOAP interface of the FRITZ!Box available on the command line.
-Shows all available services and actions when run with the argument ``-c``. Use ``-h`` for help.
-
-This is the main module and works standalone. The other modules listet here are utility modules for convenience and examples on how to use fritzconnection.
-
-``fritzstatus.py`` is a command line interface to display status information of the FRITZ!Box.
-It also serves as an example on how to use the fritzconnection module.
-
-``fritzmonitor.py`` is a Tkinter GUI to display current IP as well as the upstream and downstream rates.
-It also makes it easy to reconnect and thus get a different IP from your ISP.
-
-``fritzhosts.py`` is a command line interface to display the hosts known by the FRITZ!Box with IP, name, MAC and status.
-
-``fritzwlan.py`` Utility module for FritzConnection to list the known WLAN connections.
-
-``fritzcallforwarding.py`` Utility module for FritzConnection to manage callforwardings.
-
-``fritzphonebook.py`` Utility module for FritzConnection to access phone books.
-
-``fritzcall.py`` Gives access to recent phone calls: incoming, outgoing and missed ones.
-
-
-Other Files
------------
-
-``fritztools.py`` contains some helper functions and ``test.py`` contains unit tests.
-
 Quickstart:
 -----------
 
-Inspect the API:
+Pip will install a command line tool to inspect the FRITZ!Box-API. The APIs can differ depending on the FRITZ!Box model and the system software.
 
-    >>> import fritzconnection as fc
-    >>> fc.print_api(address=<ip-address>, password=<the password>)
+    $ fritzconnection -i <the_ip_address> -p <the_password> -s
 
-Both parameters ``address`` and ``password`` are optional. If there is more than one Fritz!Box in the network, an address must be provided, because otherwise it's undefined which box will respond. Also most services are only accessible by providing a password.
+This will list all available services. Both parameters ``the_ip_address`` and ``the_password`` are optional. If there is more than one Fritz!Box in the network, an address must be provided, because otherwise it's undefined which box will respond. Also most services are only accessible by providing a password. To list the ``actions`` of a ``service`` use the option ``-S`` with the 'servicename' as parameter, i.e.:
+
+    $ fritzconnection <the_ip_address> -p <the_password> -S WLANConfiguration1
+
+With the option ``-a`` and a 'servicename' given all parameters for the available ``actions`` are listet:
+
+    $ fritzconnection <the_ip_address> -p <the_password> -a WLANConfiguration1
+
+The option ``-A`` with 'servicename' and 'actionname' as parameter will also list ``direction`` and the ``data type`` of the action parameters:
+
+    $ fritzconnection <the_ip_address> -p <the_password> -A WLANConfiguration1 GetGenericAssociatedDeviceInfo
+
 
 An API-Call is made by the ``call_action``-method of the FritzConnection-Class. This method takes the ``servicename``, the ``actionname`` and optional arguments as parameter and may return a dictionary with the results (as described in the TR-064 protocoll description). A simple example is to reconnect for a new external ip:
 
@@ -71,7 +51,7 @@ An API-Call is made by the ``call_action``-method of the FritzConnection-Class. 
     # or more comfortable:
     >>> connection.reconnect()
 
-The latter wrapps the ``call_action``-method. For a more complete example look at the ``fritzhosts.py`` souce-code.
+The latter wrapps the ``call_action``-method. For more complete examples look at the source-code of the modules in the ``fritzconnection/lib`` folder.
 
 
 Documentation
