@@ -15,6 +15,7 @@ import os
 
 from ..core import (
     FritzConnection,
+    FritzConnectionException,
     FRITZ_IP_ADDRESS,
     FRITZ_TCP_PORT,
 )
@@ -84,8 +85,6 @@ class FritzInspection:
             print(line)
 
 
-
-
 def get_cli_arguments():
     """
     Returns a NameSpace object from the ArgumentParser parsing the given
@@ -94,7 +93,7 @@ def get_cli_arguments():
     print(f'\nFritzConnection v{package_version}')
     parser = argparse.ArgumentParser(description='Fritz!Box API Inspection:')
     parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=None, const=None,
+                        nargs='?', default=FRITZ_IP_ADDRESS, const=None,
                         dest='address',
                         help='Specify ip-address of the FritzBox to connect to.'
                              'Default: %s' % FRITZ_IP_ADDRESS)
@@ -131,11 +130,17 @@ def get_cli_arguments():
     return args
 
 
-def main():
-    """CLI entry point."""
-    args = get_cli_arguments()
-    inspector = FritzInspection(
-        args.address, args.port, args.username, args.password)
+def get_inspector(args):
+    try:
+        inspector = FritzInspection(
+            args.address, args.port, args.username, args.password)
+    except FritzConnectionException as err:
+        print(err)
+        return None
+    return inspector
+
+
+def run_inspector(inspector, args):
     inspector.view_header()
     if args.services:
         inspector.view_servicenames()
@@ -148,7 +153,16 @@ def main():
                                        args.actionarguments[1])
     elif args.reconnect:
         inspector.fc.reconnect()
-    print()  # print an empty line
+        print('reconnect the router.')
+
+
+def main():
+    """CLI entry point."""
+    args = get_cli_arguments()
+    inspector = get_inspector(args)
+    if inspector:
+        run_inspector(inspector, args)
+    print() # print an empty line
 
 
 if __name__ == '__main__':
