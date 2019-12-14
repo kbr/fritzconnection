@@ -54,7 +54,18 @@ def raise_fritzconnection_error(response):
     """
     parts = []
     error_code = None
-    root = etree.fromstring(response.content)
+    try:
+        root = etree.fromstring(response.content)
+    except etree.ParseError:
+        # May fail in case it's html instead of xml.
+        # Can happen on wrong authentication.
+        # That means it is not an error reported from executing
+        # some service in the box, but rather not allowed to
+        # access the box at all.
+        # Whatever it is, report it here:
+        detail = re.sub(r'<.*?>', '', response.text)
+        msg = f'Unable to perform operation. {detail}'
+        raise FritzConnectionException(msg)
     detail = root.find('.//detail')
     children = detail.iter()
     next(children) # skip detail itself
