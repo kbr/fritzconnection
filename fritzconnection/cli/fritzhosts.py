@@ -15,7 +15,7 @@ import argparse
 
 from .. import package_version
 from ..lib.fritzhosts import FritzHosts
-from ..core import (
+from ..core.fritzconnection import (
     FRITZ_IP_ADDRESS,
     FRITZ_TCP_PORT,
 )

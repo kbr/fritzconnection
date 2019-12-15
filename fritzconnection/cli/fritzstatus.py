@@ -13,13 +13,15 @@ Author: Klaus Bremer
 import argparse
 
 from .. import package_version
-from ..lib.fritzstatus import FritzStatus
-from ..core import (
-    FRITZ_IP_ADDRESS,
-    FRITZ_TCP_PORT,
+from ..core.exceptions import (
     FritzServiceError,
     FritzActionError,
 )
+from ..core.fritzconnection import (
+    FRITZ_IP_ADDRESS,
+    FRITZ_TCP_PORT,
+)
+from ..lib.fritzstatus import FritzStatus
 
 
 def print_status(address=None, port=None, user=None, password=None):

@@ -1,31 +1,30 @@
 """
-fritzstatus.py
-
 Modul to read status-informations from an AVM FritzBox.
-
-This module is part of the FritzConnection package.
-https://github.com/kbr/fritzconnection
-License: MIT (https://opensource.org/licenses/MIT)
-Author: Klaus Bremer
 """
 
 import time
 
-from ..core import (
-    FritzConnection,
-    FritzServiceError,
-)
+from ..core.fritzconnection import FritzConnection
+from ..core.exceptions import FritzServiceError
 from .fritztools import format_num, format_rate
 
 
 class FritzStatus(object):
     """
     Class for requesting status-informations:
-    up, down, ip, activity (bytes per second send/received)
+    up, down, ip, activity (bytes per second send/received).
+    All parameters are optional. If given, they have the following meaning:
+    *fc* is an instance of FritzConnection,
+    *address* the ip of the Fritz!Box,
+    the *port* of the Fritz!Box and the according *user* and *password*.
     """
 
     def __init__(self, fc=None, address=None, port=None,
                        user=None, password=None):
+        """
+        :fc: instance of FritzConnection.
+        :address: ip of the Fritz!Box
+        """
         super().__init__()
         self.fc = fc if fc else FritzConnection(address, port, user, password)
         # depending on the model (i.e. a repeater) some services
@@ -39,11 +38,15 @@ class FritzStatus(object):
 
     @property
     def modelname(self):
+        """The router modelname."""
         return self.fc.modelname
 
     @property
     def is_linked(self):
-        """Returns True if the FritzBox is physically linked to the provider."""
+        """
+        A boolean whether the FritzBox is physically linked to
+        the provider.
+        """
         status = self.fc.call_action('WANCommonIFC',
                                      'GetCommonLinkProperties')
         return status['NewPhysicalLinkStatus'] == 'Up'
@@ -51,44 +54,47 @@ class FritzStatus(object):
     @property
     def is_connected(self):
         """
-        Returns True if the FritzBox has established an internet-connection.
+        A boolean whether the FritzBox has established an
+        internet-connection.
         """
         status = self.fc.call_action('WANIPConn', 'GetStatusInfo')
         return status['NewConnectionStatus'] == 'Connected'
 
     @property
     def external_ip(self):
-        """Returns the external ip-address."""
+        """The external v4 ip-address."""
         return self.fc.call_action('WANIPConn',
             'GetExternalIPAddress')['NewExternalIPAddress']
 
     @property
     def external_ipv6(self):
-        """Returns the external ip-address."""
+        """The external v6 ip-address."""
         return self.fc.call_action('WANIPConn',
             'X_AVM_DE_GetExternalIPv6Address')['NewExternalIPv6Address']
 
     @property
     def uptime(self):
-        """uptime in seconds."""
+        """Uptime in seconds."""
         status = self.fc.call_action('WANIPConn', 'GetStatusInfo')
         return status['NewUptime']
 
     @property
     def str_uptime(self):
-        """uptime in human readable format."""
+        """Uptime in seconds and in human readable format."""
         mins, secs = divmod(self.uptime, 60)
         hours, mins = divmod(mins, 60)
         return '%02d:%02d:%02d' % (hours, mins, secs)
 
     @property
     def bytes_sent(self):
+        """Total number of send bytes."""
         status = self.fc.call_action('WANCommonIFC',
                                      'GetTotalBytesSent')
         return status['NewTotalBytesSent']
 
     @property
     def bytes_received(self):
+        """Total number of received bytes."""
         status = self.fc.call_action('WANCommonIFC',
                                      'GetTotalBytesReceived')
         return status['NewTotalBytesReceived']
@@ -96,7 +102,7 @@ class FritzStatus(object):
     @property
     def transmission_rate(self):
         """
-        Returns the upstream, downstream values as a tuple in bytes per
+        The upstream and downstream values as a tuple in bytes per
         second. Use this for periodical calling.
         """
         sent = self.bytes_sent
@@ -112,7 +118,10 @@ class FritzStatus(object):
 
     @property
     def str_transmission_rate(self):
-        """Returns a tuple of human readable transmission rates in bytes."""
+        """
+        Tuple of human readable transmission rate in bytes. First item
+        is upstream, second item downstream.
+        """
         upstream, downstream = self.transmission_rate
         return (
             format_num(upstream),
@@ -122,7 +131,7 @@ class FritzStatus(object):
     @property
     def max_linked_bit_rate(self):
         """
-        Returns a tuple with the maximun upstream- and downstream-rate
+        Tuple with the maximun upstream- and downstream-rate
         of the physical link. The rate is given in bits/sec.
         """
         return self._get_max_bit_rate('WANCommonInterfaceConfig')
@@ -130,7 +139,7 @@ class FritzStatus(object):
     @property
     def max_bit_rate(self):
         """
-        Returns a tuple with the maximun upstream- and downstream-rate
+        Tuple with the maximun upstream- and downstream-rate
         of the given connection. The rate is given in bits/sec.
         """
         return self._get_max_bit_rate('WANCommonIFC')
@@ -148,7 +157,7 @@ class FritzStatus(object):
     @property
     def max_byte_rate(self):
         """
-        Same as max_bit_rate but returns the rate in bytes/sec.
+        Same as max_bit_rate but rate is given in bytes/sec.
         """
         upstream, downstream = self.max_bit_rate
         return upstream / 8.0, downstream / 8.0
@@ -156,8 +165,9 @@ class FritzStatus(object):
     @property
     def str_max_linked_bit_rate(self):
         """
-        Returns a human readable maximun upstream- and downstream-rate
-        of the given connection. The rate is given in bits/sec.
+        Human readable maximum of the physical upstream- and
+        downstream-rate in bits/sec. Value is a tuple, first item is
+        upstream, second item is downstream.
         """
         upstream, downstream = self.max_linked_bit_rate
         return (
@@ -168,8 +178,9 @@ class FritzStatus(object):
     @property
     def str_max_bit_rate(self):
         """
-        Returns a human readable maximun upstream- and downstream-rate
-        of the given connection. The rate is given in bits/sec.
+        Human readable maximum of the upstream- and downstream-rate in
+        bits/sec, as given by the provider. Value is a tuple, first item
+        is upstream, second item is downstream.
         """
         upstream, downstream = self.max_bit_rate
         return (
