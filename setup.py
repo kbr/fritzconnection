@@ -7,7 +7,7 @@ with open('README.rst') as file:
 
 setup(
     name = 'fritzconnection',
-    version = '1.0a1',
+    version = '1.0a2',
     packages = find_packages(),
     license = 'MIT',
     description = 'Communicate with the AVM FritzBox',

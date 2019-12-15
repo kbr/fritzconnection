@@ -15,7 +15,7 @@ fritzconnection
 
 
 Python-Tool to communicate with the AVM FritzBox.
-Uses the TR-064 protocol over Upnp.
+Uses the TR-064 protocol over UPnP.
 
 Installation:
 -------------

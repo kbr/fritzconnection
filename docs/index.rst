@@ -23,6 +23,7 @@ The available services are depending on the Fritz!Box model and the according sy
 
    sources/install
    sources/core
+   sources/library
    sources/further_reading
    sources/changes
    sources/authors
