@@ -42,6 +42,27 @@ IndexError -------->|
 """
 
 
+# export all Exceptions on * imports
+__all__ = [
+    'FritzConnectionException',
+    'ActionError',
+    'FritzActionError',
+    'ServiceError',
+    'FritzServiceError',
+    'FritzArgumentError',
+    'FritzArgumentValueError',
+    'FritzArgumentStringToShortError',
+    'FritzArgumentStringToLongError',
+    'FritzArgumentCharacterError',
+    'FritzInternalError',
+    'FritzActionFailedError',
+    'FritzOutOfMemoryError',
+    'FritzSecurityError',
+    'FritzLookUpError',
+    'FritzArrayIndexError',
+]
+
+
 class FritzConnectionException(Exception):
     """Base Exception for communication errors with the Fritz!Box"""
 
