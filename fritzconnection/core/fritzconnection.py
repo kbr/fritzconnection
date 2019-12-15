@@ -1,13 +1,10 @@
 """
-fritzconnection.py
-
 Module to communicate with the AVM Fritz!Box.
-
-This module is part of the FritzConnection package.
-https://github.com/kbr/fritzconnection
-License: MIT (https://opensource.org/licenses/MIT)
-Author: Klaus Bremer
 """
+# This module is part of the FritzConnection package.
+# https://github.com/kbr/fritzconnection
+# License: MIT (https://opensource.org/licenses/MIT)
+# Author: Klaus Bremer
 
 
 import os
@@ -27,6 +24,15 @@ FRITZ_USERNAME = 'dslf-config'
 
 
 class FritzConnection:
+    """
+    Main class to set up a connection to the Fritz!Box router. All
+    parameters are optional. address should be the ip of a router, in
+    case that are multiple Fritz!Box routers in a network, the ip must
+    be given. Otherwise it is undefined which router will respond. If
+    user and password are not provided, the environment gets checked for
+    FRITZ_USERNAME and FRITZ_PASSWORD settings and taken from there, if
+    found.
+    """
 
     def __init__(self, address=None, port=None, user=None, password=None):
         """
@@ -79,18 +85,31 @@ class FritzConnection:
 
     @property
     def services(self):
+        """
+        Dictionary of service instances. Keys are the service names.
+        """
         return self.device_manager.services
 
     @property
     def modelname(self):
+        """
+        Returns the modelname of the router.
+        """
         return self.device_manager.modelname
 
     @property
     def system_version(self):
+        """
+        Returns system version if available, otherwise None.
+        """
         return self.device_manager.system_version
 
     @staticmethod
     def normalize_name(name):
+        """
+        Returns the normalized service name. E.g. WLANConfiguration and
+        WLANConfiguration:1 will get converted to WLANConfiguration1.
+        """
         if ':' in name:
             name, number = name.split(':', 1)
             name = name + number

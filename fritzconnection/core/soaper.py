@@ -1,11 +1,12 @@
 """
-soaper.py
-
-This module is part of the FritzConnection package.
-https://github.com/kbr/fritzconnection
-License: MIT (https://opensource.org/licenses/MIT)
-Author: Klaus Bremer
+Module handling the SOAP based communication with the router. This
+module has no public api.
 """
+# This module is part of the FritzConnection package.
+# https://github.com/kbr/fritzconnection
+# License: MIT (https://opensource.org/licenses/MIT)
+# Author: Klaus Bremer
+
 
 import datetime
 import re
@@ -25,7 +26,7 @@ SOAP_NS = "http://schemas.xmlsoap.org/soap/envelope/"
 
 
 def datetime_convert(value):
-    """Converts string in ISO 8601 format to datetime-object."""
+    """Converts a string in ISO 8601 format to a datetime-object."""
     try:
         return datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S')
     except ValueError:
@@ -48,7 +49,7 @@ def uuid_convert(value):
 
 def raise_fritzconnection_error(response):
     """
-    Handles all responses with a status codes other than 200.
+    Handles all responses with status codes other than 200.
     Will raise the relevant FritzConnectionException with
     the error code and description if available
     """

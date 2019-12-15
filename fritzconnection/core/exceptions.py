@@ -1,45 +1,46 @@
 """
-fritzconnection specific exceptions.
-
-This module is part of the FritzConnection package.
-https://github.com/kbr/fritzconnection
-License: MIT (https://opensource.org/licenses/MIT)
-Author: Klaus Bremer
-
-
-Exception Inheritance:
-----------------------
-
-FritzConnectionException
-                |
-                |--> ActionError --> FritzActionError
-                |--> ServiceError --> FritzServiceError
-                |
-                |--> FritzArgumentError
-                |       |
-                |       |--> FritzArgumentValueError
-                |               |
-                |               |--> FritzArgumentStringToShortError
-                |               |--> FritzArgumentStringToLongError
-                |               |--> FritzArgumentCharacterError
-                |
-                |--> FritzInternalError
-                |       |
-                |       |--> FritzActionFailedError
-                |       |--> FritzOutOfMemoryError
-                |
-                |--> FritzSecurityError
-                |
-                |-->|--> FritzLookUpError
-                |   |
-KeyError -------+-->|
-                |
-                |
-                |-->|--> FritzArrayIndexError
-                    |
-IndexError -------->|
-
+Module defining fritzconnection specific exceptions.
 """
+
+# This module is part of the FritzConnection package.
+# https://github.com/kbr/fritzconnection
+# License: MIT (https://opensource.org/licenses/MIT)
+# Author: Klaus Bremer
+#
+#
+# Exception Inheritance:
+# ----------------------
+#
+# FritzConnectionException
+#                 |
+#                 |--> ActionError --> FritzActionError
+#                 |--> ServiceError --> FritzServiceError
+#                 |
+#                 |--> FritzArgumentError
+#                 |       |
+#                 |       |--> FritzArgumentValueError
+#                 |               |
+#                 |               |--> FritzArgumentStringToShortError
+#                 |               |--> FritzArgumentStringToLongError
+#                 |               |--> FritzArgumentCharacterError
+#                 |
+#                 |--> FritzInternalError
+#                 |       |
+#                 |       |--> FritzActionFailedError
+#                 |       |--> FritzOutOfMemoryError
+#                 |
+#                 |--> FritzSecurityError
+#                 |
+#                 |-->|--> FritzLookUpError
+#                 |   |
+# KeyError -------+-->|
+#                 |
+#                 |
+#                 |-->|--> FritzArrayIndexError
+#                     |
+# IndexError -------->|
+#
+#
 
 
 # export all Exceptions on * imports

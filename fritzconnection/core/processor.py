@@ -1,13 +1,14 @@
 """
-processor.py
-
-This module is part of the FritzConnection package.
-https://github.com/kbr/fritzconnection
-License: MIT (https://opensource.org/licenses/MIT)
-Author: Klaus Bremer
-
-Names partly violate PEP8 representing node-names from xml description files.
+Module to parse and store the device description and the service data
+provided by xml and the scpd protocol based on xml. Names partly violate
+PEP8 representing node-names from xml description files. This modul has
+no public api.
 """
+# This module is part of the FritzConnection package.
+# https://github.com/kbr/fritzconnection
+# License: MIT (https://opensource.org/licenses/MIT)
+# Author: Klaus Bremer
+
 
 from .utils import (
     get_xml_root,
@@ -15,7 +16,7 @@ from .utils import (
 )
 
 
-__all__ = ['Description']
+#__all__ = ['Description']
 
 
 # ---------------------------------------------------------
@@ -77,8 +78,8 @@ class ValueSequencer:
 
 class InstanceAttributeFactory:
     """
-    Non data descriptor returning instances of klass and registering
-    these instances in the _storage attribute of the calling instance.
+    Non data descriptor returning instances of 'cls' and registering
+    these instances in the '_storage' attribute of the calling instance.
     """
     def __init__(self, cls):
         self.cls = cls

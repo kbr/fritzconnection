@@ -1,11 +1,13 @@
 """
-devices.py
-
-This module is part of the FritzConnection package.
-https://github.com/kbr/fritzconnection
-License: MIT (https://opensource.org/licenses/MIT)
-Author: Klaus Bremer
+Implements the DeviceManager for physical and virtual devices. Every
+physical device (a router) has a set of virtual subdevices. This module
+has no public api.
 """
+# This module is part of the FritzConnection package.
+# https://github.com/kbr/fritzconnection
+# License: MIT (https://opensource.org/licenses/MIT)
+# Author: Klaus Bremer
+
 
 from .processor import Description
 from .utils import get_xml_root
@@ -13,7 +15,7 @@ from .utils import get_xml_root
 
 class DeviceManager:
     """
-    Knows all data about the device and the sub-devices, including the
+    Knows all data about the device and the subdevices, including the
     available services.
     """
 
