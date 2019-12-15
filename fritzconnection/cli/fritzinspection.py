@@ -135,7 +135,6 @@ def get_inspector(args):
         inspector = FritzInspection(
             args.address, args.port, args.username, args.password)
     except FritzConnectionException as err:
-        print(err)
         return None
     return inspector
 
