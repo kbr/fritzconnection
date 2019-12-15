@@ -80,11 +80,11 @@ class InstanceAttributeFactory:
     Non data descriptor returning instances of klass and registering
     these instances in the _storage attribute of the calling instance.
     """
-    def __init__(self, klass):
-        self.klass = klass
+    def __init__(self, cls):
+        self.cls = cls
 
     def __get__(self, obj, objtype):
-        instance = self.klass()
+        instance = self.cls()
         obj._storage.append(instance)
         return instance
 
