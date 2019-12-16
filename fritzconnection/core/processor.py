@@ -1,8 +1,7 @@
 """
 Module to parse and store the device description and the service data
 provided by xml and the scpd protocol based on xml. Names partly violate
-PEP8 representing node-names from xml description files. This modul has
-no public api.
+PEP8 representing node-names from xml description files.
 """
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection

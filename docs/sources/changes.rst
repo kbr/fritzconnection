@@ -3,24 +3,22 @@
 Version History
 ===============
 
-1.0a1
------
+1.0
+---
 
 - Requires Python 3.6 or newer. The 0.8.x release is the last version supporting Python 2.7 and Python 3 up to 3.5
 - The ``lxml`` library is no longer a dependency.
+- New project layout. Library modules are now located the new ``lib`` package.
 - Rewrite of the description parser.
 - Errors reported by the Fritz!Box are now raising specific exceptions.
-- New project layout. The API for calling ``fritzconnection`` stays unchanged. Library modules like ``fritzstatus`` have to be imported from the new ``lib`` package, i.e.:
 
-    >>> from fritzconnection.lib import fritzhosts
-
-- Only active maintained modules on top of ``fritzconnection`` will be added to the ``lib`` module. So far these are ``fritzhosts`` and ``fritzstatus`` for this version.
 
 0.8.4
 -----
 
 - Bugfix in connection.reconnect(). This bug has been introduced with version 0.8.0. For versions 0.8.0 to 0.8.3 'reconnect' requires a password because of a changed service call.
 - Documentation updated.
+
 
 0.8.3
 -----

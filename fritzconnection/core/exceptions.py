@@ -46,21 +46,19 @@ Module defining fritzconnection specific exceptions.
 # export all Exceptions on * imports
 __all__ = [
     'FritzConnectionException',
-    'ActionError',
     'FritzActionError',
-    'ServiceError',
-    'FritzServiceError',
-    'FritzArgumentError',
-    'FritzArgumentValueError',
-    'FritzArgumentStringToShortError',
-    'FritzArgumentStringToLongError',
-    'FritzArgumentCharacterError',
-    'FritzInternalError',
     'FritzActionFailedError',
+    'FritzArgumentCharacterError',
+    'FritzArgumentError',
+    'FritzArgumentStringToLongError',
+    'FritzArgumentStringToShortError',
+    'FritzArgumentValueError',
+    'FritzArrayIndexError',
+    'FritzInternalError',
+    'FritzLookUpError',
     'FritzOutOfMemoryError',
     'FritzSecurityError',
-    'FritzLookUpError',
-    'FritzArrayIndexError',
+    'FritzServiceError',
 ]
 
 
@@ -103,15 +101,17 @@ class FritzArgumentValueError(FritzArgumentError):
 
 class FritzArgumentStringToShortError(FritzArgumentValueError):
     """
-    Exception raised by arguments with invalid string length.
-    Inherits from the more generic FritzArgumentValueError.
+    Exception raised by arguments with invalid string length for the
+    string being to short. Inherits from the more generic
+    FritzArgumentValueError.
     """
 
 
 class FritzArgumentStringToLongError(FritzArgumentValueError):
     """
-    Exception raised by arguments with invalid string length.
-    Inherits from the more generic FritzArgumentValueError.
+    Exception raised by arguments with invalid string length for the
+    string being to long. Inherits from the more generic
+    FritzArgumentValueError.
     """
 
 
@@ -128,7 +128,7 @@ class FritzInternalError(FritzConnectionException):
 
 class FritzActionFailedError(FritzInternalError):
     """
-    Exception raised by box unable to run the action.
+    Exception raised by the box unable to execute the action properly.
     Inherits from the more generic FritzInternalError.
     """
 

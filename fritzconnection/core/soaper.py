@@ -1,6 +1,5 @@
 """
-Module handling the SOAP based communication with the router. This
-module has no public api.
+Module handling the SOAP based communication with the router.
 """
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection

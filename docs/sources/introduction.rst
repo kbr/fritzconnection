@@ -1,11 +1,11 @@
 
 
-FritzConnection
-===============
+Introduction
+============
 
-Technically the communication with the Fritz!Box works by UPnP using SCPD and SOAP for information transfer which it itself is based on the TR-064 protocol. The TR-064 protocol is based on ``services`` and ``actions``. A service is a collection of actions for a given topic like WAN-connection, registered hosts and so on.
+Technically the communication with the Fritz!Box works by UPnP using SCPD and SOAP for information transfer which it itself is based on the TR-064 protocol. The TR-064 protocol uses the concepts of ``services`` and ``actions``. A service is a collection of actions for a given topic like WLAN-connections, registered hosts and so on.
 
-FritzConnection manages the inspection of a given Fritz!Box and can access all services and corresponding actions. For some services it is required to provide the user-password for the box. Avaliable services and actions may vary by router models. Also vendor branded models may have modified service sets.
+FritzConnection manages the inspection of a given Fritz!Box and can access all available services and corresponding actions. For some services it is required to provide the user-password for the box. The set of avaliable services and actions may vary by router models. Also vendor branded models may have modified configurations.
 
 
 Internal defaults
@@ -17,13 +17,13 @@ To access the router in a local network, fritzconnection use some default values
     FRITZ_TCP_PORT = 49000
     FRITZ_USERNAME = 'dslf-config'
 
-The ip-adress is a fallback-value common to every fritzbox-router, regardless of the individual configuration. In case of more than a single box in the local network (i.e. multi Fritz!Boxes connected by LAN building multiple WLAN access-points) the option ``-i`` (for the command line) or the keyword-parameter ``address`` (using as a module) is neccessary to address the router, otherwise it is not defined which one of the devices will respond.
+The ip-adress is a fallback-value common to every fritzbox-router, regardless of the individual configuration. In case of more than a single router in the local network (i.e. multiple Fritz!Boxes building a mesh or connected by LAN building multiple WLAN access-points) the option ``-i`` (for the command line) or the keyword-parameter ``address`` (module usage) is required to address the router, otherwise it is not defined which one of the devices will respond.
 
 
 Command line usage
 ------------------
 
-Installing fritzconnection by pip will also install a command line tool to inspect the Fritz!Box-API. With the option ``-h`` this will show a help menu: ::
+Installing fritzconnection by pip will also install the command line tool ``fritzconnection`` to inspect the Fritz!Box-API. With the option ``-h`` this will show a help menu: ::
 
     $ fritzconnection -h
 
@@ -65,7 +65,7 @@ With the option ``-s`` all ``services`` available without a password are listed.
     FritzConnection v1.0
     Unable to login into device to get configuration information.
 
-an additional parameter for the router ip must be provided (newer router models use ``192.1689.178.1`` as factory setting): ::
+an additional parameter for the router ip must be provided (newer router models use ``192.1689.178.1`` as factory setting) by using the ``-i`` option: ::
 
     $ fritzconnection -s -i 192.168.178.1
 
@@ -117,7 +117,7 @@ All service-names are ending with a numeric value. In case a service is listed m
 Services and actions
 ....................
 
-Every ``service`` has a set of corresponding ``actions``. A list of all actions  is reported by the flag ``-S`` with the servicename as parameter: ::
+Every ``service`` has a set of corresponding ``actions``. The actions are listed by the flag ``-S`` with the servicename as parameter: ::
 
     $ fritzconnection -i 192.168.178.1 -p <password> -S WANIPConnection1
 
@@ -150,7 +150,7 @@ A list of all available actions with their corresponding ``arguments`` is report
 
     $ fritzconnection -i 192.168.178.1 -p <password> -a WANIPConnection1
 
-This can return a lengthy output. So the arguments for a single action of a given service can get listed with the option ``-A`` and the service- and actionname as arguments. For example the output for the service ``WANIPConnection1`` and the action ``GetInfo`` will be: ::
+This can return a lengthy output. So the arguments for a single action of a given service can also get listed with the option ``-A`` and the service- and actionname as arguments. For example the output for the service ``WANIPConnection1`` and the action ``GetInfo`` will be: ::
 
     $ fritzconnection -i 192.168.178.1 -p <password> -A WANIPConnection1 GetInfo
 
@@ -188,7 +188,7 @@ For every action all arguments are listed with their name, direction and type. (
 Module usage
 ------------
 
-FritzConnection works by calling actions on services and can send and receive action-arguments. It can be used to write applications on top of it. A simple example is to reconnect the router with the provider to get a new external ip: ::
+FritzConnection works by calling actions on services and can send and receive action-arguments. A simple example is to reconnect the router with the provider to get a new external ip: ::
 
     from fritzconnection import FritzConnection
 
@@ -202,9 +202,6 @@ The method ``call_action`` takes the two required arguments: the service- and ac
 .. note ::
     Once a FritzConnection instance has been created, it can be reused for all future call_action calls. Because instantiation is expensive (doing a lot of i/o) this can increase performance significantly.
 
-The next is an example for a call that does something, but takes no action-arguments and returns no result. For reconnection there is also a buildin shortcut in fritzconnection: ::
-
-    fc.reconnect()
 
 Let's look at another example using an address (``192.168.178.1``) and calling an action (``GetInfo``) on a service (``WLANConfiguration``) that requires a password: ::
 
@@ -215,7 +212,7 @@ Let's look at another example using an address (``192.168.178.1``) and calling a
 
 Calling the service ``WLANConfiguration1`` without giving a password to FritzConnection will raise a ``FritzServiceError``. Providing a wrong password will raise a ``FritzConnectionError``.
 
-In case that the servicename is given without a numeric extension (i.e '1') fritzconnection adds the extension '1' by default. So ``WLANConfiguration`` becomes ``WLANConfiguration1``. The extension is required if there are multiple services with the same name. This can be the case for the *WLANConfigurations* if the router supports 2.4 GHz and 5 GHz and may be an additional Guest-Network. For backward compatibility historically servicenames like ``WLANConfiguration:1`` are also accepted.
+In case that the servicename is given without a numeric extension (i.e '1') fritzconnection adds the extension '1' by default. So ``WLANConfiguration`` becomes ``WLANConfiguration1``. The extension is required if there are multiple services with the same name. For backward compatibility servicenames like ``WLANConfiguration:1`` are also accepted.
 
 The result of calling the ``call_action`` method is always a dictionary with the ``argument`` names as keys. The values are the output-arguments from the Fritz!Box. In the above example 'state' will be something like this: ::
 
@@ -243,13 +240,13 @@ These informations are indicating that the WLAN network is up and operating on c
 
 To activate or deactivate the network, the action ``SetEnable`` can get called. Inspection gives informations about the required arguments: ::
 
-    $ $ fritzconnection -i 192.168.178.1 -p <password> -A WLANConfiguration3 SetEnable
+    $ $ fritzconnection -i 192.168.178.1 -p <password> -A WLANConfiguration1 SetEnable
 
     FritzConnection v1.0
     FRITZ!Box 7590 at ip 192.168.178.1
     FRITZ!OS: 7.12
 
-    Service:            WLANConfiguration3
+    Service:            WLANConfiguration1
     Action:             SetEnable
     Parameters:
 
@@ -265,7 +262,7 @@ Here just one argument is listed for the 'in'-direction. That means that this ar
     fc = FritzConnection(address='192.168.178.1', password='the_password')
     fc.call_action('WLANConfiguration1', 'SetEnable', NewEnable=0)
 
-This call will deactivate the network. As there are no arguments listed for the 'out'-direction, the call will return no result.
+This call will deactivate the network. As there are no arguments listed for the 'out'-direction, the call will return no result. (Please keep in mind: don't deactivate a wireless network by not having a cable connection.)
 
 The ``call_action`` method also accepts a keyword-only argument with the name ``arguments`` that must be a dictionary with all input-parameters as key-value pairs. This is convenient for calls with multiple arguments for the in-direction (new since 1.0): ::
 
@@ -323,50 +320,18 @@ Depending on the settings this will result in an output like this: ::
     WLANConfiguration3: {'SSID': 'FRITZ!Box Gastzugang', 'Channel': 6, 'Status': 'Disabled'}
 
 
-The modules in the fritzconnection library (modules in the lib-folder) can be used as code-examples of how to use fritzconnection-module.
+The modules in the fritzconnection library (modules in the lib-folder) can be used as code-examples of how to use fritzconnection.
 
 
 Exceptions
 ----------
 
-FritzConnection can raise several exceptions. For example using a service not provided by a specific router model will raise a ``FritzServiceError``. This and all other errors are defined in ``fritzconnection.core.exceptions`` and can get imported from this module: ::
+FritzConnection can raise several exceptions. For example using a service not provided by a specific router model will raise a ``FritzServiceError``. This and all other errors are defined in ``fritzconnection.core.exceptions`` and can get imported from this module (i.e. the ``FritzServiceError``): ::
 
     from fritzconnection.core.exceptions import FritzServiceError
 
 
-Exception Hierarchie
-....................
-
-::
-
-    FritzConnectionException
-                    |
-                    |--> ActionError --> FritzActionError
-                    |--> ServiceError --> FritzServiceError
-                    |
-                    |--> FritzArgumentError
-                    |       |
-                    |       |--> FritzArgumentValueError
-                    |               |
-                    |               |--> FritzArgumentStringToShortError
-                    |               |--> FritzArgumentStringToLongError
-                    |               |--> FritzArgumentCharacterError
-                    |
-                    |--> FritzInternalError
-                    |       |
-                    |       |--> FritzActionFailedError
-                    |       |--> FritzOutOfMemoryError
-                    |
-                    |--> FritzSecurityError
-                    |
-                    |-->|--> FritzLookUpError
-                    |   |
-    KeyError -------+-->|
-                    |
-                    |
-                    |-->|--> FritzArrayIndexError
-                        |
-    IndexError -------->|
+.. include:: exceptions_hierarchy.rst
 
 
-All exceptions are inherited from ``FritzConnectionException``. ``FritzServiceError`` and ``FritzActionError`` are superseding the older ``ServiceError`` and ``ActionError`` exceptions, that are still defined for backward compatibility. These exceptions are raised by calling unknown services and actions. All other exceptions are raised according to errors reported from the router. ``FritzLookUpError`` and ``FritzArrayIndexError`` are conceptually the same as a Python ``KeyError`` or ``IndexError``. Therefor they are also inherited from these Exceptions and can get catched by this super classes.
+All exceptions are inherited from ``FritzConnectionException``. ``FritzServiceError`` and ``FritzActionError`` are superseding the older ``ServiceError`` and ``ActionError`` exceptions, that are still existing for backward compatibility. These exceptions are raised by calling unknown services and actions. All other exceptions are raised according to errors reported from the router. ``FritzLookUpError`` and ``FritzArrayIndexError`` are conceptually the same as a Python ``KeyError`` or ``IndexError``. Because of this they are also inherited from these Exceptions.

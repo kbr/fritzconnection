@@ -5,7 +5,7 @@ The fritzconnection package is available on `PyPi <https://pypi.org/>`_ and inst
 
     $ pip install fritzconnection
 
-This installation will also install the required package `requests <http://docs.python-requests.org/>`_. If this does not work (for whatever reason) this can can also get installed by pip: ::
+This installation will also install the required package `requests <http://docs.python-requests.org/>`_. If this does not work (for whatever reason) requests can also installed by pip: ::
 
     $ pip install requests
 

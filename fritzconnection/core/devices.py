@@ -1,7 +1,6 @@
 """
 Implements the DeviceManager for physical and virtual devices. Every
-physical device (a router) has a set of virtual subdevices. This module
-has no public api.
+physical device (a router) has a set of virtual subdevices.
 """
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection

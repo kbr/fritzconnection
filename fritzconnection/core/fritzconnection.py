@@ -100,7 +100,7 @@ class FritzConnection:
     @property
     def system_version(self):
         """
-        Returns system version if available, otherwise None.
+        Returns system version if known, otherwise None.
         """
         return self.device_manager.system_version
 

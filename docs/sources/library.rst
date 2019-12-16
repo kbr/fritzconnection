@@ -1,7 +1,7 @@
 Library Modules
 ===============
 
-The library is a package with some modules on top of FritzConnection to address some specific tasks. Also they can be used as examples on how to use FritzConnection.
+The library is a package with modules on top of FritzConnection to address specific tasks. Also they can be used as examples on how to use FritzConnection.
 
 
 FritzHosts
@@ -72,14 +72,10 @@ For periodic calls, an instance of FritzStatus (resp. FritzConnection) should on
     import time
     from fritzconnection.lib.fritzstatus import FritzStatus
 
-    def main(ip='192.168.178.1', pw='password'):
-        fc = FritzStatus(address=ip, password=pw)
-        while True:
-            print(fc.str_transmission_rate)
-            time.sleep(2)
-
-    if __name__ == '__main__':
-        main()
+    fc = FritzStatus(address='192.168.178.1', password='password')
+    while True:
+        print(fc.str_transmission_rate)
+        time.sleep(2)
 
 This will report an output like this: ::
 
