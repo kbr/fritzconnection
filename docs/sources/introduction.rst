@@ -313,7 +313,7 @@ Let's write a simple module using fritzconnection to report the WLAN status of a
         main(address='192.168.178.1', password='the_password')
 
 
-Depending on the settings this will result in an output like this: ::
+Depending on the settings this will give an output like this: ::
 
     WLANConfiguration1: {'SSID': 'the_wlan_name', 'Channel': 6, 'Status': 'Up'}
     WLANConfiguration2: {'SSID': 'the_wlan_name', 'Channel': 100, 'Status': 'Up'}

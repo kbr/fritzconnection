@@ -13,6 +13,16 @@ fritzconnection is a `Python <https://www.python.org/>`_ library to communicate 
 
 The available services are depending on the Fritz!Box model and the according system software. fritzconnection can list and access all available services and actions of a given box.
 
+Using fritzconnection is as easy as: ::
+
+    from fritzconnection import FritzConnection
+
+    fc = FritzConnection(address='192.168.178.1')
+    fc.reconnect()  # get a new external ip from the provider
+    print(fc)  # print router model informations
+
+For more informations refer to Installation and Introduction.
+
 **Note**: fritzconnection is neither related to nor supported by AVM. Also AVM reserves the right to add, modify or remove features of their products at any time without notice.
 
 
