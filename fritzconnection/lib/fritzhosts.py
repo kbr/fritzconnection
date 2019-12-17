@@ -2,6 +2,11 @@
 Modul to list the known hosts. Older versions of FritzOS lists only up
 to 16 entries. For newer versions this limitation is gone.
 """
+# This module is part of the FritzConnection package.
+# https://github.com/kbr/fritzconnection
+# License: MIT (https://opensource.org/licenses/MIT)
+# Author: Klaus Bremer
+
 
 import itertools
 from ..core.fritzconnection import FritzConnection
@@ -14,8 +19,8 @@ class FritzHosts:
     """
     Class to list all known hosts. All parameters are optional. If
     given, they have the following meaning: *fc* is an instance of
-    FritzConnection, *address* the ip of the Fritz!Box, the *port* of
-    the Fritz!Box and the according *user* and *password*.
+    FritzConnection, *address* the ip of the Fritz!Box, *port* the port
+    to connect to, *user* the username, *password* the password.
     """
 
     def __init__(self, fc=None, address=None, port=None, user=None, password=None):
