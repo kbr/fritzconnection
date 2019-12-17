@@ -13,9 +13,7 @@ fritzconnection is structured into subpackages: ::
                       |          |-- soaper
                       |          |-- utils
                       |
-                      |-- lib ---|-- fritzhosts
-                      |          |-- fritzstatus
-                      |
+                      |-- lib
                       |-- tests
 
 

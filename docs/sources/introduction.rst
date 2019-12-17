@@ -5,7 +5,7 @@ Introduction
 
 Technically the communication with the Fritz!Box works by UPnP using SCPD and SOAP for information transfer which it itself is based on the TR-064 protocol. The TR-064 protocol uses the concepts of ``services`` and ``actions``. A service is a collection of actions for a given topic like WLAN-connections, registered hosts and so on.
 
-FritzConnection manages the inspection of a given Fritz!Box and can access all available services and corresponding actions. For some services it is required to provide the user-password for the box. The set of avaliable services and actions may vary by router models. Also vendor branded models may have modified configurations.
+FritzConnection manages the inspection of a given Fritz!Box and can access all available services and corresponding actions. For some services it is required to provide the user-password for the box. The set of available services and actions may vary by router models.
 
 
 Internal defaults

@@ -3,6 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+
 fritzconnection documentation
 =============================
 
@@ -11,9 +12,7 @@ fritzconnection is a `Python <https://www.python.org/>`_ library to communicate 
 
 .. image:: fritzconnection-360x76.png
 
-The available services are depending on the Fritz!Box model and the according system software. fritzconnection can list and access all available services and actions of a given box.
-
-Using fritzconnection is as easy as: ::
+The available services are depending on the Fritz!Box model and the according system software. fritzconnection can list and access all available services and actions of a given box. Using fritzconnection is as easy as: ::
 
     from fritzconnection import FritzConnection
 
@@ -23,7 +22,7 @@ Using fritzconnection is as easy as: ::
 
 For more informations refer to Installation and Introduction.
 
-**Note**: fritzconnection is neither related to nor supported by AVM. Also AVM reserves the right to add, modify or remove features of their products at any time without notice.
+**Note:** fritzconnection is neither related to nor supported by AVM. Also AVM reserves the right to add, modify or remove features of their products at any time without notice.
 
 
 .. toctree::
