@@ -156,3 +156,39 @@ FritzStatus API
 .. automodule:: fritzconnection.lib.fritzstatus
     :members:
 
+
+FritzWLAN
+---------
+
+Module for accessing basic WLANConfiguration settings. The command line tool gives an overview of active devices: ::
+
+    $ fritzwlan -i 192.168.178.1 -p <password>
+    FRITZ!Box 7590 at ip 192.168.178.1
+    FRITZ!OS: 7.12
+    Hosts registered at WLANConfiguration1:
+    WLAN name: the wlan name
+    channel  : 6
+    index  active                 mac                ip  signal   speed
+        0       1   E2:25:06:83:64:C5    192.168.178.24      51      86
+
+    Hosts registered at WLANConfiguration2:
+    WLAN name: the wlan name
+    channel  : 36
+    index  active                 mac                ip  signal   speed
+        0       1   A0:99:9B:10:09:81    192.168.178.28      91    1300
+
+
+Example to get the total number of known WLAN-devices for all WLANConfigurations: ::
+
+    from fritzconnection.lib.fritzwlan import FritzWLAN
+
+    fw = FritzWLAN(address='192.168.178.1', password='password')
+    print(fw.total_host_numbers)
+
+
+FritzWLAN API
+.............
+
+.. automodule:: fritzconnection.lib.fritzwlan
+    :members:
+
