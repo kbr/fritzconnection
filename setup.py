@@ -38,5 +38,6 @@ setup(
         'fritzhomeauto = fritzconnection.cli.fritzhomeauto:main',
         'fritzhosts = fritzconnection.cli.fritzhosts:main',
         'fritzstatus = fritzconnection.cli.fritzstatus:main',
+        'fritzwlan = fritzconnection.cli.fritzwlan:main',
     ]}
 )
