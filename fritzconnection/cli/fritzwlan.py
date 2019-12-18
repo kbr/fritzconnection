@@ -50,7 +50,10 @@ def report_devices(arguments):
                    service=arguments.service)
     print(fw.fc)
     if arguments.service:
-        report_wlanconfiguration(fw, arguments.service)
+        try:
+            report_wlanconfiguration(fw, arguments.service)
+        except FritzServiceError as err:
+            print(f'Error: {err}')
     else:
         for n in itertools.count(1):
             try:
