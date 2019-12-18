@@ -4,6 +4,70 @@ Library Modules
 The library is a package with modules on top of FritzConnection to address specific tasks. Also they can be used as examples on how to use FritzConnection.
 
 
+FritzHomeAutomation
+-------------------
+
+Can access Homeautomation devices to read the current states and set the status of switches. Usage from the command line: ::
+
+    $ fritzhomeauto -i 192.168.178.1 -p <password>
+    FRITZ!Box 7590 at ip 192.168.178.1
+    FRITZ!OS: 7.12
+    Status of registered home-automation devices:
+
+    Device Name             AIN                 Power[W]   t[°C]   switch
+    FRITZ!DECT 210 #1       '11657 0240192'        0.000    23.5   on
+
+The optional ``-v`` flag will give a verbose report about all device informations, including the settings of radiator controls.
+
+The ``-s`` flag can set the state of switches. This flag requires two parameters: the device identifier (AIN) and the state to set [on|off]. The following example will switch off the device with the identifier '11657 0240192': ::
+
+    $ fritzhomeauto -i 192.168.178.1 -p <password> -s '11657 0240192' off
+
+
+Example on how to get informations about the known devices by using a module: ::
+
+    from fritzconnection.lib.fritzhomeauto import FritzHomeAutomation
+
+    fha = FritzHomeAutomation(address='192.168.178.1', password=<password>)
+    info = fha.device_informations())
+
+'info' is a list of dictionaries describing the devices: ::
+
+    [{'NewAIN': '11657 0240192',
+      'NewDeviceId': 16,
+      'NewDeviceName': 'FRITZ!DECT 210 #1',
+       ...
+      'NewHkrComfortVentilStatus': 'CLOSED',
+       ...
+      'NewMultimeterEnergy': 75,
+      'NewMultimeterIsEnabled': 'ENABLED',
+       ...
+      'NewSwitchState': 'ON',
+      'NewTemperatureCelsius': 265,
+      'NewTemperatureIsEnabled': 'ENABLED',
+      'NewTemperatureIsValid': 'VALID',
+      'NewTemperatureOffset': 0}]
+
+Depending on the device, different informations will get reported. Informations about a specific device can get obtained with the identifier *NewAIN*. The next example shows how to get the temperature in °C, taken the *NewAIN* from device_informations() call: ::
+
+    ain = '11657 0240192'
+    fha.get_device_information_by_identifier(ain)['NewTemperatureCelsius'] * 0.1
+
+
+It is also easy to toggle a switch (like a FRITZ!DECT 200/210 device): ::
+
+    fha.set_switch(ain, on=True)
+
+This will turn the switch with the given identifier *on* or *off* depending whether the parameter 'on' is **True** or **False**. Usecases can be to set a switch depending on the temperature or daytime.
+
+
+FritzHomeAutomation  API
+........................
+
+.. automodule:: fritzconnection.lib.fritzhomeauto
+    :members:
+
+
 FritzHosts
 ----------
 
