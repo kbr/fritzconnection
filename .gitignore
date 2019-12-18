@@ -10,7 +10,6 @@ lib_
 .vscode/*
 bin
 include
-lib
 .tox
 .coverage
 .coveralls.yml
