@@ -183,7 +183,7 @@ Example to get the total number of known WLAN-devices for all WLANConfigurations
     from fritzconnection.lib.fritzwlan import FritzWLAN
 
     fw = FritzWLAN(address='192.168.178.1', password='password')
-    print(fw.total_host_numbers)
+    print(fw.total_host_number)
 
 
 FritzWLAN API

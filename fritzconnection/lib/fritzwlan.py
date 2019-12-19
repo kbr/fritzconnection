@@ -39,7 +39,7 @@ class FritzWLAN:
         return self.fc.call_action(service, actionname, **kwargs)
 
     @property
-    def host_numbers(self):
+    def host_number(self):
         """
         Number of registered wlan devices for the active
         WLANConfiguration.
@@ -48,7 +48,7 @@ class FritzWLAN:
         return result['NewTotalAssociations']
 
     @property
-    def total_host_numbers(self):
+    def total_host_number(self):
         """
         Total NewAssociatedDeviceIndexumber of registered wlan devices
         for all WLANConfigurations.
