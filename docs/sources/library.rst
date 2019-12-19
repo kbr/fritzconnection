@@ -1,7 +1,47 @@
 Library Modules
 ===============
 
-The library is a package with modules on top of FritzConnection to address specific tasks. Also they can be used as examples on how to use FritzConnection.
+The library is a package with modules on top of FritzConnection to address specific tasks. They can be used as examples on how to use FritzConnection and to write more specialised modules.
+
+
+FritzCall
+---------
+
+Allows access to history of phone calls: incoming, outgoing and missed ones. Usage from the command line: ::
+
+    $ fritzcall -i 192.168.178.1 -p <password> -t in -d 7
+    FRITZ!Box 7590 at ip 192.168.178.1
+    FRITZ!OS: 7.12
+
+    List of calls: in
+
+      type   number                           date/time    duration
+
+      ...
+      a lot of entries here
+      ...
+
+
+The flag ``-t`` indicates the type of calls to get listed: ``in | out | missed``. It -t is not given, all calls are listed (up to 999). The flag ``-d`` is the number of days to look back for calls e.g. 1: calls from today and yesterday, 7: calls from the complete last week.
+
+For using a module here is an example to list all missed calls: ::
+
+    from fritzconnection.lib.fritzcall import FritzCall
+
+    fc = FritzCall(address='192.168.178.1', password=<password>)
+    calls = fc.get_missed_calls()
+    for call in calls:
+        print(call)
+
+
+
+FritzCall  API
+..............
+
+.. automodule:: fritzconnection.lib.fritzcall
+    :members:
+
+
 
 
 FritzHomeAutomation
@@ -58,7 +98,7 @@ It is also easy to toggle a switch (like a FRITZ!DECT 200/210 device): ::
 
     fha.set_switch(ain, on=True)
 
-This will turn the switch with the given identifier *on* or *off* depending whether the parameter 'on' is **True** or **False**. Usecases can be to set a switch depending on the temperature or daytime.
+This will turn the switch with the given identifier *on* or *off* depending whether the parameter 'on' is *True* or *False*. Usecases can be to set a switch depending on the temperature or daytime.
 
 
 FritzHomeAutomation  API
