@@ -15,9 +15,6 @@ from .utils import (
 )
 
 
-#__all__ = ['Description']
-
-
 # ---------------------------------------------------------
 # processor, decorator and descriptors here:
 # ---------------------------------------------------------
