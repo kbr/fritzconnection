@@ -58,7 +58,7 @@ class FritzWLAN:
         for service in itertools.count(1):
             self.service = service
             try:
-                total += self.host_numbers
+                total += self.host_number
             except FritzServiceError:
                 break
         self.service = _service
