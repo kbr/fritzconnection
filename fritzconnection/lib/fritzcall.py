@@ -116,6 +116,17 @@ class FritzCall:
         """
         return self.get_calls(OUT_CALL_TYPE, update, num, days)
 
+    def dial(self, number):
+        """
+        Dials the given *number* (number must be a string, as phone
+        numbers are allowed to start with leading zeros). **Note:** The
+        dial-help of the Fritz!Box must be activated to make this work.
+        This method has no return value, but will raise an error
+        reported from the Fritz!Box on failure.
+        """
+        arg = {'NewX_AVM-DE_PhoneNumber': number}
+        self.fc.call_action('X_VoIP1', 'X_AVM-DE_DialNumber', arguments=arg)
+
 
 class AttributeConverter:
     """
