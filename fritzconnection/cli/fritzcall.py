@@ -8,11 +8,14 @@ from ..core.fritzconnection import (
 from ..lib.fritzcall import FritzCall
 
 
-def report_calls(arguments):
-    fc = FritzCall(address=arguments.address,
-                   port=arguments.port,
-                   user=arguments.username,
-                   password=arguments.password)
+def get_fritzcall(arguments):
+    return FritzCall(address=arguments.address,
+                     port=arguments.port,
+                     user=arguments.username,
+                     password=arguments.password)
+
+
+def report_calls(fc, arguments):
     print(fc.fc)
     days = arguments.days
     num = arguments.num if not days else None
@@ -33,6 +36,12 @@ def report_calls(arguments):
     print(f'{type_:>6}   {number:24}{time:>18}{duration:>12}\n')
     for call in calls:
         print(call)
+
+
+def dial_number(fc, number):
+    print(f'dialing number: {number}')
+    fc.dial(number)
+    print('dialing done, please wait for signal.')
 
 
 def get_cli_arguments():
@@ -62,6 +71,9 @@ def get_cli_arguments():
     parser.add_argument('-t', '--type',
                         nargs='?', default=None, const=None,
                         help='type of calls: [in|out|missed]')
+    parser.add_argument('-c', '--call',
+                        nargs='?', default=None, const=None,
+                        help='phone number to call')
     args = parser.parse_args()
     return args
 
@@ -70,8 +82,12 @@ def main():
     arguments = get_cli_arguments()
     if not arguments.password:
         print('Exit: password required.')
+        return
+    fc = get_fritzcall(arguments)
+    if arguments.call:
+        dial_number(fc, arguments.call)
     else:
-        report_calls(arguments)
+        report_calls(fc, arguments)
 
 
 if __name__ == '__main__':
