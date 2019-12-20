@@ -1,6 +1,7 @@
 
 import argparse
 
+from .. import package_version
 from ..core.fritzconnection import (
     FRITZ_IP_ADDRESS,
     FRITZ_TCP_PORT,
@@ -16,6 +17,7 @@ def get_fritzcall(arguments):
 
 
 def report_calls(fc, arguments):
+    print(f'\nFritzConnection v{package_version}')
     print(fc.fc)
     days = arguments.days
     num = arguments.num if not days else None

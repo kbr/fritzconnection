@@ -1,6 +1,7 @@
 
 import argparse
 
+from .. import package_version
 from ..lib.fritzhomeauto import FritzHomeAutomation
 from ..core.fritzconnection import (
     FRITZ_IP_ADDRESS,
@@ -36,6 +37,7 @@ def report_compact(fh):
 
 
 def report_status(fh, arguments):
+    print(f'\nFritzConnection v{package_version}')
     print(fh.fc)
     print('Status of registered home-automation devices:\n')
     if arguments.verbose:
