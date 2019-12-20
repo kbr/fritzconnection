@@ -46,11 +46,12 @@ def timedelta_converter(duration_string):
 
 class FritzCall:
     """
-    Gives access to lists of recent phone calls: incoming, outgoing and
-    missed ones. All parameters are optional. If given, they have the
-    following meaning: *fc* is an instance of FritzConnection, *address*
-    the ip of the Fritz!Box, *port* the port to connect to, *user* the
-    username, *password* the password.
+    Can dial phone numbers and gives access to lists of recent phone
+    calls: incoming, outgoing and missed ones. All parameters are
+    optional. If given, they have the following meaning: *fc* is an
+    instance of FritzConnection, *address* the ip of the Fritz!Box,
+    *port* the port to connect to, *user* the username, *password* the
+    password.
     """
     def __init__(self, fc=None, address=None, port=None,
                        user=None, password=None):
@@ -72,11 +73,11 @@ class FritzCall:
     def get_calls(self, calltype=ALL_CALL_TYPES, update=True,
                         num=None, days=None):
         """
-        Return a list of Call instances of all call types. If *update*
-        is True, all calls are reread from the router. *num* maximum
-        number of entries in call list. *days* number of days to look
-        back for calls e.g. 1: calls from today and yesterday, 7: calls
-        from the complete last week.
+        Return a list of Call instances of type calltypes. If calltype
+        is 0 all calls are listet. If *update* is True, all calls are
+        reread from the router. *num* maximum number of entries in call
+        list. *days* number of days to look back for calls e.g. 1: calls
+        from today and yesterday, 7: calls from the complete last week.
         """
         if not self.calls:
             update = True
@@ -119,10 +120,10 @@ class FritzCall:
     def dial(self, number):
         """
         Dials the given *number* (number must be a string, as phone
-        numbers are allowed to start with leading zeros). **Note:** The
-        dial-help of the Fritz!Box must be activated to make this work.
-        This method has no return value, but will raise an error
-        reported from the Fritz!Box on failure.
+        numbers are allowed to start with leading zeros). This method
+        has no return value, but will raise an error reported from the
+        Fritz!Box on failure. **Note:** The dial-help of the Fritz!Box
+        must be activated to make this work.
         """
         arg = {'NewX_AVM-DE_PhoneNumber': number}
         self.fc.call_action('X_VoIP1', 'X_AVM-DE_DialNumber', arguments=arg)

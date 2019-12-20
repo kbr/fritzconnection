@@ -200,7 +200,7 @@ At first an instance of FritzConnection must be created (#1). There can be a sho
 The method ``call_action`` takes the two required arguments: the service- and action-name as strings. In case that a service or action is unknown (because of a typo or incompatible router model) fritzconnection will raise a ``FritzServiceError``. If the service is known, but not the action, then a ``FritzActionError`` gets raised.
 
 .. note ::
-    Once a FritzConnection instance has been created, it can be reused for all future call_action calls. Because instantiation is expensive (doing a lot of i/o) this can increase performance significantly.
+    Once a FritzConnection instance has been created, it can be reused for all future call_action calls. Because instantiation is expensive (doing a lot of i/o for API inspection) this can increase performance significantly.
 
 
 Let's look at another example using an address (``192.168.178.1``) and calling an action (``GetInfo``) on a service (``WLANConfiguration``) that requires a password: ::

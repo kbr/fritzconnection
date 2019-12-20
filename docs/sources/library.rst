@@ -3,11 +3,33 @@ Library Modules
 
 The library is a package with modules on top of FritzConnection to address specific tasks. They can be used as examples on how to use FritzConnection and to write more specialised modules.
 
+**Performance considerations:**
+
+Creating a FritzConnection instance will inspect the Fritz!Box API to get informations about all availabe services and corresponding actions. As this is i/o based it's generally slow. However this has to be done for initialisation. But once an instance is created, it can be reused for all tasks. Creating a single instance for an application may be sufficient for most tasks. For this all library classes can optionally initialised with an existing FritzConnection instance: ::
+
+    from fritzconnection import FritzConnection
+    from fritzconnection.lib.fritzhomeauto import FritzHomeAutomation
+    from fritzconnection.lib.fritzwlan import FritzWLAN
+
+    fc = FritzConnection(address='192.168.178.1', password=<password>)
+    print(fc)
+    # doing more stuff here
+    # now there is the need to get the number of devices connected by WLAN:
+    # FritzWLAN can be initialised with an existing FritzConnection instance
+    fw = FritzWLAN(fc)
+    print(fw.total_host_number)
+    # doing some homeautomation:
+    fh = FritzHomeAutomation(fc)
+    ain = '11657 0240192'  # assume the AIN of the switch is known
+    fh.set_switch(ain, on=True)
+
+The next sections will describe the library modules in detail.
+
 
 FritzCall
 ---------
 
-Allows access to history of phone calls: incoming, outgoing and missed ones. Usage from the command line: ::
+Can dial phone numbers and allows access to history of phone calls: incoming, outgoing and missed ones. Usage from the command line: ::
 
     $ fritzcall -i 192.168.178.1 -p <password> -t in -d 7
     FRITZ!Box 7590 at ip 192.168.178.1
@@ -22,7 +44,14 @@ Allows access to history of phone calls: incoming, outgoing and missed ones. Usa
       ...
 
 
-The flag ``-t`` indicates the type of calls to get listed: ``in | out | missed``. It -t is not given, all calls are listed (up to 999). The flag ``-d`` is the number of days to look back for calls e.g. 1: calls from today and yesterday, 7: calls from the complete last week.
+The flag ``-t`` indicates the type of calls to get listed: ``in | out | missed``. It ``-t`` is not given, all calls are listed (up to 999). The flag ``-d`` is the number of days to look back for calls e.g. 1: calls from today and yesterday, 7: calls from the complete last week.
+
+FritzCall provides to dial numbers by the method ``dial``. This method can also invoked by the command line with the flag ``-c`` or ``--call``. *Note:* To make this work it is required to activate the dial-help service of the router first. ::
+
+    $ fritzcall -i 192.168.178.1 -p <password> -c <phonenumber>
+    dialing number: <phonenumber>
+    dialing done, please wait for signal.
+
 
 For using a module here is an example to list all missed calls: ::
 
@@ -32,6 +61,11 @@ For using a module here is an example to list all missed calls: ::
     calls = fc.get_missed_calls()
     for call in calls:
         print(call)
+
+Calling back the last missed call is easy: ::
+
+    missed_number = calls[0].Caller  # Caller attribute holds the number
+    fc.dial(missed_number)  # now dial it
 
 
 
