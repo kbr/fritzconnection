@@ -13,9 +13,9 @@ Author: Klaus Bremer
 import argparse
 import os
 
-from ..core import (
+from ..core.exceptions import FritzConnectionException
+from ..core.fritzconnection import (
     FritzConnection,
-    FritzConnectionException,
     FRITZ_IP_ADDRESS,
     FRITZ_TCP_PORT,
 )

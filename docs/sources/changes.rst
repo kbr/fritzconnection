@@ -3,12 +3,18 @@
 Version History
 ===============
 
+1.0.1
+-----
+
+- Bugfix in fritzinspection for command line based inspection of the Fritz!Box API.
+
+
 1.0
 ---
 
 - Requires Python 3.6 or newer. The 0.8.x release is the last version supporting Python 2.7 and Python 3 up to 3.5
 - The ``lxml`` library is no longer a dependency.
-- New project layout. Library modules are now located the new ``lib`` package.
+- New project layout. Library modules are now located in the new ``lib`` package.
 - Rewrite of the description parser.
 - Errors reported by the Fritz!Box are now raising specific exceptions.
 
