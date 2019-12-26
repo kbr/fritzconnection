@@ -9,7 +9,7 @@ from ..core.exceptions import FritzServiceError
 from .fritztools import format_num, format_rate
 
 
-class FritzStatus(object):
+class FritzStatus:
     """
     Class for requesting status-informations:
     up, down, ip, activity (bytes per second send/received).
@@ -25,7 +25,6 @@ class FritzStatus(object):
         :fc: instance of FritzConnection.
         :address: ip of the Fritz!Box
         """
-        super().__init__()
         self.fc = fc if fc else FritzConnection(address, port, user, password)
         # depending on the model (i.e. a repeater) some services
         # may not be available. Don't let FritzStatus crash at init.
