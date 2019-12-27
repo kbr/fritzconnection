@@ -1,5 +1,5 @@
 """
-Module to access phonebooks and their content.
+Module for read-only access to the contents of the Fritz!Box phonebooks.
 """
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection
@@ -16,6 +16,9 @@ from ..core.processor import (
     ValueSequencer,
 )
 from ..core.utils import get_xml_root
+
+
+__all__ = ['FritzPhonebook']
 
 
 SERVICE = 'X_AVM-DE_OnTel'
@@ -41,12 +44,17 @@ class FritzPhonebook(object):
 
     @property
     def modelname(self):
+        """
+        The router modelname.
+        """
         return self.fc.modelname
 
     @property
-    def list_phonebooks(self):
+    def phonebook_ids(self):
         """
-        List of integers identifying the phonebooks.
+        List of integers identifying the phonebooks. This property is
+        defined as *phonebook_ids* and as *list_phonebooks* for backward compatibility. The property *list_phonebooks* is deprecated and
+        may get removed in the future.
         """
         result = self._action('GetPhonebookList')
         try:
@@ -56,10 +64,14 @@ class FritzPhonebook(object):
             return []
         return res
 
+    # legathy api name for backward compatibility
+    list_phonebooks = phonebook_ids
+
     def phonebook_info(self, id):
         """
-        Get the name, URL and an optional extra id of the phone book
-        with integer `id`.
+        Get the *name*, *url* and an optional *extra id* of the
+        phonebook with integer `id`. Returns a dictionary with the keys
+        `name`, `url` and `xid`.
         """
         result = self._action('GetPhonebook', NewPhonebookId=id)
         return {
@@ -71,36 +83,47 @@ class FritzPhonebook(object):
     def get_all_names(self, id):
         """
         Get a dictionary with all names and their phone numbers for the
-        phone book with `id`.
+        phonebook with `id`.
         """
         url = self.phonebook_info(id)['url']
-        self.read_phonebook(url)
+        self._read_phonebook(url)
         return {
             contact.name: contact.numbers
             for contact in self.phonebook.contacts
         }
 
+    def get_all_numbers(self, id):
+        """
+        Get a dictionary with all phone numbers and the according names
+        for the phonebook with `id`.
+        """
+        reverse_contacts = dict()
+        for name, numbers in self.get_all_names(id).items():
+            for number in numbers:
+                reverse_contacts[number] = name
+        return reverse_contacts
+
     def lookup_numbers(self, id, name):
         """
-        Look up the phone numbers of contact `name` in the phone book with
-        `id`. Returns a list of numbers. Raise a KeyError if the name is unknown.
+        Look up the phone numbers of contact `name` in the phonebook
+        with `id`. Returns a list of numbers. Will raise a KeyError if
+        the name is unknown.
         """
         return self.get_all_names(id)[name]
 
     def lookup_names(self, id, number):
         """
-        Look up the names of the contacts with phone number `number`
-        in the phone book with `id`.
+        Look up the names of the contacts with phone number `number` in
+        the phonebook with `id`. Will raise a KeyError if the number is
+        unknown.
         """
-        nd = {}
-        for name, numbers in self.get_all_names(id).items():
-            for phonenumber in numbers:
-                nd[phonenumber] = name
-        return nd[number]
+        return self.get_all_numbers(id)[number]
 
-    def read_phonebook(self, url):
+    def _read_phonebook(self, url):
         """
-        Read the content of the phonebook with the given `url`.
+        Read the content of the phonebook with the given `url`. This
+        method sets the phone book instance attribute and has no return
+        value.
         """
         root = get_xml_root(url)
         self.phonebook = Phonebook()
@@ -172,4 +195,3 @@ class Phonebook(Storage):
         self.timestamp = None
         self.contacts = list()
         super().__init__(self.contacts)
-
