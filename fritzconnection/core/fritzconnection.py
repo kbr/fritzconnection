@@ -37,6 +37,7 @@ class FritzConnection:
     limiting the time waiting for a router response. This is a global
     setting for the internal communication with the router. In case of a
     timeout a `requests.ConnectTimeout` exception gets raised.
+    (`New in version 1.1`)
     """
 
     def __init__(self, address=FRITZ_IP_ADDRESS, port=FRITZ_TCP_PORT,

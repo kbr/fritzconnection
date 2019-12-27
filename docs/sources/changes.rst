@@ -3,6 +3,13 @@
 Version History
 ===============
 
+1.1
+-------
+
+- FritzConnection takes a new optional parameter `timeout` limiting the time waiting for a router response.
+- FritzPhonebook module rewritten for Python 3 without lxml-dependency and added again to the library (missing in version 1.0).
+- Library module FritzStatus adapted to Python 3.
+
 1.0.1
 -----
 

@@ -65,7 +65,7 @@ With the option ``-s`` all ``services`` available without a password are listed.
     FritzConnection v1.0
     Unable to login into device to get configuration information.
 
-an additional parameter for the router ip must be provided (newer router models use ``192.1689.178.1`` as factory setting) by using the ``-i`` option: ::
+an additional parameter for the router ip must be provided (newer router models use ``192.168.178.1`` as factory setting) by using the ``-i`` option: ::
 
     $ fritzconnection -s -i 192.168.178.1
 
@@ -236,7 +236,7 @@ The result of calling the ``call_action`` method is always a dictionary with the
      'NewStatus': 'Up'}
 
 
-These informations are indicating that the WLAN network is up and operating on channel 6.
+These informations are showing a lot of details about the network and i.e. indicating that the WLAN network is up and operating on channel 6.
 
 To activate or deactivate the network, the action ``SetEnable`` can get called. Inspection gives informations about the required arguments: ::
 

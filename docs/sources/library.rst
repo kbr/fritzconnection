@@ -185,6 +185,45 @@ FritzHosts API
 
 
 
+FritzPhonebook
+--------------
+
+Allows read-only access to the phonebooks stored in the router (a Fritz!Box router can have more than a single phonebook). The command line interface allows inspection of the phonebooks and search for name and numbers. The flag ``-a`` will list the content of all phonebooks: ::
+
+    $ fritzphonebook -i 192.168.178.1 -p <password> -a
+
+    FritzConnection v1.1
+    FritzPhonebook for FRITZ!Box 7590 at ip 192.168.178.1
+    FRITZ!OS: 7.12
+
+    Content of phonebook: business
+    good customer                 0123456789
+    another good customer         0987654321
+    ...
+    more numbers here
+    ...
+
+With the flags ``--name`` and ``--number`` like ``--name "good customer"`` and ``--number 0987654321`` all phonebooks will get searched for the according entry.
+
+Here is an example to list the entries of all phonebooks by means of a module: ::
+
+    from fritzconnection.lib.fritzphonebook import FritzPhonebook
+
+    fp = FritzPhonebook(address='192.168.178.1', password='password')
+    for phonebook_id in fp.phonebook_ids:
+        contacts = fp.get_all_names(phonebook_id)
+        for name, numbers in contacts.items():
+            print(name, numbers)
+
+
+FritzPhonebook API
+..................
+
+.. automodule:: fritzconnection.lib.fritzphonebook
+    :members:
+
+
+
 FritzStatus
 -----------
 
