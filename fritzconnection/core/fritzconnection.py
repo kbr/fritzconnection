@@ -26,15 +26,21 @@ FRITZ_USERNAME = 'dslf-config'
 class FritzConnection:
     """
     Main class to set up a connection to the Fritz!Box router. All
-    parameters are optional. address should be the ip of a router, in
+    parameters are optional. `address` should be the ip of a router, in
     case that are multiple Fritz!Box routers in a network, the ip must
     be given. Otherwise it is undefined which router will respond. If
-    user and password are not provided, the environment gets checked for
+    `user` and `password` are not provided, the environment gets checked for
     FRITZ_USERNAME and FRITZ_PASSWORD settings and taken from there, if
     found.
+
+    The optional parameter `timeout` is a floating number in seconds
+    limiting the time waiting for a router response. This is a global
+    setting for the internal communication with the router. In case of a
+    timeout a `requests.ConnectTimeout` exception gets raised.
     """
 
-    def __init__(self, address=None, port=None, user=None, password=None):
+    def __init__(self, address=FRITZ_IP_ADDRESS, port=FRITZ_TCP_PORT,
+                       user=None, password=None, timeout=None):
         """
         Initialisation of FritzConnection: reads all data from the box
         and also the api-description (the servicenames and according
@@ -50,19 +56,19 @@ class FritzConnection:
         the avm-default-username will be used. If no password is given
         the Environment gets checked for a FRITZ_PASSWORD setting. So
         password can be used without using configuration-files or even
-        hardcoding.
+        hardcoding. The optional parameter `timeout` is a floating
+        number in seconds limiting the time waiting for a router
+        response. This is a global setting for the internal
+        communication with the router. In case of a timeout a
+        `requests.ConnectTimeout` exception gets raised.
         """
-        if address is None:
-            address = FRITZ_IP_ADDRESS
-        if port is None:
-            port = FRITZ_TCP_PORT
         if user is None:
             user = os.getenv('FRITZ_USERNAME', FRITZ_USERNAME)
         if password is None:
             password = os.getenv('FRITZ_PASSWORD', '')
 
-        self.soaper = Soaper(address, port, user, password)
-        self.device_manager = DeviceManager()
+        self.soaper = Soaper(address, port, user, password, timeout=timeout)
+        self.device_manager = DeviceManager(timeout=timeout)
 
         descriptions = [FRITZ_IGD_DESC_FILE]
         if password:

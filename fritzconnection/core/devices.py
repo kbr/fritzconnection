@@ -15,12 +15,13 @@ from .utils import get_xml_root
 class DeviceManager:
     """
     Knows all data about the device and the subdevices, including the
-    available services.
+    available services. Takes an optional `timeout` parameter to limit the time waiting for a router response.
     """
 
-    def __init__(self):
+    def __init__(self, timeout=None):
         self.descriptions = []
         self.services = {}
+        self.timeout = timeout
 
     @property
     def modelname(self):
@@ -52,7 +53,7 @@ class DeviceManager:
         services. 'source' is a string with the xml-data, like the
         content of an igddesc- or tr64desc-file.
         """
-        root = get_xml_root(source)
+        root = get_xml_root(source, timeout=self.timeout)
         self.descriptions.append(Description(root))
 
     def scan(self):
@@ -69,5 +70,5 @@ class DeviceManager:
         known their actions.
         """
         for service in self.services.values():
-            service.load_scpd(address, port)
+            service.load_scpd(address, port, timeout=self.timeout)
 

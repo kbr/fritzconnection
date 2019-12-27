@@ -86,6 +86,11 @@ class Soaper:
     """
     Class making the soap on its own to communicate with the FritzBox.
     Instead of ham, spam and eggs, it's hopelessly addicted to soap.
+
+    For accessing the Fritz!Box the parameters `address` for the router
+    ip, `port`, `user` and `password` are required. The optional
+    parameter `timeout` will limit the time Soaper waits for a router
+    response. (These parameters will get set by FritzConnection,)
     """
 
     headers = {
@@ -121,11 +126,12 @@ class Soaper:
         'ui4': int,
     }
 
-    def __init__(self, address, port, user, password):
+    def __init__(self, address, port, user, password, timeout=None):
         self.address = address
         self.port = port
         self.user = user
         self.password = password
+        self.timeout = timeout
 
     def get_body(self, service, action_name, arguments):
         """Returns the body by template substitution."""
@@ -152,7 +158,8 @@ class Soaper:
         auth = None
         if self.password:
             auth = HTTPDigestAuth(self.user, self.password)
-        response = requests.post(url, data=envelope, headers=headers, auth=auth)
+        response = requests.post(url, data=envelope, headers=headers,
+                                      auth=auth, timeout=self.timeout)
         if response.status_code != 200:
             raise_fritzconnection_error(response)
         return self.parse_response(response, service, action_name)
