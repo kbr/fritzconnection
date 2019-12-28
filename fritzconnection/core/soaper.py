@@ -20,7 +20,6 @@ from .exceptions import (
 )
 from .utils import localname
 
-
 SOAP_NS = "http://schemas.xmlsoap.org/soap/envelope/"
 
 
@@ -68,7 +67,7 @@ def raise_fritzconnection_error(response):
         raise FritzConnectionException(msg)
     detail = root.find('.//detail')
     children = detail.iter()
-    next(children) # skip detail itself
+    next(children)  # skip detail itself
     for node in children:
         tag = localname(node)
         text = node.text.strip()
@@ -126,12 +125,16 @@ class Soaper:
         'ui4': int,
     }
 
-    def __init__(self, address, port, user, password, timeout=None):
+    def __init__(self, address, protocol, port, user, password, timeout=None, certificate=None, session=None):
         self.address = address
+        self.protocol = protocol
         self.port = port
         self.user = user
         self.password = password
         self.timeout = timeout
+        self.certificate = certificate
+
+        self.session = session
 
     def get_body(self, service, action_name, arguments):
         """Returns the body by template substitution."""
@@ -153,13 +156,16 @@ class Soaper:
                             for k, v in arguments.items())
         body = self.get_body(service, action_name, arguments)
         envelope = self.envelope.format(body=body)
-        protocol = 'http'
-        url = f'{protocol}://{self.address}:{self.port}{service.controlURL}'
+        url = f'{self.protocol}://{self.address}:{self.port}{service.controlURL}'
         auth = None
         if self.password:
             auth = HTTPDigestAuth(self.user, self.password)
-        response = requests.post(url, data=envelope, headers=headers,
-                                      auth=auth, timeout=self.timeout)
+
+        if self.protocol == "https" and self.certificate is not None:
+            response = self.session.post(url, data=envelope, headers=headers, auth=auth, timeout=self.timeout,
+                                         verify=self.certificate)
+        else:
+            response = self.session.post(url, data=envelope, headers=headers, auth=auth, timeout=self.timeout)
         if response.status_code != 200:
             raise_fritzconnection_error(response)
         return self.parse_response(response, service, action_name)

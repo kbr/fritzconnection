@@ -1,5 +1,5 @@
 """
-Modul to list the known hosts. Older versions of FritzOS lists only up
+Module to list the known hosts. Older versions of FritzOS lists only up
 to 16 entries. For newer versions this limitation is gone.
 """
 # This module is part of the FritzConnection package.
@@ -23,10 +23,11 @@ class FritzHosts:
     to connect to, *user* the username, *password* the password.
     """
 
-    def __init__(self, fc=None, address=None, port=None, user=None, password=None):
+    def __init__(self, fc=None, address=None, port=None, protocol='http',
+                       user=None, password=None, certificate=None):
         super().__init__()
         if fc is None:
-            fc = FritzConnection(address, port, user, password)
+            fc = FritzConnection(address, port, protocol, certificate, user, password)
         self.fc = fc
 
     def _action(self, actionname, **kwargs):

@@ -19,13 +19,13 @@ class FritzStatus:
     the *port* of the Fritz!Box and the according *user* and *password*.
     """
 
-    def __init__(self, fc=None, address=None, port=None,
-                       user=None, password=None):
+    def __init__(self, fc=None, address=None, port=None, protocol='http',
+                       user=None, password=None, certificate=None):
         """
         :fc: instance of FritzConnection.
         :address: ip of the Fritz!Box
         """
-        self.fc = fc if fc else FritzConnection(address, port, user, password)
+        self.fc = fc if fc else FritzConnection(address, port, protocol, certificate, user, password)
         # depending on the model (i.e. a repeater) some services
         # may not be available. Don't let FritzStatus crash at init.
         try:
@@ -171,7 +171,7 @@ class FritzStatus:
         upstream, downstream = self.max_linked_bit_rate
         return (
             format_rate(upstream, unit='bits'),
-            format_rate(downstream, unit ='bits')
+            format_rate(downstream, unit='bits')
         )
 
     @property
@@ -184,7 +184,7 @@ class FritzStatus:
         upstream, downstream = self.max_bit_rate
         return (
             format_rate(upstream, unit='bits'),
-            format_rate(downstream, unit ='bits')
+            format_rate(downstream, unit='bits')
         )
 
     def reconnect(self):

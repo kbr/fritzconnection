@@ -8,6 +8,18 @@ import requests
 from xml.etree import ElementTree as etree
 from .exceptions import FritzConnectionException
 
+from requests.adapters import HTTPAdapter
+
+
+# adapted from https://github.com/urllib3/urllib3/issues/517
+class HostnameVerificationAdapter(requests.adapters.HTTPAdapter):
+    def __init__(self, *args, assert_hostname=None, **kwargs):
+        self.assert_hostname = assert_hostname
+        requests.adapters.HTTPAdapter.__init__(self, *args, **kwargs)
+
+    def init_poolmanager(self, *args, **kwargs):
+        self.poolmanager = requests.adapters.PoolManager(*args, assert_hostname=self.assert_hostname, **kwargs)
+
 
 NS_REGEX = re.compile("({(?P<namespace>.*)})?(?P<localname>.*)")
 
@@ -19,15 +31,19 @@ def localname(node):
     return m.group('localname')
 
 
-def get_content_from(url, timeout=None):
-    conn = requests.get(url, timeout=timeout)
+def get_content_from(url, timeout=None, certificate=None, session=None):
+    if certificate is not None:
+        conn = session.get(url, verify=certificate, timeout=timeout)
+    else:
+        conn = session.get(url, timeout=timeout)
+
     ct = conn.headers.get("Content-type")
     if ct == "text/html":
         raise FritzConnectionException("Unable to login into device to get configuration information.")
     return conn.text
 
 
-def get_xml_root(source, timeout=None):
+def get_xml_root(source, timeout=None, certificate=None, session=None):
     """
     Function to help migrate from lxml to the standard-library xml-package.
 
@@ -39,7 +55,7 @@ def get_xml_root(source, timeout=None):
     """
     if source.startswith("http://") or source.startswith("https://"):
         # it's a uri, use requests to get the content
-        source = get_content_from(source, timeout=timeout)
+        source = get_content_from(source, timeout=timeout, certificate=certificate, session=session)
     elif not source.startswith("<"):
         # assume it's a filename
         with open(source) as fobj:

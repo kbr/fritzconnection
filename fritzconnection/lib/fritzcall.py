@@ -53,10 +53,10 @@ class FritzCall:
     *port* the port to connect to, *user* the username, *password* the
     password.
     """
-    def __init__(self, fc=None, address=None, port=None,
-                       user=None, password=None):
+    def __init__(self, fc=None, address=None, port=None, protocol='http',
+                       user=None, password=None, certificate=None):
         if fc is None:
-            fc = FritzConnection(address, port, user, password)
+            fc = FritzConnection(address, port, protocol, certificate, user, password)
         self.fc = fc
         self.calls = None
 
@@ -67,7 +67,7 @@ class FritzCall:
             url += f'&days={days}'
         elif num:
             url += f'&max={num}'
-        root = get_xml_root(url)
+        root = get_xml_root(url, certificate=self.fc.certificate, session=self.fc.session)
         self.calls = CallCollection(root)
 
     def get_calls(self, calltype=ALL_CALL_TYPES, update=True,

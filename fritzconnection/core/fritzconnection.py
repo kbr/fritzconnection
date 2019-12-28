@@ -9,15 +9,18 @@ Module to communicate with the AVM Fritz!Box.
 
 import os
 import string
+import requests
 
 from .devices import DeviceManager
 from .exceptions import FritzServiceError
 from .soaper import Soaper
 
+from .utils import HostnameVerificationAdapter
 
 # FritzConnection defaults:
 FRITZ_IP_ADDRESS = '169.254.1.1'
 FRITZ_TCP_PORT = 49000
+FRITZ_TCP_PORT_TLS = 49443
 FRITZ_IGD_DESC_FILE = 'igddesc.xml'
 FRITZ_TR64_DESC_FILE = 'tr64desc.xml'
 FRITZ_USERNAME = 'dslf-config'
@@ -40,8 +43,8 @@ class FritzConnection:
     (`New in version 1.1`)
     """
 
-    def __init__(self, address=FRITZ_IP_ADDRESS, port=FRITZ_TCP_PORT,
-                       user=None, password=None, timeout=None):
+    def __init__(self, address=FRITZ_IP_ADDRESS, port=None, protocol='http', certificate=None,
+                 user=None, password=None, timeout=None):
         """
         Initialisation of FritzConnection: reads all data from the box
         and also the api-description (the servicenames and according
@@ -68,14 +71,27 @@ class FritzConnection:
         if password is None:
             password = os.getenv('FRITZ_PASSWORD', '')
 
-        self.soaper = Soaper(address, port, user, password, timeout=timeout)
-        self.device_manager = DeviceManager(timeout=timeout)
+        self.session = requests.Session()  # session is shared for speed up (especially TLS)
+
+        if port is None:
+            if protocol == "http":
+                port = FRITZ_TCP_PORT
+            else:
+                port = FRITZ_TCP_PORT_TLS
+                self.session.mount('https://',
+                                   HostnameVerificationAdapter(assert_hostname=False))  # disable hostname verification
+
+        self.certificate = certificate
+
+        self.soaper = Soaper(address, protocol, port, user, password, timeout=timeout, certificate=certificate,
+                             session=self.session)
+        self.device_manager = DeviceManager(timeout=timeout, certificate=self.certificate, session=self.session)
 
         descriptions = [FRITZ_IGD_DESC_FILE]
         if password:
             descriptions.append(FRITZ_TR64_DESC_FILE)
         for description in descriptions:
-            source = f'http://{address}:{port}/{description}'
+            source = f'{protocol}://{address}:{port}/{description}'
             try:
                 self.device_manager.add_description(source)
             except OSError:
@@ -83,12 +99,12 @@ class FritzConnection:
                 pass
 
         self.device_manager.scan()
-        self.device_manager.load_service_descriptions(address, port)
+        self.device_manager.load_service_descriptions(address, protocol, port)
 
     def __repr__(self):
         """Return a readable representation"""
-        return  f"{self.modelname} at ip {self.soaper.address}\n"\
-                f"FRITZ!OS: {self.system_version}"
+        return f"{self.modelname} at ip {self.soaper.address}\n" \
+               f"FRITZ!OS: {self.system_version}"
 
     @property
     def services(self):

@@ -23,10 +23,10 @@ class FritzHomeAutomation:
     password.
     """
 
-    def __init__(self, fc=None, address=None, port=None,
+    def __init__(self, fc=None, address=None, port=None, protocol='http', certificate=None,
                  user=None, password=None):
         if fc is None:
-            fc = FritzConnection(address, port, user, password)
+            fc = FritzConnection(address, port, protocol, certificate, user, password)
         self.fc = fc
 
     def _action(self, actionname, *, arguments=None, **kwargs):

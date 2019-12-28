@@ -326,11 +326,10 @@ class Service:
             self._state_variables = self._scpd.state_variables
         return self._state_variables
 
-    def load_scpd(self, address, port, timeout=None):
+    def load_scpd(self, address, protocol, port, timeout=None, certificate=None, session=None):
         """Loads the scpd data"""
-        protocol = 'http'
         url = f'{protocol}://{address}:{port}{self.SCPDURL}'
-        root = get_xml_root(url, timeout=timeout)
+        root = get_xml_root(url, timeout=timeout, certificate=certificate, session=session)
         self._scpd = Scpd(root)
 
 
