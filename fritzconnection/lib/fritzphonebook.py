@@ -27,9 +27,9 @@ SERVICE = 'X_AVM-DE_OnTel'
 class FritzPhonebook(object):
     """
     Interface to access the Fritz!Box phonebooks. All parameters are
-    optional. If given, they have the following meaning: *fc* is an
-    instance of FritzConnection, *address* the ip of the Fritz!Box,
-    *port* the port to connect to, *user* the username, *password* the
+    optional. If given, they have the following meaning: `fc` is an
+    instance of FritzConnection, `address` the ip of the Fritz!Box,
+    `port` the port to connect to, `user` the username, `password` the
     password.
     """
     def __init__(self, fc=None, address=None, port=None,
@@ -53,7 +53,8 @@ class FritzPhonebook(object):
     def phonebook_ids(self):
         """
         List of integers identifying the phonebooks. This property is
-        defined as *phonebook_ids* and as *list_phonebooks* for backward compatibility. The property *list_phonebooks* is deprecated and
+        defined as `phonebook_ids` and as `list_phonebooks` for backward
+        compatibility. The property `list_phonebooks` is deprecated and
         may get removed in the future.
         """
         result = self._action('GetPhonebookList')
@@ -69,7 +70,7 @@ class FritzPhonebook(object):
 
     def phonebook_info(self, id):
         """
-        Get the *name*, *url* and an optional *extra id* of the
+        Get the `name`, `url` and an optional `extra id` of the
         phonebook with integer `id`. Returns a dictionary with the keys
         `name`, `url` and `xid`.
         """
