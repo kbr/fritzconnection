@@ -18,7 +18,7 @@ from ..core.processor import (
 from ..core.utils import get_xml_root
 
 
-__all__ = ['FritzPhonebook']
+__all__ = ['FritzPhonebook1']
 
 
 SERVICE = 'X_AVM-DE_OnTel'
@@ -147,7 +147,7 @@ class Person:
     """
     def __init__(self):
         self.realName = None
-        imageURL = None
+        self.imageURL = None
 
 
 @processor
