@@ -3,9 +3,11 @@
 Introduction
 ============
 
-Technically the communication with the Fritz!Box works by UPnP using SCPD and SOAP for information transfer which it itself is based on the TR-064 protocol. The TR-064 protocol uses the concepts of ``services`` and ``actions``. A service is a collection of actions for a given topic like WLAN-connections, registered hosts and so on.
+Technically the communication with the Fritz!Box works by UPnP using SCPD and SOAP for information transfer which is based on the TR-064 protocol. The TR-064 protocol uses the concepts of ``services`` and ``actions``. A service is a collection of actions for a given topic like WLAN-connections, registered hosts, phone calls, home-automation tasks and so on. The documentation about all services and actions is available from the vendor AVM (see `Further Reading <further_reading.html>`_).
 
 FritzConnection manages the inspection of a given Fritz!Box and can access all available services and corresponding actions. For some services it is required to provide the user-password for the box. The set of available services and actions may vary by router models.
+
+The installation of fritzconnection (using pip) will also install a command line tool for the Fritz!Box api-inspection. The next sections will give an introduction to this command line tool and how to write modules on top of fritzconnection.
 
 
 Internal defaults
@@ -195,9 +197,9 @@ FritzConnection works by calling actions on services and can send and receive ac
     fc = FritzConnection()  #1
     fc.call_action('WANIPConnection1', 'ForceTermination')
 
-At first an instance of FritzConnection must be created (#1). There can be a short delay doing this because fritzconnection has to wait for the response of the router to inspect the router-specific api.
+At first an instance of FritzConnection must be created (*#1*). There can be a short delay doing this because fritzconnection has to wait for the response of the router to inspect the router-specific api.
 
-The method ``call_action`` takes the two required arguments: the service- and action-name as strings. In case that a service or action is unknown (because of a typo or incompatible router model) fritzconnection will raise a ``FritzServiceError``. If the service is known, but not the action, then a ``FritzActionError`` gets raised.
+The method ``call_action`` takes two required arguments: the service- and the action-name as strings. In case that a service or action is unknown (because of a typo or incompatible router model) fritzconnection will raise a ``FritzServiceError``. If the service is known, but not the action, then a ``FritzActionError`` gets raised.
 
 .. note ::
     Once a FritzConnection instance has been created, it can be reused for all future call_action calls. Because instantiation is expensive (doing a lot of i/o for API inspection) this can increase performance significantly.
@@ -235,10 +237,9 @@ The result of calling the ``call_action`` method is always a dictionary with the
      'NewStandard': 'n',
      'NewStatus': 'Up'}
 
+These informations are showing a lot of details. In this example the network is up and operating on channel 6.
 
-These informations are showing a lot of details about the network and i.e. indicating that the WLAN network is up and operating on channel 6.
-
-To activate or deactivate the network, the action ``SetEnable`` can get called. Inspection gives informations about the required arguments: ::
+To activate or deactivate a network, the action ``SetEnable`` can get called. Inspection gives informations about the required arguments: ::
 
     $ $ fritzconnection -i 192.168.178.1 -p <password> -A WLANConfiguration1 SetEnable
 
@@ -262,9 +263,11 @@ Here just one argument is listed for the 'in'-direction. That means that this ar
     fc = FritzConnection(address='192.168.178.1', password='the_password')
     fc.call_action('WLANConfiguration1', 'SetEnable', NewEnable=0)
 
-This call will deactivate the network. As there are no arguments listed for the 'out'-direction, the call will return no result. (Please keep in mind: don't deactivate a wireless network by not having a cable connection.)
+This call will deactivate the network. As there are no arguments listed for the 'out'-direction, ``call_action`` will return an empty dictionary without any out-argument keys (keep in mind: don't deactivate a wireless network by not having a backup cable connection).
 
-The ``call_action`` method also accepts a keyword-only argument with the name ``arguments`` that must be a dictionary with all input-parameters as key-value pairs. This is convenient for calls with multiple arguments for the in-direction (new since 1.0): ::
+The ``call_action`` method also accepts a keyword-only argument with the name ``arguments`` that must be a dictionary with all input-parameters as key-value pairs. (*new since 1.0*)
+
+This is convenient for calls with multiple arguments for the in-direction, or for argument names not suitable as keyword parameters (like having a dash in the name) : ::
 
     arguments = {'NewEnable': 0}
     fc.call_action('WLANConfiguration1', 'SetEnable', arguments=arguments)
