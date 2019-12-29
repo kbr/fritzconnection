@@ -3,8 +3,15 @@
 Version History
 ===============
 
+1.1.1
+-----
+
+- Bugfix in FritzConnection default parameters preventing the usage of library modules (bug introduced in 1.1)
+- Minor bugfix in FritzPhonebook storing image-urls
+
+
 1.1
--------
+---
 
 - FritzConnection takes a new optional parameter `timeout` limiting the time waiting for a router response.
 - FritzPhonebook module rewritten for Python 3 without lxml-dependency and added again to the library (missing in version 1.0).
