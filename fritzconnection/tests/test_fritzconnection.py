@@ -21,3 +21,17 @@ def test_normalize_name(name, expected):
     result = FritzConnection.normalize_name(name)
     assert result == expected
 
+
+@pytest.mark.parametrize(
+    "url, use_tls, expected", [
+        ('192.168.178.1', False, 'http://192.168.178.1'),
+        ('192.168.178.1', True, 'https://192.168.178.1'),
+        ('http://192.168.178.1', False, 'http://192.168.178.1'),
+        ('http://192.168.178.1', True, 'https://192.168.178.1'),
+        ('https://192.168.178.1', False, 'http://192.168.178.1'),
+        ('https://192.168.178.1', True, 'https://192.168.178.1'),
+    ]
+)
+def test_set_protocol(url, use_tls, expected):
+    result = FritzConnection.set_protocol(url, use_tls)
+    assert result == expected
