@@ -98,7 +98,7 @@ def get_cli_arguments():
                         help='Specify ip-address of the FritzBox to connect to.'
                              'Default: %s' % FRITZ_IP_ADDRESS)
     parser.add_argument('--port',
-                        nargs='?', default=None, const=None,
+                        nargs='?', default=FRITZ_TCP_PORT, const=None,
                         help='Port of the FritzBox to connect to. '
                              'Default: %s' % FRITZ_TCP_PORT)
     parser.add_argument('-u', '--username',
