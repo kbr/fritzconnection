@@ -40,8 +40,8 @@ class FritzConnection:
     (`New in version 1.1`)
     """
 
-    def __init__(self, address=FRITZ_IP_ADDRESS, port=FRITZ_TCP_PORT,
-                       user=None, password=None, timeout=None):
+    def __init__(self, address=None, port=None, user=None, password=None,
+                       timeout=None):
         """
         Initialisation of FritzConnection: reads all data from the box
         and also the api-description (the servicenames and according
@@ -63,6 +63,10 @@ class FritzConnection:
         communication with the router. In case of a timeout a
         `requests.ConnectTimeout` exception gets raised.
         """
+        if address is None:
+            address = FRITZ_IP_ADDRESS
+        if port is None:
+            port = FRITZ_TCP_PORT
         if user is None:
             user = os.getenv('FRITZ_USERNAME', FRITZ_USERNAME)
         if password is None:
