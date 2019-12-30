@@ -21,6 +21,7 @@ from .soaper import Soaper
 # FritzConnection defaults:
 FRITZ_IP_ADDRESS = '169.254.1.1'
 FRITZ_TCP_PORT = 49000
+FRITZ_TLS_PORT = 49443
 FRITZ_USERNAME = 'dslf-config'
 FRITZ_IGD_DESC_FILE = 'igddesc.xml'
 FRITZ_TR64_DESC_FILE = 'tr64desc.xml'
@@ -45,7 +46,7 @@ class FritzConnection:
     """
 
     def __init__(self, address=None, port=None, user=None, password=None,
-                       timeout=None):
+                       timeout=None, use_tls=False):
         """
         Initialisation of FritzConnection: reads all data from the box
         and also the api-description (the servicenames and according
@@ -75,12 +76,15 @@ class FritzConnection:
             user = os.getenv('FRITZ_USERNAME', FRITZ_USERNAME)
         if password is None:
             password = os.getenv('FRITZ_PASSWORD', '')
+        if use_tls:
+            port = FRITZ_TLS_PORT
+        address = self.set_protocol(address, use_tls)
 
         self.soaper = Soaper(address, port, user, password, timeout=timeout)
         self.device_manager = DeviceManager(timeout=timeout)
 
         for description in FRITZ_DESCRIPTIONS:
-            source = f'http://{address}:{port}/{description}'
+            source = f'{address}:{port}/{description}'
             try:
                 self.device_manager.add_description(source)
             except FritzConnectionException:

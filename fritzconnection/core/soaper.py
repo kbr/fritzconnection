@@ -153,13 +153,13 @@ class Soaper:
                             for k, v in arguments.items())
         body = self.get_body(service, action_name, arguments)
         envelope = self.envelope.format(body=body)
-        protocol = 'http'
-        url = f'{protocol}://{self.address}:{self.port}{service.controlURL}'
+        url = f'{self.address}:{self.port}{service.controlURL}'
         auth = None
         if self.password:
             auth = HTTPDigestAuth(self.user, self.password)
         response = requests.post(url, data=envelope, headers=headers,
-                                      auth=auth, timeout=self.timeout)
+                                      auth=auth, timeout=self.timeout,
+                                      verify=False)
         if response.status_code != 200:
             raise_fritzconnection_error(response)
         return self.parse_response(response, service, action_name)

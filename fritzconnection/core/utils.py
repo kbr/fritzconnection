@@ -20,7 +20,14 @@ def localname(node):
 
 
 def get_content_from(url, timeout=None):
-    conn = requests.get(url, timeout=timeout)
+    """
+    Returns text from a get-request for the given url. In case of a
+    secure request (using TLS) the parameter verify is set to False, to
+    disable certificate verifications. As the Fritz!Box creates a
+    self-signed certificate for use in the LAN, encryption will work but
+    verification will fail.
+    """
+    conn = requests.get(url, timeout=timeout, verify=False)
     ct = conn.headers.get("Content-type")
     if ct == "text/html":
         message = f"Unable to retrieve resource '{url}' from the device."

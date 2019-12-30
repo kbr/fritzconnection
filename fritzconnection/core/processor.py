@@ -328,8 +328,7 @@ class Service:
 
     def load_scpd(self, address, port, timeout=None):
         """Loads the scpd data"""
-        protocol = 'http'
-        url = f'{protocol}://{address}:{port}{self.SCPDURL}'
+        url = f'{address}:{port}{self.SCPDURL}'
         root = get_xml_root(url, timeout=timeout)
         self._scpd = Scpd(root)
 
