@@ -11,16 +11,20 @@ import os
 import string
 
 from .devices import DeviceManager
-from .exceptions import FritzServiceError
+from .exceptions import (
+    FritzConnectionException,
+    FritzServiceError,
+)
 from .soaper import Soaper
 
 
 # FritzConnection defaults:
 FRITZ_IP_ADDRESS = '169.254.1.1'
 FRITZ_TCP_PORT = 49000
+FRITZ_USERNAME = 'dslf-config'
 FRITZ_IGD_DESC_FILE = 'igddesc.xml'
 FRITZ_TR64_DESC_FILE = 'tr64desc.xml'
-FRITZ_USERNAME = 'dslf-config'
+FRITZ_DESCRIPTIONS = [FRITZ_IGD_DESC_FILE, FRITZ_TR64_DESC_FILE]
 
 
 class FritzConnection:
@@ -75,15 +79,15 @@ class FritzConnection:
         self.soaper = Soaper(address, port, user, password, timeout=timeout)
         self.device_manager = DeviceManager(timeout=timeout)
 
-        descriptions = [FRITZ_IGD_DESC_FILE]
-        if password:
-            descriptions.append(FRITZ_TR64_DESC_FILE)
-        for description in descriptions:
+        for description in FRITZ_DESCRIPTIONS:
             source = f'http://{address}:{port}/{description}'
             try:
                 self.device_manager.add_description(source)
-            except OSError:
-                # resource not available: ignore this
+            except FritzConnectionException:
+                # resource not available:
+                # this can happen on devices not providing
+                # an igddesc-file.
+                # ignore this
                 pass
 
         self.device_manager.scan()

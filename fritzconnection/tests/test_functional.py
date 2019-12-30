@@ -1,5 +1,5 @@
 """
-Running functional tests against a router - if present.
+Running functional tests against a router - if the router is present.
 """
 
 import pytest
@@ -10,7 +10,7 @@ from ..core.fritzconnection import (
 )
 
 
-TIMEOUT = 1.0
+TIMEOUT = 2.0  # give older models some time
 NO_ROUTER = 'no router present'
 
 
