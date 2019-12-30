@@ -23,7 +23,8 @@ def get_content_from(url, timeout=None):
     conn = requests.get(url, timeout=timeout)
     ct = conn.headers.get("Content-type")
     if ct == "text/html":
-        raise FritzConnectionException("Unable to login into device to get configuration information.")
+        message = f"Unable to retrieve resource '{url}' from the device."
+        raise FritzConnectionException(message)
     return conn.text
 
 
