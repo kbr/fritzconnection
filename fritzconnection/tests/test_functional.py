@@ -14,7 +14,7 @@ TIMEOUT = 2.0  # give older models some time
 NO_ROUTER = 'no router present'
 
 
-def _check_router_presence():
+def _no_router_present():
     try:
         requests.get('http://169.254.1.1/', timeout=TIMEOUT)
     except requests.ConnectionError:
@@ -22,7 +22,7 @@ def _check_router_presence():
     return False
 
 
-no_router_present = _check_router_presence()
+no_router_present = _no_router_present()
 
 
 @pytest.mark.skipif(no_router_present, reason=NO_ROUTER)
