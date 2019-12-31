@@ -18,10 +18,10 @@ from ..core.processor import (
 from ..core.utils import get_xml_root
 
 
-__all__ = ['FritzPhonebook1']
+__all__ = ['FritzPhonebook']
 
 
-SERVICE = 'X_AVM-DE_OnTel'
+SERVICE = 'X_AVM-DE_OnTel1'
 
 
 class FritzPhonebook(object):
