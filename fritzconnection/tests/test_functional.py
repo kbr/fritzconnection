@@ -10,6 +10,7 @@ from ..core.fritzconnection import (
 )
 from ..lib.fritzhomeauto import FritzHomeAutomation
 from ..lib.fritzhosts import FritzHosts
+from ..lib.fritzphonebook import FritzPhonebook
 
 
 TIMEOUT = 2.0  # give older models some time
@@ -61,6 +62,8 @@ def test_soap_access(use_tls):
         (FritzHomeAutomation, True),
         (FritzHosts, False),
         (FritzHosts, True),
+        (FritzPhonebook, False),
+        (FritzPhonebook, True),
     ])
 def test_library_api_arguments(cls, use_tls):
     obj = cls(timeout=TIMEOUT, use_tls=use_tls)

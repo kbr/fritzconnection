@@ -7,7 +7,6 @@ Module for read-only access to the contents of the Fritz!Box phonebooks.
 # Authors: Klaus Bremer, David M. Straub
 
 
-from ..core.fritzconnection import FritzConnection
 from ..core.processor import (
     processor,
     process_node,
@@ -16,6 +15,7 @@ from ..core.processor import (
     ValueSequencer,
 )
 from ..core.utils import get_xml_root
+from .fritzbase import AbstractLibraryBase
 
 
 __all__ = ['FritzPhonebook']
@@ -24,30 +24,21 @@ __all__ = ['FritzPhonebook']
 SERVICE = 'X_AVM-DE_OnTel1'
 
 
-class FritzPhonebook(object):
+class FritzPhonebook(AbstractLibraryBase):
     """
     Interface to access the Fritz!Box phonebooks. All parameters are
     optional. If given, they have the following meaning: `fc` is an
     instance of FritzConnection, `address` the ip of the Fritz!Box,
     `port` the port to connect to, `user` the username, `password` the
-    password.
+    password, `timeout` a timeout as floating point number in seconds,
+    `use_tls` a boolean indicating to use TLS (default False).
     """
-    def __init__(self, fc=None, address=None, port=None,
-                       user=None, password=None):
-        if fc is None:
-            fc = FritzConnection(address, port, user, password)
-        self.fc = fc
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.phonebook = None
 
     def _action(self, actionname, **kwargs):
         return self.fc.call_action(SERVICE, actionname, **kwargs)
-
-    @property
-    def modelname(self):
-        """
-        The router modelname.
-        """
-        return self.fc.modelname
 
     @property
     def phonebook_ids(self):
