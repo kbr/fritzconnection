@@ -17,6 +17,11 @@ from .exceptions import (
 )
 from .soaper import Soaper
 
+# disable InsecureRequestWarning in case of using TLS in a local network
+# skipping verification of a self signed certificate:
+import urllib3
+urllib3.disable_warnings()
+
 
 # FritzConnection defaults:
 FRITZ_IP_ADDRESS = '169.254.1.1'
@@ -43,6 +48,10 @@ class FritzConnection:
     setting for the internal communication with the router. In case of a
     timeout a `requests.ConnectTimeout` exception gets raised.
     (`New in version 1.1`)
+
+    `use_tls` accepts a boolean for using encrypted communication with
+    the Fritz!Box. Default is `False`.
+    (`New in version 1.2`)
     """
 
     def __init__(self, address=None, port=None, user=None, password=None,
@@ -66,7 +75,9 @@ class FritzConnection:
         number in seconds limiting the time waiting for a router
         response. This is a global setting for the internal
         communication with the router. In case of a timeout a
-        `requests.ConnectTimeout` exception gets raised.
+        `requests.ConnectTimeout` exception gets raised. `use_tls`
+        accepts a boolean for using encrypted communication with the
+        Fritz!Box. Default is `False`.
         """
         if address is None:
             address = FRITZ_IP_ADDRESS

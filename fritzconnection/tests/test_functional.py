@@ -33,6 +33,7 @@ def test_access_model_name(use_tls):
     In this case there is some modelname available (a string).
     """
     fc = FritzConnection(timeout=TIMEOUT, use_tls=use_tls)
+    # on success the modelname should be a string:
     assert isinstance(fc.modelname, str)
 
 
@@ -42,7 +43,8 @@ def test_soap_access(use_tls):
     """
     Test whether a soap access returns successful. The Service
     'DeviceInfo1' with the action 'GetInfo' should be provided by all
-    router models – including repeaters.
+    router models – including repeaters - and provides access to the
+    model name.
     """
     fc = FritzConnection(timeout=TIMEOUT, use_tls=use_tls)
     info = fc.call_action('DeviceInfo1', 'GetInfo')
