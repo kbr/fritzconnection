@@ -8,6 +8,7 @@ import requests
 from ..core.fritzconnection import (
     FritzConnection,
 )
+from ..lib.fritzcall import FritzCall
 from ..lib.fritzhomeauto import FritzHomeAutomation
 from ..lib.fritzhosts import FritzHosts
 from ..lib.fritzphonebook import FritzPhonebook
@@ -60,6 +61,8 @@ def test_soap_access(use_tls):
 @pytest.mark.skipif(no_router_present, reason=NO_ROUTER)
 @pytest.mark.parametrize(
     "cls, use_tls", [
+        (FritzCall, False),
+        (FritzCall, True),
         (FritzHomeAutomation, False),
         (FritzHomeAutomation, True),
         (FritzHosts, False),

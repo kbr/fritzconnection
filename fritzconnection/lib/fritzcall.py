@@ -10,7 +10,6 @@ missed ones.
 
 import datetime
 
-from ..core.fritzconnection import FritzConnection
 from ..core.processor import (
     processor,
     process_node,
@@ -18,6 +17,7 @@ from ..core.processor import (
     Storage,
 )
 from ..core.utils import get_xml_root
+from .fritzbase import AbstractLibraryBase
 
 
 __all__ = ['FritzCall', 'Call']
@@ -28,7 +28,7 @@ RECEIVED_CALL_TYPE = 1
 MISSED_CALL_TYPE = 2
 OUT_CALL_TYPE = 3
 
-SERVICE = 'X_AVM-DE_OnTel'
+SERVICE = 'X_AVM-DE_OnTel1'
 
 
 def datetime_converter(date_string):
@@ -44,20 +44,18 @@ def timedelta_converter(duration_string):
     return datetime.timedelta(hours=hours, minutes=minutes)
 
 
-class FritzCall:
+class FritzCall(AbstractLibraryBase):
     """
     Can dial phone numbers and gives access to lists of recent phone
     calls: incoming, outgoing and missed ones. All parameters are
-    optional. If given, they have the following meaning: *fc* is an
-    instance of FritzConnection, *address* the ip of the Fritz!Box,
-    *port* the port to connect to, *user* the username, *password* the
-    password.
+    optional. If given, they have the following meaning: `fc` is an
+    instance of FritzConnection, `address` the ip of the Fritz!Box,
+    `port` the port to connect to, `user` the username, `password` the
+    password, `timeout` a timeout as floating point number in seconds,
+    `use_tls` a boolean indicating to use TLS (default False).
     """
-    def __init__(self, fc=None, address=None, port=None,
-                       user=None, password=None):
-        if fc is None:
-            fc = FritzConnection(address, port, user, password)
-        self.fc = fc
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.calls = None
 
     def _update_calls(self, num=None, days=None):
