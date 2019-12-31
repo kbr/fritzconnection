@@ -8,6 +8,7 @@ import requests
 from ..core.fritzconnection import (
     FritzConnection,
 )
+from ..lib.fritzhomeauto import FritzHomeAutomation
 
 
 TIMEOUT = 2.0  # give older models some time
@@ -50,3 +51,15 @@ def test_soap_access(use_tls):
     info = fc.call_action('DeviceInfo1', 'GetInfo')
     # on success the modelname should be a string:
     assert isinstance(info['NewModelName'], str)
+
+
+@pytest.mark.skipif(no_router_present, reason=NO_ROUTER)
+@pytest.mark.parametrize(
+    "cls, use_tls", [
+        (FritzHomeAutomation, False),
+        (FritzHomeAutomation, True),
+    ])
+def test_library_api_arguments(cls, use_tls):
+    obj = cls(timeout=TIMEOUT, use_tls=use_tls)
+    # on success the modelname should be a string:
+    assert isinstance(obj.modelname, str)

@@ -17,16 +17,20 @@ SERVICE = 'X_AVM-DE_Homeauto'
 class FritzHomeAutomation:
     """
     Interface for fritzbox homeauto service. All parameters are
-    optional. If given, they have the following meaning: *fc* is an
-    instance of FritzConnection, *address* the ip of the Fritz!Box,
-    *port* the port to connect to, *user* the username, *password* the
-    password.
+    optional. If given, they have the following meaning: `fc` is an
+    instance of FritzConnection, `address` the ip of the Fritz!Box,
+    `port` the port to connect to, `user` the username, `password` the
+    password, `timeout` a timeout as floating point number in seconds,
+    `use_tls` a boolean indicating to use TLS (default False).
     """
 
     def __init__(self, fc=None, address=None, port=None,
-                 user=None, password=None):
+                 user=None, password=None, timeout=None, use_tls=False):
         if fc is None:
-            fc = FritzConnection(address, port, user, password)
+            kwargs = {
+                k:v for k, v in locals().items() if k not in ('self', 'fc')
+            }
+            fc = FritzConnection(**kwargs)
         self.fc = fc
 
     def _action(self, actionname, *, arguments=None, **kwargs):
@@ -43,7 +47,8 @@ class FritzHomeAutomation:
     def get_info(self):
         """
         Return a dictionary with a single key-value pair:
-        'NewAllowedCharsAIN': string with all allowed chars for state variable AIN
+        'NewAllowedCharsAIN': string with all allowed chars for state
+        variable AIN
         """
         return self._action('GetInfo')
 
@@ -51,7 +56,8 @@ class FritzHomeAutomation:
         """
         Return a dictionary with all device arguments according to the
         AVM documentation (x_homeauto) at the given internal index.
-        Raise a FritzArrayIndexError (subclass of IndexError) on invalid index values.
+        Raise a FritzArrayIndexError (subclass of IndexError) on invalid
+        index values.
         """
         return self._action('GetGenericDeviceInfos', NewIndex=index)
 
