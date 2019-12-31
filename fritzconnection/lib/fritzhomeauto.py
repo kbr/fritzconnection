@@ -8,13 +8,13 @@ Modul to access home-automation devices
 
 
 import itertools
-from ..core.fritzconnection import FritzConnection
+from .fritzbase import AbstractLibraryBase
 
 
-SERVICE = 'X_AVM-DE_Homeauto'
+SERVICE = 'X_AVM-DE_Homeauto1'
 
 
-class FritzHomeAutomation:
+class FritzHomeAutomation(AbstractLibraryBase):
     """
     Interface for fritzbox homeauto service. All parameters are
     optional. If given, they have the following meaning: `fc` is an
@@ -24,24 +24,10 @@ class FritzHomeAutomation:
     `use_tls` a boolean indicating to use TLS (default False).
     """
 
-    def __init__(self, fc=None, address=None, port=None,
-                 user=None, password=None, timeout=None, use_tls=False):
-        if fc is None:
-            kwargs = {
-                k:v for k, v in locals().items() if k not in ('self', 'fc')
-            }
-            fc = FritzConnection(**kwargs)
-        self.fc = fc
-
     def _action(self, actionname, *, arguments=None, **kwargs):
         if arguments is None:
             arguments = kwargs
         return self.fc.call_action(SERVICE, actionname, arguments=arguments)
-
-    @property
-    def modelname(self):
-        """Modelname of the router."""
-        return self.fc.modelname
 
     @property
     def get_info(self):

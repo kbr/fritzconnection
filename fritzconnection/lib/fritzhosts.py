@@ -9,33 +9,24 @@ to 16 entries. For newer versions this limitation is gone.
 
 
 import itertools
-from ..core.fritzconnection import FritzConnection
+from .fritzbase import AbstractLibraryBase
 
 
-SERVICE = 'Hosts'
+SERVICE = 'Hosts1'
 
 
-class FritzHosts:
+class FritzHosts(AbstractLibraryBase):
     """
     Class to list all known hosts. All parameters are optional. If
-    given, they have the following meaning: *fc* is an instance of
-    FritzConnection, *address* the ip of the Fritz!Box, *port* the port
-    to connect to, *user* the username, *password* the password.
+    given, they have the following meaning: `fc` is an instance of
+    FritzConnection, `address` the ip of the Fritz!Box, `port` the port
+    to connect to, `user` the username, `password` the password,
+    `timeout` a timeout as floating point number in seconds, `use_tls` a
+    boolean indicating to use TLS (default False).
     """
-
-    def __init__(self, fc=None, address=None, port=None, user=None, password=None):
-        super().__init__()
-        if fc is None:
-            fc = FritzConnection(address, port, user, password)
-        self.fc = fc
 
     def _action(self, actionname, **kwargs):
         return self.fc.call_action(SERVICE, actionname, **kwargs)
-
-    @property
-    def modelname(self):
-        """The router modelname."""
-        return self.fc.modelname
 
     @property
     def host_numbers(self):
