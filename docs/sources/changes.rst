@@ -3,6 +3,15 @@
 Version History
 ===============
 
+
+1.2b1
+-----
+
+- TLS for router communication added.
+- Functional tests addressing a physical router added. Skipped if no router present.
+- Bugfix for rendering the documentation of the FritzPhonebook-API (bug introduced in 1.1.1)
+
+
 1.1.1
 -----
 
