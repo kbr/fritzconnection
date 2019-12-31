@@ -11,12 +11,13 @@ from .fritztools import format_num, format_rate
 
 class FritzStatus(AbstractLibraryBase):
     """
-    Class for requesting status-informations:
-    up, down, ip, activity (bytes per second send/received).
-    All parameters are optional. If given, they have the following meaning:
-    *fc* is an instance of FritzConnection,
-    *address* the ip of the Fritz!Box,
-    the *port* of the Fritz!Box and the according *user* and *password*.
+    Class for requesting status-informations: up, down, ip, activity
+    (bytes per second send/received). All parameters are optional. If
+    given, they have the following meaning: `fc` is an instance of
+    FritzConnection, `address` the ip of the Fritz!Box, `port` the port
+    to connect to, `user` the username, `password` the password,
+    `timeout` a timeout as floating point number in seconds, `use_tls` a
+    boolean indicating to use TLS (default False).
     """
 
     def __init__(self, *args, **kwargs):

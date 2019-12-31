@@ -9,29 +9,26 @@ Module to get informations about WLAN devices.
 
 import itertools
 from ..core.exceptions import FritzServiceError
-from ..core.fritzconnection import FritzConnection
+from .fritzbase import AbstractLibraryBase
 
 
-SERVICE = 'WLANConfiguration'
+SERVICE = 'WLANConfiguration1'
 
 
-class FritzWLAN:
+class FritzWLAN(AbstractLibraryBase):
     """
     Class to list all known wlan devices. All parameters are optional.
-    If given, they have the following meaning: *fc* is an instance of
-    FritzConnection, *address* the ip of the Fritz!Box, *port* the port
-    to connect to, *user* the username, *password* the password. The
-    *service* parameter specifies the configuration in use. Typically
-    this is 1 for 2.4 GHz, 2 for 5 GHz and 3 for a guest network. This
-    can vary depending on the router model and change with future
-    standards.
+    If given, they have the following meaning: `fc` is an instance of
+    FritzConnection, `address` the ip of the Fritz!Box, `port` the port
+    to connect to, `user` the username, `password` the password,
+    `timeout` a timeout as floating point number in seconds, `use_tls` a
+    boolean indicating to use TLS (default False). The *service*
+    parameter specifies the configuration in use. Typically this is 1
+    for 2.4 GHz, 2 for 5 GHz and 3 for a guest network. This can vary
+    depending on the router model and change with future standards.
     """
-
-    def __init__(self, fc=None, address=None, port=None,
-                       user=None, password=None, service=1):
-        if fc is None:
-            fc = FritzConnection(address, port, user, password)
-        self.fc = fc
+    def __init__(self, *args, service=1, **kwargs):
+        super().__init__(*args, **kwargs)
         self.service = service
 
     def _action(self, actionname, **kwargs):
