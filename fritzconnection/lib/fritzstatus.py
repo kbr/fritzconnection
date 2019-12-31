@@ -4,12 +4,12 @@ Modul to read status-informations from an AVM FritzBox.
 
 import time
 
-from ..core.fritzconnection import FritzConnection
 from ..core.exceptions import FritzServiceError
+from .fritzbase import AbstractLibraryBase
 from .fritztools import format_num, format_rate
 
 
-class FritzStatus:
+class FritzStatus(AbstractLibraryBase):
     """
     Class for requesting status-informations:
     up, down, ip, activity (bytes per second send/received).
@@ -19,13 +19,8 @@ class FritzStatus:
     the *port* of the Fritz!Box and the according *user* and *password*.
     """
 
-    def __init__(self, fc=None, address=None, port=None,
-                       user=None, password=None):
-        """
-        :fc: instance of FritzConnection.
-        :address: ip of the Fritz!Box
-        """
-        self.fc = fc if fc else FritzConnection(address, port, user, password)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         # depending on the model (i.e. a repeater) some services
         # may not be available. Don't let FritzStatus crash at init.
         try:
@@ -34,11 +29,6 @@ class FritzStatus:
         except FritzServiceError:
             pass
         self.last_traffic_call = time.time()
-
-    @property
-    def modelname(self):
-        """The router modelname."""
-        return self.fc.modelname
 
     @property
     def is_linked(self):
