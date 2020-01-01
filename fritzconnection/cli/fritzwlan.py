@@ -47,7 +47,8 @@ def report_devices(arguments):
                    port=arguments.port,
                    user=arguments.username,
                    password=arguments.password,
-                   service=arguments.service)
+                   service=arguments.service,
+                   use_tls=arguments.encrypt)
     print(fw.fc)
     if arguments.service:
         try:
@@ -83,6 +84,9 @@ def get_cli_arguments():
     parser.add_argument('-s', '--service',
                         nargs='?', default=0, const=None,
                         help='WLANConfiguration service number')
+    parser.add_argument('-e', '--encrypt',
+                        nargs='?', default=False, const=True,
+                        help='use secure connection')
     args = parser.parse_args()
     return args
 

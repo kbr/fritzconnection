@@ -29,8 +29,12 @@ class FritzInspection:
     """
     # pylint: disable=invalid-name  # self.fc is ok.
 
-    def __init__(self, address, port, user, password):
-        self.fc = FritzConnection(address, port, user, password)
+    def __init__(self, address, port, user, password, use_tls):
+        self.fc = FritzConnection(address=address,
+                                  port=port,
+                                  user=user,
+                                  password=password,
+                                  use_tls=use_tls)
 
     def view_header(self):
         print(self.fc)
@@ -126,6 +130,9 @@ def get_cli_arguments():
                              'specified service: <service> <action>. '
                              'Lists also direction and data type of the '
                              'arguments.')
+    parser.add_argument('-e', '--encrypt',
+                        nargs='?', default=False, const=True,
+                        help='use secure connection')
     args = parser.parse_args()
     return args
 
@@ -133,7 +140,11 @@ def get_cli_arguments():
 def get_inspector(args):
     try:
         inspector = FritzInspection(
-            args.address, args.port, args.username, args.password)
+            address=args.address,
+            port=args.port,
+            user=args.username,
+            password=args.password,
+            use_tls=args.encrypt)
     except FritzConnectionException as err:
         return None
     return inspector

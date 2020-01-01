@@ -77,6 +77,9 @@ def get_cli_arguments():
                         nargs=2,
                         help='set switch state. requires two parameters: '
                              'ain and state [on|off]')
+    parser.add_argument('-e', '--encrypt',
+                        nargs='?', default=False, const=True,
+                        help='use secure connection')
     args = parser.parse_args()
     return args
 
@@ -89,7 +92,8 @@ def main():
     fh = FritzHomeAutomation(address=arguments.address,
                              port=arguments.port,
                              user=arguments.username,
-                             password=arguments.password)
+                             password=arguments.password,
+                             use_tls=arguments.encrypt)
     if arguments.switch:
         switch_device(fh, arguments)
     else:

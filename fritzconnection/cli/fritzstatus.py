@@ -24,9 +24,14 @@ from ..core.fritzconnection import (
 from ..lib.fritzstatus import FritzStatus
 
 
-def print_status(address=None, port=None, user=None, password=None):
+def print_status(address=None, port=None, user=None,
+                 password=None, use_tls=False):
     print(f'\nFritzConnection v{package_version}')
-    fs = FritzStatus(address=address, port=port, user=user, password=password)
+    fs = FritzStatus(address=address,
+                     port=port,
+                     user=user,
+                     password=password,
+                     use_tls=use_tls)
     print(f'FritzStatus for {fs.fc}:\n')
     status_informations = [
         ('is linked', 'is_linked'),
@@ -64,6 +69,9 @@ def get_cli_arguments():
                         dest='port',
                         help=f'port of the FritzBox to connect to. '
                              f'Default: {FRITZ_TCP_PORT}')
+    parser.add_argument('-e', '--encrypt',
+                        nargs='?', default=False, const=True,
+                        help='use secure connection')
     args = parser.parse_args()
     return args
 
@@ -73,7 +81,11 @@ def main():
     if not args.password:
         print('Exit: password required.')
     else:
-        print_status(args.address, args.port, args.username, args.password)
+        print_status(address=args.address,
+                     port=args.port,
+                     user=args.username,
+                     password=args.password,
+                     use_tls=args.encrypt)
 
 
 if __name__ == '__main__':

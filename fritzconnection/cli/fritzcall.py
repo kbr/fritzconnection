@@ -13,7 +13,8 @@ def get_fritzcall(arguments):
     return FritzCall(address=arguments.address,
                      port=arguments.port,
                      user=arguments.username,
-                     password=arguments.password)
+                     password=arguments.password,
+                     use_tls=arguments.encrypt)
 
 
 def report_calls(fc, arguments):
@@ -76,6 +77,9 @@ def get_cli_arguments():
     parser.add_argument('-c', '--call',
                         nargs='?', default=None, const=None,
                         help='phone number to call')
+    parser.add_argument('-e', '--encrypt',
+                        nargs='?', default=False, const=True,
+                        help='use secure connection')
     args = parser.parse_args()
     return args
 

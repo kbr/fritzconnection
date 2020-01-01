@@ -26,7 +26,8 @@ def print_status(arguments):
     fh = FritzHosts(address=arguments.address,
                     port=arguments.port,
                     user=arguments.username,
-                    password=arguments.password)
+                    password=arguments.password,
+                    use_tls=arguments.encrypt)
     print(f'FritzHosts for {fh.fc}:\n')
     print('List of registered hosts:\n')
     print('{:>3}: {:<16} {:<28} {:<17}   {}\n'.format(
@@ -59,6 +60,9 @@ def get_cli_arguments():
     parser.add_argument('-p', '--password',
                         nargs='?', default=None, const=None,
                         help='Fritzbox authentication password')
+    parser.add_argument('-e', '--encrypt',
+                        nargs='?', default=False, const=True,
+                        help='use secure connection')
     args = parser.parse_args()
     return args
 

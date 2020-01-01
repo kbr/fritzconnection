@@ -84,6 +84,9 @@ def get_cli_arguments():
     parser.add_argument('--number',
                         nargs='?', default=0,
                         help='Number for name search')
+    parser.add_argument('-e', '--encrypt',
+                        nargs='?', default=False, const=True,
+                        help='use secure connection')
     args = parser.parse_args()
     return args
 
@@ -96,7 +99,8 @@ def main():
     fpb = FritzPhonebook(address=arguments.address,
                          port=arguments.port,
                          user=arguments.username,
-                         password=arguments.password)
+                         password=arguments.password,
+                         use_tls=arguments.encrypt)
     print_header(fpb)
     if arguments.all:
         print_phonebooks(fpb)
