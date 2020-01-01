@@ -24,6 +24,7 @@ class AbstractLibraryBase:
     @property
     def modelname(self):
         """
-        The device modelname.
+        The device modelname. Every library module derived from
+        `AbstractLibraryBase` inherits this property.
         """
         return self.fc.modelname

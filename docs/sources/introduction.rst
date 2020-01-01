@@ -3,7 +3,9 @@
 Introduction
 ============
 
-Technically the communication with the Fritz!Box works by UPnP using SCPD and SOAP for information transfer which is based on the TR-064 protocol. The TR-064 protocol uses the concepts of ``services`` and ``actions``. A service is a collection of actions for a given topic like WLAN-connections, registered hosts, phone calls, home-automation tasks and so on. The documentation about all services and actions is available from the vendor AVM (see `Further Reading <further_reading.html>`_).
+Technically the communication with the Fritz!Box works by UPnP using SCPD and SOAP for information transfer which is based on the TR-064 protocol. The TR-064 protocol uses the concepts of ``services`` and ``actions``. A service is a collection of actions for a given topic like WLAN-connections, registered hosts, phone calls, home-automation tasks and so on.
+
+The documentation about all services and actions is available from the vendor AVM (see `Further Reading <further_reading.html>`_).
 
 FritzConnection manages the inspection of a given Fritz!Box and can access all available services and corresponding actions. For some services it is required to provide the user-password for the box. The set of available services and actions may vary by router models.
 
@@ -17,9 +19,10 @@ To access the router in a local network, fritzconnection use some default values
 
     FRITZ_IP_ADDRESS = '169.254.1.1'
     FRITZ_TCP_PORT = 49000
+    FRITZ_TLS_PORT = 49443
     FRITZ_USERNAME = 'dslf-config'
 
-The ip-adress is a fallback-value common to every fritzbox-router, regardless of the individual configuration. In case of more than a single router in the local network (i.e. multiple Fritz!Boxes building a mesh or connected by LAN building multiple WLAN access-points) the option ``-i`` (for the command line) or the keyword-parameter ``address`` (module usage) is required to address the router, otherwise it is not defined which one of the devices will respond.
+The ip-adress is a fallback-value common to every fritzbox-router, regardless of the individual configuration. In case of more than a single router in the local network (i.e. multiple Fritz!Boxes building a Mesh or connected by LAN building multiple WLAN access-points) the option ``-i`` (for the command line) or the keyword-parameter ``address`` (module usage) is required to address the router, otherwise it is not defined which one of the devices will respond.
 
 
 Command line inspection
@@ -331,14 +334,9 @@ FritzConnection supports encrypted communication with Fritz!Box devices (*new in
 
     fc = FritzConnection(address=192.168.178.1, password=<password>, use_tls=True)
 
-As the routers are providing self-signed certificates, certificate-verification is suppressed. **Note:** using TLS will slow down the communication with the router.
+As the routers are providing self-signed certificates, certificate-verification is suppressed. The default setting for ``use_tls`` is ``False``.
 
-When to use TLS (and when not):
+When to use TLS (*and when not*): in a private WLAN already using encryption there is no need to add another encryption layer. Same for a private LAN as long as the users can be trusted. The latter should never be the case in corporate networks: there encryption is essential. Same for accessing the router from the internet by VPN if the local network is not a trusted private one.
 
-* Connections to the router are just by WLAN. If the WLAN is (hopefully) encrypted, there is no need for an additional encryption.
-* Connections to the router are also by LAN in your home-network. Normally you don't need encryption – if there is a MITM in your LAN, then you have a *serious* problem.
-* Connections happen in a company network: use encryption!
-* Access the router from the internet: use a VPN (which is encrypted).
-* You are paranoid: use encryption.
-* In case of doubt: be paranoid.
-
+.. note ::
+    Using TLS will slow down the communication with the router. Especially getting a new FritzConnection instance will take longer by setting ``use_tls=True``. Tip: reuse instances.

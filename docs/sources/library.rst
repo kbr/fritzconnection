@@ -5,25 +5,30 @@ The library is a package with modules on top of FritzConnection to address speci
 
 **Performance considerations:**
 
-Creating a FritzConnection instance will inspect the Fritz!Box API to get informations about all availabe services and corresponding actions. As this is i/o based it's generally slow. However this has to be done for initialisation. But once an instance is created, it can be reused for all tasks. Creating a single instance for an application may be sufficient for most tasks. For this all library classes can optionally initialised with an existing FritzConnection instance: ::
+Creating a FritzConnection instance will inspect the Fritz!Box API to get informations about all availabe services and corresponding actions. As this is i/o based it's generally slow. However this has to be done for initialisation. But once an instance is created, it can be reused for all tasks. Creating a single FritzConnection instance for an application may be sufficient for most tasks. For this all library classes can optionally initialised with an existing FritzConnection instance: ::
 
     from fritzconnection import FritzConnection
     from fritzconnection.lib.fritzhomeauto import FritzHomeAutomation
     from fritzconnection.lib.fritzwlan import FritzWLAN
 
     fc = FritzConnection(address='192.168.178.1', password=<password>)
-    print(fc)
-    # doing more stuff here
-    # now there is the need to get the number of devices connected by WLAN:
-    # FritzWLAN can be initialised with an existing FritzConnection instance
+
+    # library modules can be initialised with an existing FritzConnection instance
     fw = FritzWLAN(fc)
     print(fw.total_host_number)
-    # doing some homeautomation:
+
     fh = FritzHomeAutomation(fc)
     ain = '11657 0240192'  # assume the AIN of the switch is known
     fh.set_switch(ain, on=True)
 
 The next sections will describe the library modules in detail.
+
+**Inheritance from a common base class:**
+
+All library modules inherit from a common abstract base class that should not get instantiated:
+
+.. automodule:: fritzconnection.lib.fritzbase
+    :members:
 
 
 FritzCall
