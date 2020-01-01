@@ -27,20 +27,18 @@ def get_content_from(url, timeout=None, session=None):
     self-signed certificate for use in the LAN, encryption will work but
     verification will fail.
     """
-    if session:
-        with session.get(url) as conn:
-            ct = conn.headers.get("Content-type")
-            if ct == "text/html":
-                message = f"Unable to retrieve resource '{url}' from the device."
-                raise FritzConnectionException(message)
-            return conn.text
-    else:
-        conn = requests.get(url, timeout=timeout, verify=False)
-        ct = conn.headers.get("Content-type")
+    def handle_response(response):
+        ct = response.headers.get("Content-type")
         if ct == "text/html":
             message = f"Unable to retrieve resource '{url}' from the device."
             raise FritzConnectionException(message)
-        return conn.text
+        return response.text
+
+    if session:
+        with session.get(url) as response:
+            return handle_response(response)
+    response = requests.get(url, timeout=timeout, verify=False)
+    return handle_response(response)
 
 
 def get_xml_root(source, timeout=None, session=None):

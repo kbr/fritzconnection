@@ -148,6 +148,11 @@ class Soaper:
         Numeric and boolean values are converted from strings to Python
         datatypes.
         """
+        def handle_response(response):
+            if response.status_code != 200:
+                raise_fritzconnection_error(response)
+            return self.parse_response(response, service, action_name)
+
         headers = self.headers.copy()
         headers['soapaction'] = f'{service.serviceType}#{action_name}'
         arguments = ''.join(self.argument_template.format(name=k, value=v)
@@ -162,17 +167,12 @@ class Soaper:
             with self.session.post(
                 url, data=envelope, headers=headers, auth=auth
             ) as response:
-                if response.status_code != 200:
-                    raise_fritzconnection_error(response)
-                return self.parse_response(response, service, action_name)
+                return handle_response(response)
         else:
             response = requests.post(
                 url, data=envelope, headers=headers, auth=auth,
                 timeout=self.timeout, verify=False)
-            if response.status_code != 200:
-                raise_fritzconnection_error(response)
-            return self.parse_response(response, service, action_name)
-
+            return handle_response(response)
 
     def parse_response(self, response, service, action_name):
         """

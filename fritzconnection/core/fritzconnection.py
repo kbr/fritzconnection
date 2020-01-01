@@ -92,7 +92,8 @@ class FritzConnection:
             port = FRITZ_TLS_PORT
         address = self.set_protocol(address, use_tls)
 
-        # session is optional but will speed up connections:
+        # session is optional but will speed up connections
+        # (significantly for tls):
         session = requests.Session()
         session.verify = False
         session.timeout = timeout
