@@ -119,8 +119,8 @@ class FritzConnection:
 
     def __repr__(self):
         """Return a readable representation"""
-        return  f"{self.modelname} at ip {self.soaper.address}\n"\
-                f"FRITZ!OS: {self.system_version}"
+        return f"{self.modelname} at {self.soaper.address}\n" \
+               f"FRITZ!OS: {self.system_version}"
 
     @property
     def services(self):
