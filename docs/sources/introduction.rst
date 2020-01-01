@@ -22,14 +22,14 @@ To access the router in a local network, fritzconnection use some default values
 The ip-adress is a fallback-value common to every fritzbox-router, regardless of the individual configuration. In case of more than a single router in the local network (i.e. multiple Fritz!Boxes building a mesh or connected by LAN building multiple WLAN access-points) the option ``-i`` (for the command line) or the keyword-parameter ``address`` (module usage) is required to address the router, otherwise it is not defined which one of the devices will respond.
 
 
-Command line usage
-------------------
+Command line inspection
+-----------------------
 
 Installing fritzconnection by pip will also install the command line tool ``fritzconnection`` to inspect the Fritz!Box-API. With the option ``-h`` this will show a help menu: ::
 
     $ fritzconnection -h
 
-    FritzConnection v1.0
+    FritzConnection v1.2.0
     usage: fritzconnection [-h] [-i [ADDRESS]] [--port [PORT]] [-u [USERNAME]]
                            [-p [PASSWORD]] [-r] [-s] [-S SERVICEACTIONS]
                            [-a SERVICEARGUMENTS]
@@ -60,34 +60,18 @@ Installing fritzconnection by pip will also install the command line tool ``frit
                             data type of the arguments.
 
 
-With the option ``-s`` all ``services`` available without a password are listed. In case an error gets reported like: ::
+With the option ``-s`` all available ``services`` are listed. In case an error gets reported like: ::
 
     $ fritzconnection -s
 
-    FritzConnection v1.0
+    FritzConnection v1.2.0
     Unable to login into device to get configuration information.
 
-an additional parameter for the router ip must be provided (newer router models use ``192.168.178.1`` as factory setting) by using the ``-i`` option: ::
+an additional parameter for the router ip must be provided (newer router models use ``192.168.178.1`` as factory setting) by using the ``-i`` option. The number of services can vary depending on the router model: ::
 
     $ fritzconnection -s -i 192.168.178.1
 
-    FritzConnection v1.0
-    FRITZ!Box 7590 at ip 192.168.178.1
-    FRITZ!OS: None
-    Servicenames:
-                        any1
-                        WANCommonIFC1
-                        WANDSLLinkC1
-                        WANIPConn1
-                        WANIPv6Firewall1
-
-
-With a given password the OS-version and more services are listed. The number of services can vary depending on the router model: ::
-
-
-    $ fritzconnection -s -i 192.168.178.1 -p <password>
-
-    FritzConnection v1.0
+    FritzConnection v1.2.0
     FRITZ!Box 7590 at ip 192.168.178.1
     FRITZ!OS: 7.12
     Servicenames:
@@ -338,3 +322,23 @@ FritzConnection can raise several exceptions. For example using a service not pr
 
 
 All exceptions are inherited from ``FritzConnectionException``. ``FritzServiceError`` and ``FritzActionError`` are superseding the older ``ServiceError`` and ``ActionError`` exceptions, that are still existing for backward compatibility. These exceptions are raised by calling unknown services and actions. All other exceptions are raised according to errors reported from the router. ``FritzLookUpError`` and ``FritzArrayIndexError`` are conceptually the same as a Python ``KeyError`` or ``IndexError``. Because of this they are also inherited from these Exceptions.
+
+
+Using TLS
+---------
+
+FritzConnection supports encrypted communication with Fritz!Box devices (*new in 1.2.0*) by providing the option ``use_tls``: ::
+
+    fc = FritzConnection(address=192.168.178.1, password=<password>, use_tls=True)
+
+As the routers are providing self-signed certificates, certificate-verification is suppressed. **Note:** using TLS will slow down the communication with the router.
+
+When to use TLS (and when not):
+
+* Connections to the router are just by WLAN. If the WLAN is (hopefully) encrypted, there is no need for an additional encryption.
+* Connections to the router are also by LAN in your home-network. Normally you don't need encryption – if there is a MITM in your LAN, then you have a *serious* problem.
+* Connections happen in a company network: use encryption!
+* Access the router from the internet: use a VPN (which is encrypted).
+* You are paranoid: use encryption.
+* In case of doubt: be paranoid.
+
