@@ -19,7 +19,7 @@ def localname(node):
     return m.group('localname')
 
 
-def get_content_from(url, timeout=None):
+def get_content_from(url, timeout=None, session=None):
     """
     Returns text from a get-request for the given url. In case of a
     secure request (using TLS) the parameter verify is set to False, to
@@ -27,15 +27,23 @@ def get_content_from(url, timeout=None):
     self-signed certificate for use in the LAN, encryption will work but
     verification will fail.
     """
-    conn = requests.get(url, timeout=timeout, verify=False)
-    ct = conn.headers.get("Content-type")
-    if ct == "text/html":
-        message = f"Unable to retrieve resource '{url}' from the device."
-        raise FritzConnectionException(message)
-    return conn.text
+    if session:
+        with session.get(url) as conn:
+            ct = conn.headers.get("Content-type")
+            if ct == "text/html":
+                message = f"Unable to retrieve resource '{url}' from the device."
+                raise FritzConnectionException(message)
+            return conn.text
+    else:
+        conn = requests.get(url, timeout=timeout, verify=False)
+        ct = conn.headers.get("Content-type")
+        if ct == "text/html":
+            message = f"Unable to retrieve resource '{url}' from the device."
+            raise FritzConnectionException(message)
+        return conn.text
 
 
-def get_xml_root(source, timeout=None):
+def get_xml_root(source, timeout=None, session=None):
     """
     Function to help migrate from lxml to the standard-library xml-package.
 
@@ -47,7 +55,7 @@ def get_xml_root(source, timeout=None):
     """
     if source.startswith("http://") or source.startswith("https://"):
         # it's a uri, use requests to get the content
-        source = get_content_from(source, timeout=timeout)
+        source = get_content_from(source, timeout=timeout, session=session)
     elif not source.startswith("<"):
         # assume it's a filename
         with open(source) as fobj:

@@ -9,6 +9,7 @@ Module to communicate with the AVM Fritz!Box.
 
 import os
 import string
+import requests
 
 from .devices import DeviceManager
 from .exceptions import (
@@ -91,8 +92,15 @@ class FritzConnection:
             port = FRITZ_TLS_PORT
         address = self.set_protocol(address, use_tls)
 
-        self.soaper = Soaper(address, port, user, password, timeout=timeout)
-        self.device_manager = DeviceManager(timeout=timeout)
+        # session is optional but will speed up connections:
+        session = requests.Session()
+        session.verify = False
+        session.timeout = timeout
+
+        self.soaper = Soaper(
+            address, port, user, password, timeout=timeout, session=session
+        )
+        self.device_manager = DeviceManager(timeout=timeout, session=session)
 
         for description in FRITZ_DESCRIPTIONS:
             source = f'{address}:{port}/{description}'

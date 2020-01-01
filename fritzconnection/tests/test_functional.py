@@ -5,7 +5,10 @@ Running functional tests against a router - if the router is present.
 import pytest
 import requests
 
-from ..core.exceptions import FritzConnectionException
+from ..core.exceptions import (
+    FritzConnectionException,
+    FritzServiceError,
+)
 from ..core.fritzconnection import FritzConnection
 from ..lib.fritzcall import FritzCall
 from ..lib.fritzhomeauto import FritzHomeAutomation
@@ -42,15 +45,12 @@ def get_fc_tls_instance():
 
 @pytest.mark.skipif(no_router_present, reason=NO_ROUTER)
 @pytest.mark.parametrize("use_tls", [False, True])
-def test_access_model_name(use_tls, get_fc_instance, get_fc_tls_instance):
+def test_access_model_name(use_tls):
     """
     Check whether description files are accessible.
     In this case there is some modelname available (a string).
     """
-    if use_tls:
-        fc = get_fc_instance
-    else:
-        fc = get_fc_tls_instance
+    fc = FritzConnection(use_tls=use_tls)
     # on success the modelname should be a string:
     assert isinstance(fc.modelname, str)
 
@@ -63,21 +63,33 @@ def test_soap_access(use_tls, get_fc_instance, get_fc_tls_instance):
     'DeviceInfo1' with the action 'GetInfo' should be provided by all
     router models – including repeaters - and provides access to the
     model name.
+    The service must be accessible without a password. As the model is unknown, the service should be available on all models. In practice that's not the case because routers and repeaters will have different service sets. So this will test a soap-call if
     """
-    if use_tls:
-        fc = get_fc_instance
-    else:
-        fc = get_fc_tls_instance
+    fc = FritzConnection(use_tls=use_tls)
     try:
         info = fc.call_action('DeviceInfo1', 'GetInfo')
     except FritzConnectionException:
-        # will not work on devices requiring a password
-        # to access a tr64 service.
-        # fake success and skip
+        # successful call but access not allowed
+        # (password required)
+        # so at least the soap request has worked:
         assert True
+    except FritzServiceError:
+        # this should not happen with the known product range.
+        # skip this:
+        pass
     else:
         # on success the modelname should be a string:
         assert isinstance(info['NewModelName'], str)
+    try:
+        info = fc.call_action('WANIPConn1', 'GetStatusInfo')
+    except FritzServiceError:
+        # some devices (like repeaters) may not have this service.
+        # skip this:
+        pass
+    else:
+        assert isinstance(info['NewConnectionStatus'], str)
+    # do at least one assert:
+    assert True
 
 
 @pytest.mark.skipif(no_router_present, reason=NO_ROUTER)
