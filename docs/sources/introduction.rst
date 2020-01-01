@@ -32,50 +32,45 @@ Installing fritzconnection by pip will also install the command line tool ``frit
 
     $ fritzconnection -h
 
-    FritzConnection v1.2.0
-    usage: fritzconnection [-h] [-i [ADDRESS]] [--port [PORT]] [-u [USERNAME]]
-                           [-p [PASSWORD]] [-r] [-s] [-S SERVICEACTIONS]
-                           [-a SERVICEARGUMENTS]
-                           [-A ACTIONARGUMENTS ACTIONARGUMENTS]
+FritzConnection v1.2.0
+usage: fritzconnection [-h] [-i [ADDRESS]] [--port [PORT]] [-u [USERNAME]]
+                       [-p [PASSWORD]] [-r] [-s] [-S SERVICEACTIONS]
+                       [-a SERVICEARGUMENTS]
+                       [-A ACTIONARGUMENTS ACTIONARGUMENTS] [-e [ENCRYPT]]
 
-    Fritz!Box API Inspection:
+Fritz!Box API Inspection:
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      -i [ADDRESS], --ip-address [ADDRESS]
-                            Specify ip-address of the FritzBox to connect
-                            to.Default: 169.254.1.1
-      --port [PORT]         Port of the FritzBox to connect to. Default: 49000
-      -u [USERNAME], --username [USERNAME]
-                            Fritzbox authentication username
-      -p [PASSWORD], --password [PASSWORD]
-                            Fritzbox authentication password
-      -r, --reconnect       Reconnect and get a new ip
-      -s, --services        List all available services
-      -S SERVICEACTIONS, --serviceactions SERVICEACTIONS
-                            List actions for the given service: <service>
-      -a SERVICEARGUMENTS, --servicearguments SERVICEARGUMENTS
-                            List arguments for the actions of a specified service:
-                            <service>.
-      -A ACTIONARGUMENTS ACTIONARGUMENTS, --actionarguments ACTIONARGUMENTS ACTIONARGUMENTS
-                            List arguments for the given action of a specified
-                            service: <service> <action>. Lists also direction and
-                            data type of the arguments.
+optional arguments:
+  -h, --help            show this help message and exit
+  -i [ADDRESS], --ip-address [ADDRESS]
+                        Specify ip-address of the FritzBox to connect
+                        to.Default: 169.254.1.1
+  --port [PORT]         Port of the FritzBox to connect to. Default: 49000
+  -u [USERNAME], --username [USERNAME]
+                        Fritzbox authentication username
+  -p [PASSWORD], --password [PASSWORD]
+                        Fritzbox authentication password
+  -r, --reconnect       Reconnect and get a new ip
+  -s, --services        List all available services
+  -S SERVICEACTIONS, --serviceactions SERVICEACTIONS
+                        List actions for the given service: <service>
+  -a SERVICEARGUMENTS, --servicearguments SERVICEARGUMENTS
+                        List arguments for the actions of a specified service:
+                        <service>.
+  -A ACTIONARGUMENTS ACTIONARGUMENTS, --actionarguments ACTIONARGUMENTS ACTIONARGUMENTS
+                        List arguments for the given action of a specified
+                        service: <service> <action>. Lists also direction and
+                        data type of the arguments.
+  -e [ENCRYPT], --encrypt [ENCRYPT]
+                        use secure connection
 
 
-With the option ``-s`` all available ``services`` are listed. In case an error gets reported like: ::
-
-    $ fritzconnection -s
-
-    FritzConnection v1.2.0
-    Unable to login into device to get configuration information.
-
-an additional parameter for the router ip must be provided (newer router models use ``192.168.178.1`` as factory setting) by using the ``-i`` option. The number of services can vary depending on the router model: ::
+With the option ``-s`` all available ``services`` are listed. If there are multiple fritz devices in the network, it is undefined which one will respond. In this case an additional parameter for the router ip must be provided (newer router models use ``192.168.178.1`` as factory setting) by using the ``-i`` option. The number of services can vary depending on the router model: ::
 
     $ fritzconnection -s -i 192.168.178.1
 
     FritzConnection v1.2.0
-    FRITZ!Box 7590 at ip 192.168.178.1
+    FRITZ!Box 7590 at http://192.168.178.1
     FRITZ!OS: 7.12
     Servicenames:
                         any1
@@ -106,12 +101,12 @@ All service-names are ending with a numeric value. In case a service is listed m
 Services and actions
 ....................
 
-Every ``service`` has a set of corresponding ``actions``. The actions are listed by the flag ``-S`` with the servicename as parameter: ::
+Every ``service`` has a set of corresponding ``actions``. The actions are listed by the flag ``-S`` with the servicename as parameter.  ::
 
-    $ fritzconnection -i 192.168.178.1 -p <password> -S WANIPConnection1
+    $ fritzconnection -i 192.168.178.1 -S WANIPConnection1
 
-    FritzConnection v1.0
-    FRITZ!Box 7590 at ip 192.168.178.1
+    FritzConnection v1.2.0
+    FRITZ!Box 7590 at http://192.168.178.1
     FRITZ!OS: 7.12
 
     Servicename:        WANIPConnection1
@@ -137,14 +132,14 @@ Every ``service`` has a set of corresponding ``actions``. The actions are listed
 
 A list of all available actions with their corresponding ``arguments`` is reported by the flag ``-a`` with the servicename as parameter: ::
 
-    $ fritzconnection -i 192.168.178.1 -p <password> -a WANIPConnection1
+    $ fritzconnection -i 192.168.178.1 -a WANIPConnection1
 
 This can return a lengthy output. So the arguments for a single action of a given service can also get listed with the option ``-A`` and the service- and actionname as arguments. For example the output for the service ``WANIPConnection1`` and the action ``GetInfo`` will be: ::
 
-    $ fritzconnection -i 192.168.178.1 -p <password> -A WANIPConnection1 GetInfo
+    $ $ fritzconnection -i 192.168.178.1 -A WANIPConnection1 GetInfo
 
-    FritzConnection v1.0
-    FRITZ!Box 7590 at ip 192.168.178.1
+    FritzConnection v1.2.0
+    FRITZ!Box 7590 at http://192.168.178.1
     FRITZ!OS: 7.12
 
     Service:            WANIPConnection1
