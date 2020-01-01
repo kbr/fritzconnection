@@ -18,8 +18,8 @@ from .exceptions import (
 )
 from .soaper import Soaper
 
-# disable InsecureRequestWarning in case of using TLS in a local network
-# skipping verification of a self signed certificate:
+# disable InsecureRequestWarning from urllib3
+# because of skipping certificate verification:
 import urllib3
 urllib3.disable_warnings()
 
@@ -82,14 +82,14 @@ class FritzConnection:
         """
         if address is None:
             address = FRITZ_IP_ADDRESS
-        if port is None:
-            port = FRITZ_TCP_PORT
         if user is None:
             user = os.getenv('FRITZ_USERNAME', FRITZ_USERNAME)
         if password is None:
             password = os.getenv('FRITZ_PASSWORD', '')
-        if use_tls:
+        if port is None and use_tls:
             port = FRITZ_TLS_PORT
+        elif port is None:
+            port = FRITZ_TCP_PORT
         address = self.set_protocol(address, use_tls)
 
         # session is optional but will speed up connections
