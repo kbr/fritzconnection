@@ -12,7 +12,8 @@ from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
 
 
-SERVICE = 'WLANConfiguration1'
+# important: don't set an extension number here:
+SERVICE = 'WLANConfiguration'
 
 
 class FritzWLAN(AbstractLibraryBase):
