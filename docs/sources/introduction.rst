@@ -32,37 +32,37 @@ Installing fritzconnection by pip will also install the command line tool ``frit
 
     $ fritzconnection -h
 
-FritzConnection v1.2.0
-usage: fritzconnection [-h] [-i [ADDRESS]] [--port [PORT]] [-u [USERNAME]]
-                       [-p [PASSWORD]] [-r] [-s] [-S SERVICEACTIONS]
-                       [-a SERVICEARGUMENTS]
-                       [-A ACTIONARGUMENTS ACTIONARGUMENTS] [-e [ENCRYPT]]
+    FritzConnection v1.2.0
+    usage: fritzconnection [-h] [-i [ADDRESS]] [--port [PORT]] [-u [USERNAME]]
+                           [-p [PASSWORD]] [-r] [-s] [-S SERVICEACTIONS]
+                           [-a SERVICEARGUMENTS]
+                           [-A ACTIONARGUMENTS ACTIONARGUMENTS] [-e [ENCRYPT]]
 
-Fritz!Box API Inspection:
+    Fritz!Box API Inspection:
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -i [ADDRESS], --ip-address [ADDRESS]
-                        Specify ip-address of the FritzBox to connect
-                        to.Default: 169.254.1.1
-  --port [PORT]         Port of the FritzBox to connect to. Default: 49000
-  -u [USERNAME], --username [USERNAME]
-                        Fritzbox authentication username
-  -p [PASSWORD], --password [PASSWORD]
-                        Fritzbox authentication password
-  -r, --reconnect       Reconnect and get a new ip
-  -s, --services        List all available services
-  -S SERVICEACTIONS, --serviceactions SERVICEACTIONS
-                        List actions for the given service: <service>
-  -a SERVICEARGUMENTS, --servicearguments SERVICEARGUMENTS
-                        List arguments for the actions of a specified service:
-                        <service>.
-  -A ACTIONARGUMENTS ACTIONARGUMENTS, --actionarguments ACTIONARGUMENTS ACTIONARGUMENTS
-                        List arguments for the given action of a specified
-                        service: <service> <action>. Lists also direction and
-                        data type of the arguments.
-  -e [ENCRYPT], --encrypt [ENCRYPT]
-                        use secure connection
+    optional arguments:
+      -h, --help            show this help message and exit
+      -i [ADDRESS], --ip-address [ADDRESS]
+                            Specify ip-address of the FritzBox to connect
+                            to.Default: 169.254.1.1
+      --port [PORT]         Port of the FritzBox to connect to. Default: 49000
+      -u [USERNAME], --username [USERNAME]
+                            Fritzbox authentication username
+      -p [PASSWORD], --password [PASSWORD]
+                            Fritzbox authentication password
+      -r, --reconnect       Reconnect and get a new ip
+      -s, --services        List all available services
+      -S SERVICEACTIONS, --serviceactions SERVICEACTIONS
+                            List actions for the given service: <service>
+      -a SERVICEARGUMENTS, --servicearguments SERVICEARGUMENTS
+                            List arguments for the actions of a specified service:
+                            <service>.
+      -A ACTIONARGUMENTS ACTIONARGUMENTS, --actionarguments ACTIONARGUMENTS ACTIONARGUMENTS
+                            List arguments for the given action of a specified
+                            service: <service> <action>. Lists also direction and
+                            data type of the arguments.
+      -e [ENCRYPT], --encrypt [ENCRYPT]
+                            use secure connection
 
 
 With the option ``-s`` all available ``services`` are listed. If there are multiple fritz devices in the network, it is undefined which one will respond. In this case an additional parameter for the router ip must be provided (newer router models use ``192.168.178.1`` as factory setting) by using the ``-i`` option. The number of services can vary depending on the router model: ::
@@ -187,14 +187,14 @@ The method ``call_action`` takes two required arguments: the service- and the ac
     Once a FritzConnection instance has been created, it can be reused for all future call_action calls. Because instantiation is expensive (doing a lot of i/o for API inspection) this can increase performance significantly.
 
 
-Let's look at another example using an address (``192.168.178.1``) and calling an action (``GetInfo``) on a service (``WLANConfiguration``) that requires a password: ::
+Let's look at another example using an address ``192.168.178.1`` and calling an action ``GetInfo`` on a service ``WLANConfiguration`` that requires a password: ::
 
     from fritzconnection import FritzConnection
 
     fc = FritzConnection(address='192.168.178.1', password='the_password')
     state = fc.call_action('WLANConfiguration1', 'GetInfo')
 
-Calling the service ``WLANConfiguration1`` without giving a password to FritzConnection will raise a ``FritzServiceError``. Providing a wrong password will raise a ``FritzConnectionError``.
+Calling the service ``WLANConfiguration1`` without giving a password (or providing a wrong one) will raise a ``FritzConnectionException``. Inspecting the API works without a password, but most of the API-calls require a password.
 
 In case that the servicename is given without a numeric extension (i.e '1') fritzconnection adds the extension '1' by default. So ``WLANConfiguration`` becomes ``WLANConfiguration1``. The extension is required if there are multiple services with the same name. For backward compatibility servicenames like ``WLANConfiguration:1`` are also accepted.
 
@@ -219,14 +219,14 @@ The result of calling the ``call_action`` method is always a dictionary with the
      'NewStandard': 'n',
      'NewStatus': 'Up'}
 
-These informations are showing a lot of details. In this example the network is up and operating on channel 6.
+These informations are showing a lot of details about the WLAN configuration. In this example the network is up and operating on channel 6.
 
 To activate or deactivate a network, the action ``SetEnable`` can get called. Inspection gives informations about the required arguments: ::
 
-    $ $ fritzconnection -i 192.168.178.1 -p <password> -A WLANConfiguration1 SetEnable
+    $ $ fritzconnection -i 192.168.178.1 -A WLANConfiguration1 SetEnable
 
-    FritzConnection v1.0
-    FRITZ!Box 7590 at ip 192.168.178.1
+    FritzConnection v1.2.0
+    FRITZ!Box 7590 at http://192.168.178.1
     FRITZ!OS: 7.12
 
     Service:            WLANConfiguration1
@@ -238,14 +238,14 @@ To activate or deactivate a network, the action ``SetEnable`` can get called. In
         NewEnable                     -> in         boolean
 
 
-Here just one argument is listed for the 'in'-direction. That means that this argument has to be send to the router. FritzConnection sends arguments by giving them as keyword-parameters to the ``call_action``-method: ::
+Here just one argument is listed for the in-direction. That means that this argument has to be send to the router. FritzConnection takes arguments as keyword-parameters for the ``call_action``-method: ::
 
     from fritzconnection import FritzConnection
 
     fc = FritzConnection(address='192.168.178.1', password='the_password')
     fc.call_action('WLANConfiguration1', 'SetEnable', NewEnable=0)
 
-This call will deactivate the network. As there are no arguments listed for the 'out'-direction, ``call_action`` will return an empty dictionary without any out-argument keys (keep in mind: don't deactivate a wireless network by not having a backup cable connection).
+This call will deactivate the network (keep in mind: don't deactivate a wireless network by not having a backup cable connection). As there are no arguments listed for the out-direction, ``call_action`` will return an empty dictionary without any out-argument keys .
 
 The ``call_action`` method also accepts a keyword-only argument with the name ``arguments`` that must be a dictionary with all input-parameters as key-value pairs. (*new since 1.0*)
 
@@ -325,13 +325,13 @@ All exceptions are inherited from ``FritzConnectionException``. ``FritzServiceEr
 Using TLS
 ---------
 
-FritzConnection supports encrypted communication with Fritz!Box devices (*new in 1.2.0*) by providing the option ``use_tls``: ::
+FritzConnection supports encrypted communication with Fritz!Box devices by providing the option ``use_tls`` (*new in 1.2.0*): ::
 
     fc = FritzConnection(address=192.168.178.1, password=<password>, use_tls=True)
 
-As the routers are providing self-signed certificates, certificate-verification is suppressed. The default setting for ``use_tls`` is ``False``.
+The default setting for ``use_tls`` is ``False``. For the command line tools encryption is provided by the flag ``-e`` or ``--encrypt``.
 
-When to use TLS (*and when not*): in a private WLAN already using encryption there is no need to add another encryption layer. Same for a private LAN as long as the users can be trusted. The latter should never be the case in corporate networks: there encryption is essential. Same for accessing the router from the internet by VPN if the local network is not a trusted private one.
 
 .. note ::
-    Using TLS will slow down the communication with the router. Especially getting a new FritzConnection instance will take longer by setting ``use_tls=True``. Tip: reuse instances.
+    - Using TLS will slow down the communication with the router. Especially getting a new FritzConnection instance will take longer by setting ``use_tls=True``. Tip: reuse instances.
+    - Since the routers currently create self-signed certificates, certificate-verification is disabled.
