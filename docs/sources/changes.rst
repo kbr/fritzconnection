@@ -4,11 +4,11 @@ Version History
 ===============
 
 
-1.2.0b2
--------
+1.2.0
+-----
 
 - TLS for router communication added.
-- command line tools take the new option `-e` for encrypted connection.
+- command line tools take the new option -e for encrypted connection.
 - Sessions added for faster connections (significant speed up for TLS)
 - Functional tests added addressing a physical router. Skipped if no router present.
 - Bugfix for rendering the documentation of the FritzPhonebook-API (bug introduced in 1.1.1)
