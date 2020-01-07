@@ -3,6 +3,11 @@
 Version History
 ===============
 
+1.2.1
+-----
+
+- library modules handling complex datatypes (urls) can now reuse fritzconnection sessions.
+
 
 1.2.0
 -----

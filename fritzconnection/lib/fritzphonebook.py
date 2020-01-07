@@ -117,7 +117,7 @@ class FritzPhonebook(AbstractLibraryBase):
         method sets the phone book instance attribute and has no return
         value.
         """
-        root = get_xml_root(url)
+        root = get_xml_root(url, session=self.fc.session)
         self.phonebook = Phonebook()
         process_node(self, root)
 

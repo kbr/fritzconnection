@@ -94,14 +94,16 @@ class FritzConnection:
 
         # session is optional but will speed up connections
         # (significantly for tls):
-        session = requests.Session()
-        session.verify = False
-        session.timeout = timeout
+        self.session = requests.Session()
+        self.session.verify = False
+        self.session.timeout = timeout
 
         self.soaper = Soaper(
-            address, port, user, password, timeout=timeout, session=session
+            address, port, user, password, timeout=timeout, session=self.session
         )
-        self.device_manager = DeviceManager(timeout=timeout, session=session)
+        self.device_manager = DeviceManager(
+            timeout=timeout, session=self.session
+        )
 
         for description in FRITZ_DESCRIPTIONS:
             source = f'{address}:{port}/{description}'

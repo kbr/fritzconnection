@@ -65,7 +65,7 @@ class FritzCall(AbstractLibraryBase):
             url += f'&days={days}'
         elif num:
             url += f'&max={num}'
-        root = get_xml_root(url)
+        root = get_xml_root(url, session=self.fc.session)
         self.calls = CallCollection(root)
 
     def get_calls(self, calltype=ALL_CALL_TYPES, update=True,
