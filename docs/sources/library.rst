@@ -150,7 +150,7 @@ FritzHomeAutomation  API
 FritzHosts
 ----------
 
-Utility modul for FritzConnection to list the known hosts. For all known hosts the current ip, name, the MAC address and the active-state are reported. Usage from the command line: ::
+Utility modul for FritzConnection to access and control the known hosts. The command line tool allows to list the current ip, name, the MAC address and the active-state for all registered hosts: ::
 
     $ fritzhosts -i 192.168.178.1 -p <password>
 

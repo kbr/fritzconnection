@@ -3,17 +3,25 @@
 Version History
 ===============
 
+
+1.3.0-dev
+---------
+
+- Library class FritzHost provides more methods to access devices, including wake on LAN and net topology informations.
+
+
+
 1.2.1
 -----
 
-- library modules handling complex datatypes (urls) can now reuse fritzconnection sessions.
+- Library modules handling complex datatypes (urls) can now reuse fritzconnection sessions.
 
 
 1.2.0
 -----
 
 - TLS for router communication added.
-- command line tools take the new option -e for encrypted connection.
+- Command line tools take the new option -e for encrypted connection.
 - Sessions added for faster connections (significant speed up for TLS)
 - Functional tests added addressing a physical router. Skipped if no router present.
 - Bugfix for rendering the documentation of the FritzPhonebook-API (bug introduced in 1.1.1)
