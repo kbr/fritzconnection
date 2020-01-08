@@ -1,6 +1,5 @@
 """
-Modul to list the known hosts. Older versions of FritzOS lists only up
-to 16 entries. For newer versions this limitation is gone.
+Modul to access and control the known hosts.
 """
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection
@@ -21,7 +20,7 @@ SERVICE = 'Hosts1'
 
 class FritzHosts(AbstractLibraryBase):
     """
-    Class to list all known hosts. All parameters are optional. If
+    Class to access the registered hosts. All parameters are optional. If
     given, they have the following meaning: `fc` is an instance of
     FritzConnection, `address` the ip of the Fritz!Box, `port` the port
     to connect to, `user` the username, `password` the password,
@@ -29,8 +28,10 @@ class FritzHosts(AbstractLibraryBase):
     boolean indicating to use TLS (default False).
     """
 
-    def _action(self, actionname, **kwargs):
-        return self.fc.call_action(SERVICE, actionname, **kwargs)
+    def _action(self, actionname, *, arguments=None, **kwargs):
+        return self.fc.call_action(
+            SERVICE, actionname, arguments=arguments, **kwargs
+        )
 
     @property
     def host_numbers(self):
@@ -112,3 +113,47 @@ class FritzHosts(AbstractLibraryBase):
         url = f'{self.fc.address}:{self.fc.port}{path}'
         with self.fc.session.get(url) as response:
             return response.text if raw else response.json()
+
+    def get_wol_status(self, mac_address):
+        """
+        Returns a boolean whether wake on LAN signal gets send to the
+        device with the given `mac_address` in case of a remote access.
+        """
+        info = self._action(
+            'X_AVM-DE_GetAutoWakeOnLANByMACAddress', NewMACAddress=mac_address
+        )
+        return info['NewAutoWOLEnabled']
+
+    def set_wol_status(self, mac_address, status=False):
+        """
+        Sets whether a wake on LAN signal should get send send to the
+        device with the given `mac_address` in case of a remote access.
+        `status` is a boolean, default value is `False`. This method has
+        no return value.
+        """
+        args = {
+            'NewMACAddress': mac_address,
+            'NewAutoWOLEnabled': 1 if status else 0
+        }
+        self._action('X_AVM-DE_SetAutoWakeOnLANByMACAddress', arguments=args)
+
+    def set_host_name(self, mac_address, name):
+        """
+        Sets the hostname of the device with the given `mac_address` to
+        the new `name`.
+        """
+        args = {
+            'NewMACAddress': mac_address,
+            'NewHostName': name,
+        }
+        self._action('X_AVM-DE_SetHostNameByMACAddress', arguments=args)
+
+    def run_host_update(self, mac_address):
+        """
+        Triggers the host with the given `mac_address` to run a system
+        update. The method returns immediately, but for the device it
+        take some time to do the OS update. All vendor warnings about running a
+        system update apply, like not turning power off during a system
+        update. So run this command with caution.
+        """
+        self._action('X_AVM-DE_HostDoUpdate', NewMACAddress=mac_address)
