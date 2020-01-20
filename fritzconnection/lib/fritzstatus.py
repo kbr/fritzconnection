@@ -178,6 +178,27 @@ class FritzStatus(AbstractLibraryBase):
             format_rate(downstream, unit ='bits')
         )
 
+    def get_monitor_data(self, sync_group_index=0):
+        """
+        Returns a dictionary with realtime data about the current up-
+        and downstream rates.
+        """
+        monitor_data = self.fc.call_action(
+            'WANCommonInterfaceConfig1',
+            'X_AVM-DE_GetOnlineMonitor',
+            NewSyncGroupIndex=sync_group_index
+        )
+        for key, value in monitor_data.items():
+            if isinstance(value, str) and ',' in value:
+                try:
+                    items = [int(v) for v in value.split(',')]
+                except (AttributeError, ValueError):
+                    # ignore and keep value as is:
+                    pass
+                else:
+                    monitor_data[key] = items
+        return monitor_data
+
     def reconnect(self):
         """Makes a reconnection with a new external ip."""
         self.fc.reconnect()
