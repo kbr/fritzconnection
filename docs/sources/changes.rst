@@ -8,6 +8,8 @@ Version History
 ---------
 
 - Library class FritzHost provides more methods to access devices, including wake on LAN and net topology informations.
+- Library class FritzStatus provides easy access to realtime monitor data.
+- PyPi Development Status classifier changed to 'Production/Stable'.
 
 
 

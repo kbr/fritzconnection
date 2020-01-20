@@ -11,13 +11,13 @@ setup(
     version = package_version,
     packages = find_packages(),
     license = 'MIT',
-    description = 'Communicate with the AVM FritzBox',
+    description = 'Communicate with the AVM FRITZ!Box',
     long_description = the_long_description,
     author = 'Klaus Bremer',
     author_email = 'bremer@bremer-media.de',
     url = 'https://github.com/kbr/fritzconnection',
     classifiers = [
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable'
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
@@ -29,7 +29,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    keywords = 'AVM FritzBox',
+    keywords = 'AVM FRITZ!Box fritzbox fritz',
     python_requires = ">= 3.6",
     install_requires = [
         'requests>=2.22.0',
