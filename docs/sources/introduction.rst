@@ -243,11 +243,11 @@ Here just one argument is listed for the in-direction. That means that this argu
     from fritzconnection import FritzConnection
 
     fc = FritzConnection(address='192.168.178.1', password='the_password')
-    fc.call_action('WLANConfiguration1', 'SetEnable', NewEnable=0)
+    fc.call_action('WLANConfiguration1', 'SetEnable', NewEnable=False)
 
-This call will deactivate the network (keep in mind: don't deactivate a wireless network by not having a backup cable connection). As there are no arguments listed for the out-direction, ``call_action`` will return an empty dictionary without any out-argument keys .
+This call will deactivate the network (keep in mind: don't deactivate a wireless network by not having a backup cable connection). As there are no arguments listed for the out-direction, ``call_action`` will return an empty dictionary without any out-argument keys.
 
-The ``call_action`` method also accepts a keyword-only argument with the name ``arguments`` that must be a dictionary with all input-parameters as key-value pairs. (*new since 1.0*)
+The ``call_action`` method also accepts a keyword-only argument with the name ``arguments`` that must be a dictionary with all input-parameters as key-value pairs (*new since 1.0*). Arguments like ``NewEnable`` can accept Python booleans instead of the numeric values [0, 1] (*new since 1.3*).
 
 This is convenient for calls with multiple arguments for the in-direction, or for argument names not suitable as keyword parameters (like having a dash in the name) : ::
 
