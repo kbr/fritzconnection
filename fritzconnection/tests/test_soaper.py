@@ -21,6 +21,7 @@ from ..core.exceptions import (
 from ..core.soaper import (
     raise_fritzconnection_error,
     boolean_convert,
+    encode_boolean,
 )
 
 
@@ -121,3 +122,29 @@ def test_long_error_message():
          "errorDescription: Invalid Action",
          ]
     )
+
+
+@pytest.mark.parametrize(
+    "value, expected_type", [
+        ("text", str),
+        (0, int),
+        (1, int),
+        (None, int),
+        (False, int),
+        (True, int),
+    ]
+)
+def test_encode_boolean(value, expected_type):
+    result = encode_boolean(value)
+    assert isinstance(result, expected_type)
+
+
+@pytest.mark.parametrize(
+    "value, not_expected_type", [
+        (False, bool),  # should be int after encoding, not bool
+        (True, bool),
+    ]
+)
+def test_encode_boolean2(value, not_expected_type):
+    result = encode_boolean(value)
+    assert not isinstance(result, not_expected_type)
