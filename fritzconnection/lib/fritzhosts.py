@@ -114,7 +114,7 @@ class FritzHosts(AbstractLibraryBase):
         with self.fc.session.get(url) as response:
             return response.text if raw else response.json()
 
-    def get_wol_status(self, mac_address):
+    def get_wakeonlan_status(self, mac_address):
         """
         Returns a boolean whether wake on LAN signal gets send to the
         device with the given `mac_address` in case of a remote access.
@@ -124,7 +124,7 @@ class FritzHosts(AbstractLibraryBase):
         )
         return info['NewAutoWOLEnabled']
 
-    def set_wol_status(self, mac_address, status=False):
+    def set_wakeonlan_status(self, mac_address, status=False):
         """
         Sets whether a wake on LAN signal should get send send to the
         device with the given `mac_address` in case of a remote access.
