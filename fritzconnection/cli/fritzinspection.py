@@ -11,6 +11,7 @@ Author: Klaus Bremer
 
 
 import argparse
+import datetime
 import os
 
 from ..core.exceptions import FritzConnectionException
@@ -62,7 +63,6 @@ class FritzInspection:
                         print('{:24}- {}'.format('', argument))
                     print()
 
-
     def view_actionarguments(self, service_name, action_name):
         """Send all action names of the given service to stdout."""
         try:
@@ -78,15 +78,38 @@ class FritzInspection:
         print('\n{:<20}{}'.format('Service:', service_name))
         print('{:<20}{}'.format('Action:', action_name))
         print('Parameters:\n')
-        print('    {:30}{:14}{}\n'.format('Name', 'direction', 'data type'))
+        print('    {:38}{:14}{}\n'.format('Name', 'direction', 'data type'))
         for argument in action.arguments.values():
             if argument.direction == 'in':
                 direction = '-> in'
             else:
                 direction = '   out ->'
             var = service.state_variables.get(argument.relatedStateVariable, '')
-            line = f'    {argument.name:30}{direction:14}{var.dataType}'
+            line = f'    {argument.name:38}{direction:14}{var.dataType}'
             print(line)
+
+    def view_complete_api(self):
+        """
+        Send the complete api to stdout.
+
+        This can be a lengthy output that may be redirected to a file.
+        """
+        print()
+        system_info = self.fc.device_manager.system_info
+        print(
+            f"system : {system_info[-1]}\n"
+            f"build  : {system_info[-2]}\n"
+            f"hw-code: {system_info[0]}"
+        )
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"Report date: {now}")
+        for service_name, service in self.fc.services.items():
+            if service_name == 'any1':
+                continue
+            print()
+            print('=' * 65)
+            for action_name in service.actions:
+                self.view_actionarguments(service_name, action_name)
 
 
 def get_cli_arguments():
@@ -130,6 +153,9 @@ def get_cli_arguments():
                              'specified service: <service> <action>. '
                              'Lists also direction and data type of the '
                              'arguments.')
+    parser.add_argument('-c', '--complete',
+                        nargs='?', default=False, const=True,
+                        help='List the complete api of the router')
     parser.add_argument('-e', '--encrypt',
                         nargs='?', default=False, const=True,
                         help='use secure connection')
@@ -161,6 +187,8 @@ def run_inspector(inspector, args):
     elif args.actionarguments:
         inspector.view_actionarguments(args.actionarguments[0],
                                        args.actionarguments[1])
+    elif args.complete:
+        inspector.view_complete_api()
     elif args.reconnect:
         inspector.fc.reconnect()
         print('reconnect the router.')
