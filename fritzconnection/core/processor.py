@@ -443,7 +443,8 @@ class Description:
     def system_info(self):
         """
         Returns the systemVersion attributes as a tuple:
-        (HW, Major, Minor, Patch, Bildnumber, Display)
+        (HW, Major, Minor, Patch, Bildnumber, Display). This information
+        is only available by the 'tr64desc.xml' file.
         """
         return self.systemVersion.info
 

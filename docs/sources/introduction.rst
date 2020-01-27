@@ -32,7 +32,7 @@ Installing fritzconnection by pip will also install the command line tool ``frit
 
     $ fritzconnection -h
 
-    FritzConnection v1.3.0-dev
+    FritzConnection v1.3.0
     usage: fritzconnection [-h] [-i [ADDRESS]] [--port [PORT]] [-u [USERNAME]]
                            [-p [PASSWORD]] [-r] [-s] [-S SERVICEACTIONS]
                            [-a SERVICEARGUMENTS]
@@ -175,7 +175,7 @@ To report the complete api of the router, the option ``-c`` can be used: ::
 
     $ fritzconnection -i 192.168.178.1 -c > api.txt
 
-In the above example the output is redirected to a file, because the output will be to lengthy for a useful command line information.
+In the above example the output is redirected to a file, because the output will be really huge.
 
 
 Module usage
