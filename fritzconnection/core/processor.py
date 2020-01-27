@@ -141,6 +141,21 @@ class SystemVersion:
             return f'{self.Minor}.{self.Patch}'
         return None
 
+    @property
+    def info(self):
+        """
+        Returns a tuple with all instance attributes 'HW, Major, Minor,
+        Patch, Buildnumber, Display' in this order.
+        """
+        return (
+            self.HW,
+            self.Major,
+            self.Minor,
+            self.Patch,
+            self.Buildnumber,
+            self.Display,
+        )
+
 
 @processor
 class Argument:
@@ -423,6 +438,14 @@ class Description:
         'tr64desc.xml' file.
         """
         return self.systemVersion.version
+
+    @property
+    def system_info(self):
+        """
+        Returns the systemVersion attributes as a tuple:
+        (HW, Major, Minor, Patch, Bildnumber, Display)
+        """
+        return self.systemVersion.info
 
     @property
     def system_buildnumber(self):
