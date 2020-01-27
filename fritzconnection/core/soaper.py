@@ -46,6 +46,29 @@ def uuid_convert(value):
     return value.split(':')[-1]
 
 
+def encode_boolean(value):
+    """
+    Returns 1 or 0 if the value is True or False.
+    None gets interpreted as False.
+    Otherwise the original value is returned.
+    """
+    if value is True:
+        return 1
+    if value is False or value is None:
+        return 0
+    return value
+
+
+def preprocess_arguments(arguments):
+    """
+    Takes a dictionary with arguments for a soap call and converts all
+    values which are True, False or None to the according integers:
+    1, 0, 0.
+    Returns a new dictionary with the processed values.
+    """
+    return {k: encode_boolean(v) for k, v in arguments.items()}
+
+
 def raise_fritzconnection_error(response):
     """
     Handles all responses with status codes other than 200.
@@ -155,6 +178,7 @@ class Soaper:
 
         headers = self.headers.copy()
         headers['soapaction'] = f'{service.serviceType}#{action_name}'
+        arguments = preprocess_arguments(arguments)
         arguments = ''.join(self.argument_template.format(name=k, value=v)
                             for k, v in arguments.items())
         body = self.get_body(service, action_name, arguments)

@@ -193,6 +193,9 @@ class FritzConnection:
         dictionary given to 'arguments' or as separate keyword
         parameters. If 'arguments' is given additional
         keyword-parameters as further arguments are ignored.
+        The argument values can be of type *str*, *int* or *bool*.
+        (Note: *bool* is provided since 1.3. In former versions
+        booleans must provided as numeric values: 1, 0).
         If the service_name does not end with a number (like 1), a 1
         gets added by default. If the service_name ends with a colon and a
         number, the colon gets removed. So i.e. WLANConfiguration
