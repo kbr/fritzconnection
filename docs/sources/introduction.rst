@@ -32,11 +32,12 @@ Installing fritzconnection by pip will also install the command line tool ``frit
 
     $ fritzconnection -h
 
-    FritzConnection v1.2.0
+    FritzConnection v1.3.0-dev
     usage: fritzconnection [-h] [-i [ADDRESS]] [--port [PORT]] [-u [USERNAME]]
                            [-p [PASSWORD]] [-r] [-s] [-S SERVICEACTIONS]
                            [-a SERVICEARGUMENTS]
-                           [-A ACTIONARGUMENTS ACTIONARGUMENTS] [-e [ENCRYPT]]
+                           [-A ACTIONARGUMENTS ACTIONARGUMENTS] [-c [COMPLETE]]
+                           [-e [ENCRYPT]]
 
     Fritz!Box API Inspection:
 
@@ -61,6 +62,8 @@ Installing fritzconnection by pip will also install the command line tool ``frit
                             List arguments for the given action of a specified
                             service: <service> <action>. Lists also direction and
                             data type of the arguments.
+      -c [COMPLETE], --complete [COMPLETE]
+                            List the complete api of the router
       -e [ENCRYPT], --encrypt [ENCRYPT]
                             use secure connection
 
@@ -167,6 +170,12 @@ This can return a lengthy output. So the arguments for a single action of a give
 
 
 For every action all arguments are listed with their name, direction and type. (Some arguments for other services may have the direction "in" for sending data to the router.)
+
+To report the complete api of the router, the option ``-c`` can be used: ::
+
+    $ fritzconnection -i 192.168.178.1 -c > api.txt
+
+In the above example the output is redirected to a file, because the output will be to lengthy for a useful command line information.
 
 
 Module usage
