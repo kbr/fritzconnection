@@ -133,7 +133,7 @@ class FritzHosts(AbstractLibraryBase):
         """
         args = {
             'NewMACAddress': mac_address,
-            'NewAutoWOLEnabled': 1 if status else 0
+            'NewAutoWOLEnabled': status,
         }
         self._action('X_AVM-DE_SetAutoWakeOnLANByMACAddress', arguments=args)
 
