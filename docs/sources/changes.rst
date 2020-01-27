@@ -11,7 +11,6 @@ Version History
 - Library class FritzStatus provides easy access to realtime monitor data.
 - Boolean arguments sent to the router as *1* and *0* can also be given as the Python datatypes *True* and *False*.
 - Flag -c, --complete added to fritzconnection cli interface to report the complete api.
-- PyPi Development Status classifier changed to 'Production/Stable'.
 
 
 
