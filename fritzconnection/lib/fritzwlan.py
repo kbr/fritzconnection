@@ -123,7 +123,7 @@ class FritzWLAN(AbstractLibraryBase):
     def get_hosts_info(self):
         """
         Returns a list of dictionaries with information about the known hosts.
-        The dict-keys are: 'auth', 'mac', 'ip', 'signal', 'speed'
+        The dict-keys are: 'service', 'index', 'status', 'mac', 'ip', 'signal', 'speed'
         """
         informations = []
         for index in itertools.count():
