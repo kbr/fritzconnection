@@ -3,6 +3,12 @@
 Version History
 ===============
 
+1.2.2
+-----
+
+- fix of issue #20 (GetTotalBytesSent resets to 0). The library module fritzstatus now provides two new properties for FritzStatus instances: ``bytes_sent_64`` and  ``bytes_received_64`` providing the data as integers with 64 bit precision.
+
+
 1.2.1
 -----
 

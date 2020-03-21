@@ -39,8 +39,8 @@ def print_status(address=None, port=None, user=None,
         ('external ip (v4)', 'external_ip'),
         ('external ip (v6)', 'external_ipv6'),
         ('uptime', 'str_uptime'),
-        ('bytes send', 'bytes_sent'),
-        ('bytes received', 'bytes_received'),
+        ('bytes send', 'bytes_sent_64'),
+        ('bytes received', 'bytes_received_64'),
         ('max. bit rate', 'str_max_bit_rate'),
     ]
     for status, attribute in status_informations:

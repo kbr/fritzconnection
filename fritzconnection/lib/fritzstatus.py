@@ -77,17 +77,41 @@ class FritzStatus(AbstractLibraryBase):
 
     @property
     def bytes_sent(self):
-        """Total number of send bytes."""
+        """Returns total number of sent in 32 bit-range."""
         status = self.fc.call_action('WANCommonIFC',
                                      'GetTotalBytesSent')
         return status['NewTotalBytesSent']
 
     @property
     def bytes_received(self):
-        """Total number of received bytes."""
+        """Returns total number of received bytes in 32 bit-range."""
         status = self.fc.call_action('WANCommonIFC',
                                      'GetTotalBytesReceived')
         return status['NewTotalBytesReceived']
+
+    @property
+    def bytes_sent_64(self):
+        """Returns total number of sent bytes in 64 bit-range."""
+        status = self.fc.call_action('WANCommonIFC',
+                                     'GetAddonInfos')
+        value = status['NewX_AVM_DE_TotalBytesSent64']
+        try:
+            value = int(value)
+        except ValueError:
+            pass
+        return value
+
+    @property
+    def bytes_received_64(self):
+        """Returns total number of received bytes in 64 bit-range."""
+        status = self.fc.call_action('WANCommonIFC',
+                                     'GetAddonInfos')
+        value = status['NewX_AVM_DE_TotalBytesReceived64']
+        try:
+            value = int(value)
+        except ValueError:
+            pass
+        return value
 
     @property
     def transmission_rate(self):
