@@ -9,7 +9,7 @@ with open('README.rst') as file:
 setup(
     name = 'fritzconnection',
     version = package_version,
-    packages = find_packages(),
+    packages = find_packages(exclude=['*.tests']),
     license = 'MIT',
     description = 'Communicate with the AVM FRITZ!Box',
     long_description = the_long_description,
