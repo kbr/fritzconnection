@@ -3,6 +3,7 @@ Modul to read status-informations from an AVM FritzBox.
 """
 
 import time
+import datetime
 
 from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
@@ -74,6 +75,12 @@ class FritzStatus(AbstractLibraryBase):
         mins, secs = divmod(self.uptime, 60)
         hours, mins = divmod(mins, 60)
         return '%02d:%02d:%02d' % (hours, mins, secs)
+
+    @property
+    def connected_since(self):
+        """Last reconnect of WAN"""
+        time = datetime.datetime.now() - datetime.timedelta(seconds=self.uptime)
+        return time.strftime("%Y-%m-%d %H:%M")
 
     @property
     def bytes_sent(self):
