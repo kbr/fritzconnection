@@ -82,6 +82,12 @@ The latter wrapps the ``call_action``-method. For a more complete example look a
 
 
 
+Changed with version 0.8.5:
+---------------------------
+
+- lxml-dependency updated from 4.3.4 to 4.5.1 to work with some newer linux-versions.
+
+
 Changed with version 0.8.4:
 ---------------------------
 
