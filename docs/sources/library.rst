@@ -72,6 +72,15 @@ Calling back the last missed call is easy: ::
     missed_number = calls[0].Caller  # Caller attribute holds the number
     fc.dial(missed_number)  # now dial it
 
+The module provides some constants that can be used with the get_calls() method as arguments for the calltype parameter: ::
+
+    ALL_CALL_TYPES = 0
+    RECEIVED_CALL_TYPE = 1
+    MISSED_CALL_TYPE = 2
+    OUT_CALL_TYPE = 3
+    ACTIVE_RECEIVED_CALL_TYPE = 9
+    REJECTED_CALL_TYPE = 10
+    ACTIVE_OUT_CALL_TYPE = 11
 
 
 FritzCall  API
