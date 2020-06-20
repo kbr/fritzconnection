@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-from fritzconnection import package_version
 
 
 with open('README.rst') as file:
@@ -8,7 +7,7 @@ with open('README.rst') as file:
 
 setup(
     name = 'fritzconnection',
-    version = package_version,
+    version = '1.3.0-dev',
     packages = find_packages(exclude=['*.tests']),
     license = 'MIT',
     description = 'Communicate with the AVM FRITZ!Box',

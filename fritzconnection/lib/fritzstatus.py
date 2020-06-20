@@ -9,6 +9,17 @@ from .fritzbase import AbstractLibraryBase
 from .fritztools import format_num, format_rate
 
 
+def _integer_or_original(value):
+    """
+    Tries to convert value to an integer. Returns this integer on
+    success, otherwise returns the original value.
+    """
+    try:
+        return int(value)
+    except ValueError:
+        return value
+
+
 class FritzStatus(AbstractLibraryBase):
     """
     Class for requesting status-informations: up, down, ip, activity
@@ -19,17 +30,6 @@ class FritzStatus(AbstractLibraryBase):
     `timeout` a timeout as floating point number in seconds, `use_tls` a
     boolean indicating to use TLS (default False).
     """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # depending on the model (i.e. a repeater) some services
-        # may not be available. Don't let FritzStatus crash at init.
-        try:
-            self.last_bytes_sent = self.bytes_sent
-            self.last_bytes_received = self.bytes_received
-        except FritzServiceError:
-            pass
-        self.last_traffic_call = time.time()
 
     @property
     def is_linked(self):
@@ -78,16 +78,16 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def bytes_sent(self):
         """Total number of send bytes."""
-        status = self.fc.call_action('WANCommonIFC',
-                                     'GetTotalBytesSent')
-        return status['NewTotalBytesSent']
+        status = self.fc.call_action('WANCommonIFC1',
+                                     'GetAddonInfos')
+        return _integer_or_original(status['NewX_AVM_DE_TotalBytesSent64'])
 
     @property
     def bytes_received(self):
         """Total number of received bytes."""
-        status = self.fc.call_action('WANCommonIFC',
-                                     'GetTotalBytesReceived')
-        return status['NewTotalBytesReceived']
+        status = self.fc.call_action('WANCommonIFC1',
+                                     'GetAddonInfos')
+        return _integer_or_original(status['NewX_AVM_DE_TotalBytesReceived64'])
 
     @property
     def transmission_rate(self):
@@ -95,15 +95,10 @@ class FritzStatus(AbstractLibraryBase):
         The upstream and downstream values as a tuple in bytes per
         second. Use this for periodical calling.
         """
-        sent = self.bytes_sent
-        received = self.bytes_received
-        traffic_call = time.time()
-        time_delta = traffic_call - self.last_traffic_call
-        upstream = int(1.0 * (sent - self.last_bytes_sent)/time_delta)
-        downstream = int(1.0 * (received - self.last_bytes_received)/time_delta)
-        self.last_bytes_sent = sent
-        self.last_bytes_received = received
-        self.last_traffic_call = traffic_call
+        status = self.fc.call_action('WANCommonIFC1',
+                                     'GetAddonInfos')
+        upstream = status['NewByteSendRate']
+        downstream = status['NewByteReceiveRate']
         return upstream, downstream
 
     @property
