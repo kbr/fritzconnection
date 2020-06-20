@@ -9,6 +9,17 @@ from .fritzbase import AbstractLibraryBase
 from .fritztools import format_num, format_rate
 
 
+def _integer_or_original(value):
+    """
+    Tries to convert value to an integer. Returns this integer on
+    success, otherwise returns the original value.
+    """
+    try:
+        return int(value)
+    except ValueError:
+        return value
+
+
 class FritzStatus(AbstractLibraryBase):
     """
     Class for requesting status-informations: up, down, ip, activity
@@ -19,9 +30,6 @@ class FritzStatus(AbstractLibraryBase):
     `timeout` a timeout as floating point number in seconds, `use_tls` a
     boolean indicating to use TLS (default False).
     """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
     @property
     def is_linked(self):
@@ -72,14 +80,14 @@ class FritzStatus(AbstractLibraryBase):
         """Total number of send bytes."""
         status = self.fc.call_action('WANCommonIFC1',
                                      'GetAddonInfos')
-        return int(status['NewX_AVM_DE_TotalBytesSent64'])
+        return _integer_or_original(status['NewX_AVM_DE_TotalBytesSent64'])
 
     @property
     def bytes_received(self):
         """Total number of received bytes."""
         status = self.fc.call_action('WANCommonIFC1',
                                      'GetAddonInfos')
-        return int(status['NewX_AVM_DE_TotalBytesReceived64'])
+        return _integer_or_original(status['NewX_AVM_DE_TotalBytesReceived64'])
 
     @property
     def transmission_rate(self):
