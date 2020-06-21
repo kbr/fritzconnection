@@ -7,7 +7,7 @@ Technically the communication with the Fritz!Box works by UPnP using SCPD and SO
 
 The documentation about all services and actions is available from the vendor AVM (see `Further Reading <further_reading.html>`_).
 
-FritzConnection manages the inspection of a given Fritz!Box and can access all available services and corresponding actions. For some services it is required to provide the user-password for the box. The set of available services and actions may vary by router models.
+FritzConnection manages the inspection of a given Fritz!Box and can access all available services and corresponding actions. For some services it is required to provide the user-password for the box. The set of available services and actions may vary by router models and the installed Fritz!OS version.
 
 The installation of fritzconnection (using pip) will also install a command line tool for the Fritz!Box api-inspection. The next sections will give an introduction to this command line tool and how to write modules on top of fritzconnection.
 
@@ -68,11 +68,11 @@ Installing fritzconnection by pip will also install the command line tool ``frit
                             use secure connection
 
 
-With the option ``-s`` all available ``services`` are listed. If there are multiple fritz devices in the network, it is undefined which one will respond. In this case an additional parameter for the router ip must be provided (newer router models use ``192.168.178.1`` as factory setting) by using the ``-i`` option. The number of services can vary depending on the router model: ::
+With the option ``-s`` all available ``services`` are listed. If there are multiple fritz devices in the network, it is undefined which one will respond. In this case an additional parameter for the router ip must be given with the ``-i`` option (newer router models use ``192.168.178.1`` as factory setting). The number of services can vary depending on the router model: ::
 
     $ fritzconnection -s -i 192.168.178.1
 
-    FritzConnection v1.2.0
+    FritzConnection v1.3.0
     FRITZ!Box 7590 at http://192.168.178.1
     FRITZ!OS: 7.12
     Servicenames:
@@ -108,7 +108,7 @@ Every ``service`` has a set of corresponding ``actions``. The actions are listed
 
     $ fritzconnection -i 192.168.178.1 -S WANIPConnection1
 
-    FritzConnection v1.2.0
+    FritzConnection v1.3.0
     FRITZ!Box 7590 at http://192.168.178.1
     FRITZ!OS: 7.12
 
@@ -141,7 +141,7 @@ This can return a lengthy output. So the arguments for a single action of a give
 
     $ $ fritzconnection -i 192.168.178.1 -A WANIPConnection1 GetInfo
 
-    FritzConnection v1.2.0
+    FritzConnection v1.3.0
     FRITZ!Box 7590 at http://192.168.178.1
     FRITZ!OS: 7.12
 
@@ -234,7 +234,7 @@ To activate or deactivate a network, the action ``SetEnable`` can get called. In
 
     $ $ fritzconnection -i 192.168.178.1 -A WLANConfiguration1 SetEnable
 
-    FritzConnection v1.2.0
+    FritzConnection v1.3.0
     FRITZ!Box 7590 at http://192.168.178.1
     FRITZ!OS: 7.12
 

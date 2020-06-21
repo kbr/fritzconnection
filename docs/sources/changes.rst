@@ -7,11 +7,12 @@ Version History
 1.3.0
 -----
 
-- Library class FritzHost provides more methods to access devices, including wake on LAN and net topology informations.
-- Library class FritzStatus provides easy access to realtime monitor data and reports the sent and received bytes now as 64 bit integers.
+- Library class FritzStatus reports the sent and received bytes now as 64 bit integers and provides easy access to realtime monitor data.
+- Library class FritzHost provides more methods to access devices, including *wake on LAN* and net topology informations.
+- Library class FritzPhonebook has a new method *get_all_name_numbers()* to fix a bug of *get_all_names()* reporting just one name in case that a phonebook holds multiple entries of the same name.
 - Boolean arguments send to the router as *1* and *0* can also be given as the Python datatypes *True* and *False*.
-- Flag -c, --complete added to fritzconnection cli interface to report the complete api.
-
+- pip installation longer includes the tests.
+- Flag -c added to fritzconnection cli interface to report the complete api.
 
 
 1.2.1
