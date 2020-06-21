@@ -7,7 +7,7 @@ with open('README.rst') as file:
 
 setup(
     name = 'fritzconnection',
-    version = '1.3.0-dev',
+    version = '1.3.0',
     packages = find_packages(exclude=['*.tests']),
     license = 'MIT',
     description = 'Communicate with the AVM FRITZ!Box',
@@ -16,7 +16,7 @@ setup(
     author_email = 'bremer@bremer-media.de',
     url = 'https://github.com/kbr/fritzconnection',
     classifiers = [
-        'Development Status :: 4 - Beta'
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
