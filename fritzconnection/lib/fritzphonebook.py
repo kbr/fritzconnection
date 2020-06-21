@@ -72,22 +72,28 @@ class FritzPhonebook(AbstractLibraryBase):
             'xid': result.get('NewPhonebookExtraID')
         }
 
-    def get_all_names(self, id):
+    def get_all_name_numbers(self, id):
         """
-        Get a dictionary with all names and their phone numbers for the
-        phonebook with `id`.
+        Returns all entries from the phonebook with the given id as a list of tuples. The first item of every tuple is the contact name and the second item is the list of numbers for this contact.
         """
         url = self.phonebook_info(id)['url']
         self._read_phonebook(url)
-        return {
-            contact.name: contact.numbers
+        return [
+            (contact.name, contact.numbers)
             for contact in self.phonebook.contacts
-        }
+        ]
+
+    def get_all_names(self, id):
+        """
+        Get a dictionary with all names and their phone numbers for the
+        phonebook with `id`. If a name is given more than once in a single phonebook, the last entry will overwrite the previous entries. (That's because the names are the keys in the dictionary returned from this method. In this case use the method 'get_all_name_numbers()' to get all entries as a list of tuples.)
+        """
+        return {name: number for name, number in self.get_all_name_numbers(id)}
 
     def get_all_numbers(self, id):
         """
         Get a dictionary with all phone numbers and the according names
-        for the phonebook with `id`.
+        for the phonebook with `id`. This method is based on the method 'get_all_names()' and has the same limitations.
         """
         reverse_contacts = dict()
         for name, numbers in self.get_all_names(id).items():
