@@ -1,16 +1,17 @@
 
-*.pyc
+.coverage
+.coveralls.yml
 .DS_Store
+.pytest*
+.Python
+.tox
+.vscode/*
+*.ipynb*
+*.pyc
 __pycache__/*
+bin
 build/*
 dist/*
 fritzconnection.egg-info/*
-*.ipynb*
-lib_
-.vscode/*
-bin
 include
-.tox
-.coverage
-.coveralls.yml
-.Python
+lib_

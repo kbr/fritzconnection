@@ -171,7 +171,7 @@ This can return a lengthy output. So the arguments for a single action of a give
 
 For every action all arguments are listed with their name, direction and type. (Some arguments for other services may have the direction "in" for sending data to the router.)
 
-To report the complete api of the router, the option ``-c`` can be used: ::
+The API of a FRITZ!Box depends on the model and the installed FRITZ!OS version. To report the complete api of the router, the option ``-c`` can be used: ::
 
     $ fritzconnection -i 192.168.178.1 -c > api.txt
 

@@ -4,12 +4,12 @@ Version History
 ===============
 
 
-1.3.0-dev
----------
+1.3.0
+-----
 
 - Library class FritzHost provides more methods to access devices, including wake on LAN and net topology informations.
-- Library class FritzStatus provides easy access to realtime monitor data.
-- Boolean arguments sent to the router as *1* and *0* can also be given as the Python datatypes *True* and *False*.
+- Library class FritzStatus provides easy access to realtime monitor data and reports the sent and received bytes now as 64 bit integers.
+- Boolean arguments send to the router as *1* and *0* can also be given as the Python datatypes *True* and *False*.
 - Flag -c, --complete added to fritzconnection cli interface to report the complete api.
 
 
@@ -58,6 +58,12 @@ Version History
 - New project layout. Library modules are now located in the new ``lib`` package.
 - Rewrite of the description parser.
 - Errors reported by the Fritz!Box are now raising specific exceptions.
+
+
+0.8.5
+-----
+
+- updates the pinned lxml-dependency from version 4.3.4 to 4.5.1
 
 
 0.8.4
