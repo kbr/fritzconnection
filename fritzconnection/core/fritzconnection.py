@@ -10,6 +10,7 @@ Module to communicate with the AVM Fritz!Box.
 import os
 import string
 import requests
+from requests.auth import HTTPDigestAuth
 
 from .devices import DeviceManager
 from .exceptions import (
@@ -97,6 +98,8 @@ class FritzConnection:
         session = requests.Session()
         session.verify = False
         session.timeout = timeout
+        if password:
+            session.auth = HTTPDigestAuth(user, password)
         # store as instance attributes for use by library modules
         self.address = address
         self.session = session
