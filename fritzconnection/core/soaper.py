@@ -184,18 +184,20 @@ class Soaper:
         body = self.get_body(service, action_name, arguments)
         envelope = self.envelope.format(body=body)
         url = f'{self.address}:{self.port}{service.controlURL}'
-        auth = None
-        if self.password:
-            auth = HTTPDigestAuth(self.user, self.password)
         if self.session:
             with self.session.post(
-                url, data=envelope, headers=headers, auth=auth
+                url, data=envelope, headers=headers
             ) as response:
                 return handle_response(response)
         else:
+            if self.password:
+                auth = HTTPDigestAuth(self.user, self.password)
+            else:
+                auth = None
             response = requests.post(
                 url, data=envelope, headers=headers, auth=auth,
-                timeout=self.timeout, verify=False)
+                timeout=self.timeout, verify=False
+            )
             return handle_response(response)
 
     def parse_response(self, response, service, action_name):
