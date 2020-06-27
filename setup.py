@@ -1,17 +1,30 @@
+import os
+import re
 from setuptools import setup, find_packages
 
 
-with open('README.rst') as file:
-    the_long_description = file.read()
+def get_long_description():
+    with open('README.rst') as file:
+        return file.read()
+
+
+def get_version():
+    path = os.path.join('fritzconnection', '__init__.py')
+    with open(path) as file:
+        content = file.read()
+    mo = re.search(r'\n\s*__version__\s*=\s*[\'"]([^\'"]*)[\'"]', content)
+    if mo:
+        return mo.group(1)
+    raise RuntimeError(f'Unable to find version string in {path}')
 
 
 setup(
     name = 'fritzconnection',
-    version = '1.3.0',
+    version = get_version(),
     packages = find_packages(exclude=['*.tests']),
     license = 'MIT',
     description = 'Communicate with the AVM FRITZ!Box',
-    long_description = the_long_description,
+    long_description = get_long_description(),
     author = 'Klaus Bremer',
     author_email = 'bremer@bremer-media.de',
     url = 'https://github.com/kbr/fritzconnection',
