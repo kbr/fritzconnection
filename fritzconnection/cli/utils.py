@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from ..core.fritzconnection import (
     FritzConnection,
@@ -20,7 +21,7 @@ def get_instance(cls, args):
     return cls(
         address=args.address,
         port=args.port,
-        user=args.user,
+        user=args.username,
         password=args.password,
         use_tls=args.encrypt,
     )
