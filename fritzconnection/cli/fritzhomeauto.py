@@ -1,12 +1,17 @@
+"""
+fritzhomeauto.py
 
-import argparse
+Module to inspect the FritzBox homeautomation API.
+CLI interface.
 
-from .. import package_version
+This module is part of the FritzConnection package.
+https://github.com/kbr/fritzconnection
+License: MIT (https://opensource.org/licenses/MIT)
+Author: Klaus Bremer
+"""
+
 from ..lib.fritzhomeauto import FritzHomeAutomation
-from ..core.fritzconnection import (
-    FRITZ_IP_ADDRESS,
-    FRITZ_TCP_PORT,
-)
+from . utils import get_cli_arguments, get_instance, print_header
 
 
 def report_verbose(fh):
@@ -34,11 +39,11 @@ def report_compact(fh):
         temperature = di['NewTemperatureCelsius'] *0.1
         switch_state = di['NewSwitchState'].lower()
         print(f'{name:24}{ain:18}{power:>10.3f}{temperature:>8.1f}   {switch_state}')
+    print()
 
 
 def report_status(fh, arguments):
-    print(f'\nFritzConnection v{package_version}')
-    print(fh.fc)
+    print('FritzHomeautomation:')
     print('Status of registered home-automation devices:\n')
     if arguments.verbose:
         report_verbose(fh)
@@ -52,24 +57,7 @@ def switch_device(fh, arguments):
     fh.set_switch(identifier=ain, on=state)
 
 
-def get_cli_arguments():
-    parser = argparse.ArgumentParser(description='FritzBox HomeAuto')
-    parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=None, const=None,
-                        dest='address',
-                        help='ip-address of the FritzBox to connect to. '
-                             'Default: %s' % FRITZ_IP_ADDRESS)
-    parser.add_argument('--port',
-                        nargs='?', default=None, const=None,
-                        dest='port',
-                        help='port of the FritzBox to connect to. '
-                             'Default: %s' % FRITZ_TCP_PORT)
-    parser.add_argument('-u', '--username',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication username')
-    parser.add_argument('-p', '--password',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication password')
+def add_arguments(parser):
     parser.add_argument('-v', '--verbose',
                         nargs='?', default=False, const=True,
                         help='report in verbose mode')
@@ -77,26 +65,18 @@ def get_cli_arguments():
                         nargs=2,
                         help='set switch state. requires two parameters: '
                              'ain and state [on|off]')
-    parser.add_argument('-e', '--encrypt',
-                        nargs='?', default=False, const=True,
-                        help='use secure connection')
-    args = parser.parse_args()
-    return args
 
 
 def main():
-    arguments = get_cli_arguments()
+    arguments = get_cli_arguments(add_arguments)
     if not arguments.password:
         print('Exit: password required.')
         return
-    fh = FritzHomeAutomation(address=arguments.address,
-                             port=arguments.port,
-                             user=arguments.username,
-                             password=arguments.password,
-                             use_tls=arguments.encrypt)
+    fh = get_instance(FritzHomeAutomation, arguments)
     if arguments.switch:
         switch_device(fh, arguments)
     else:
+        print_header(fh)
         report_status(fh, arguments)
 
 
