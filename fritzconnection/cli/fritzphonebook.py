@@ -3,12 +3,12 @@ fritzphonebook.py
 
 Module to inspect the Fritz!Box phonebooks.
 CLI interface.
-"""
-# This module is part of the FritzConnection package.
-# https://github.com/kbr/fritzconnection
-# License: MIT (https://opensource.org/licenses/MIT)
-# Authors: Klaus Bremer, David M. Straub
 
+This module is part of the FritzConnection package.
+https://github.com/kbr/fritzconnection
+License: MIT (https://opensource.org/licenses/MIT)
+Authors: Klaus Bremer, David M. Straub
+"""
 
 from ..lib.fritzphonebook import FritzPhonebook
 from . utils import get_cli_arguments, get_instance, print_header

@@ -9,7 +9,6 @@ License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
 
-
 import datetime
 
 from ..core.fritzconnection import FritzConnection
