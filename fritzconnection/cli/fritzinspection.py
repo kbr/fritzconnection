@@ -10,17 +10,10 @@ Author: Klaus Bremer
 """
 
 
-import argparse
 import datetime
-import os
 
-from ..core.exceptions import FritzConnectionException
-from ..core.fritzconnection import (
-    FritzConnection,
-    FRITZ_IP_ADDRESS,
-    FRITZ_TCP_PORT,
-)
-from .. import package_version
+from ..core.fritzconnection import FritzConnection
+from . utils import get_cli_arguments, get_instance, print_header
 
 
 class FritzInspection:
@@ -30,15 +23,8 @@ class FritzInspection:
     """
     # pylint: disable=invalid-name  # self.fc is ok.
 
-    def __init__(self, address, port, user, password, use_tls):
-        self.fc = FritzConnection(address=address,
-                                  port=port,
-                                  user=user,
-                                  password=password,
-                                  use_tls=use_tls)
-
-    def view_header(self):
-        print(self.fc)
+    def __init__(self, fc)
+        self.fc = fc
 
     def view_servicenames(self):
         """Send all known service names to stdout."""
@@ -112,28 +98,7 @@ class FritzInspection:
                 self.view_actionarguments(service_name, action_name)
 
 
-def get_cli_arguments():
-    """
-    Returns a NameSpace object from the ArgumentParser parsing the given
-    command line arguments.
-    """
-    print(f'\nFritzConnection v{package_version}')
-    parser = argparse.ArgumentParser(description='Fritz!Box API Inspection:')
-    parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=FRITZ_IP_ADDRESS, const=None,
-                        dest='address',
-                        help='Specify ip-address of the FritzBox to connect to.'
-                             'Default: %s' % FRITZ_IP_ADDRESS)
-    parser.add_argument('--port',
-                        nargs='?', default=None, const=None,
-                        help='Port of the FritzBox to connect to. '
-                             'Default: %s' % FRITZ_TCP_PORT)
-    parser.add_argument('-u', '--username',
-                        nargs='?', default=os.getenv('FRITZ_USERNAME', None),
-                        help='Fritzbox authentication username')
-    parser.add_argument('-p', '--password',
-                        nargs='?', default=os.getenv('FRITZ_PASSWORD', None),
-                        help='Fritzbox authentication password')
+def add_arguments():
     parser.add_argument('-r', '--reconnect',
                         action='store_true',
                         help='Reconnect and get a new ip')
@@ -156,24 +121,6 @@ def get_cli_arguments():
     parser.add_argument('-c', '--complete',
                         nargs='?', default=False, const=True,
                         help='List the complete api of the router')
-    parser.add_argument('-e', '--encrypt',
-                        nargs='?', default=False, const=True,
-                        help='use secure connection')
-    args = parser.parse_args()
-    return args
-
-
-def get_inspector(args):
-    try:
-        inspector = FritzInspection(
-            address=args.address,
-            port=args.port,
-            user=args.username,
-            password=args.password,
-            use_tls=args.encrypt)
-    except FritzConnectionException as err:
-        return None
-    return inspector
 
 
 def run_inspector(inspector, args):
@@ -196,8 +143,9 @@ def run_inspector(inspector, args):
 
 def main():
     """CLI entry point."""
-    args = get_cli_arguments()
-    inspector = get_inspector(args)
+    args = get_cli_arguments(add_arguments)
+    fc = get_instance(FritzConnection, args)
+    inspector = FritzInspection(fc=fc)
     if inspector:
         run_inspector(inspector, args)
     print() # print an empty line
