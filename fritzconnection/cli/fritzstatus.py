@@ -10,29 +10,16 @@ License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
 
-import argparse
-
-from .. import package_version
 from ..core.exceptions import (
     FritzServiceError,
     FritzActionError,
 )
-from ..core.fritzconnection import (
-    FRITZ_IP_ADDRESS,
-    FRITZ_TCP_PORT,
-)
 from ..lib.fritzstatus import FritzStatus
+from . utils import get_cli_arguments, get_instance, print_header
 
 
-def print_status(address=None, port=None, user=None,
-                 password=None, use_tls=False):
-    print(f'\nFritzConnection v{package_version}')
-    fs = FritzStatus(address=address,
-                     port=port,
-                     user=user,
-                     password=password,
-                     use_tls=use_tls)
-    print(f'FritzStatus for {fs.fc}:\n')
+def print_status(fs):
+    print('\nFritzStatus:\n')
     status_informations = [
         ('is linked', 'is_linked'),
         ('is connected', 'is_connected'),
@@ -49,31 +36,7 @@ def print_status(address=None, port=None, user=None,
         except (FritzServiceError, FritzActionError):
             information = f'unsupported attribute "{attribute}"'
         print(f'    {status:20}: {information}')
-
-
-def get_cli_arguments():
-    parser = argparse.ArgumentParser(description='FritzBox Status')
-    parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=None, const=None,
-                        dest='address',
-                        help=f'ip-address of the FritzBox to connect to. '
-                             f'Default: {FRITZ_IP_ADDRESS}')
-    parser.add_argument('-u', '--username',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication username')
-    parser.add_argument('-p', '--password',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication password')
-    parser.add_argument('--port',
-                        nargs='?', default=None, const=None,
-                        dest='port',
-                        help=f'port of the FritzBox to connect to. '
-                             f'Default: {FRITZ_TCP_PORT}')
-    parser.add_argument('-e', '--encrypt',
-                        nargs='?', default=False, const=True,
-                        help='use secure connection')
-    args = parser.parse_args()
-    return args
+    print('\n')
 
 
 def main():
@@ -81,11 +44,9 @@ def main():
     if not args.password:
         print('Exit: password required.')
     else:
-        print_status(address=args.address,
-                     port=args.port,
-                     user=args.username,
-                     password=args.password,
-                     use_tls=args.encrypt)
+        fs = get_instance(FritzStatus, args)
+        print_header(fs)
+        print_status(fs)
 
 
 if __name__ == '__main__':
