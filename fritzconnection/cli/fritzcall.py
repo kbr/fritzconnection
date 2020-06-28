@@ -1,25 +1,21 @@
+"""
+fritzcall.py
 
-import argparse
+Module to inspect the FritzBox phone API.
+CLI interface.
 
-from .. import package_version
-from ..core.fritzconnection import (
-    FRITZ_IP_ADDRESS,
-    FRITZ_TCP_PORT,
-)
+This module is part of the FritzConnection package.
+https://github.com/kbr/fritzconnection
+License: MIT (https://opensource.org/licenses/MIT)
+Author: Klaus Bremer
+"""
+
 from ..lib.fritzcall import FritzCall
-
-
-def get_fritzcall(arguments):
-    return FritzCall(address=arguments.address,
-                     port=arguments.port,
-                     user=arguments.username,
-                     password=arguments.password,
-                     use_tls=arguments.encrypt)
+from . utils import get_cli_arguments, get_instance, print_header
 
 
 def report_calls(fc, arguments):
-    print(f'\nFritzConnection v{package_version}')
-    print(fc.fc)
+    print('FritzCall:')
     days = arguments.days
     num = arguments.num if not days else None
     if arguments.type == 'in':
@@ -31,7 +27,7 @@ def report_calls(fc, arguments):
     else:
         calls = fc.get_calls(num=num, days=days)
     call_type = arguments.type if arguments.type else 'all'
-    print('\nList of calls:', call_type, '\n')
+    print('List of calls:', call_type, '\n')
     type_ = 'type'
     number = 'number'
     time = 'date/time'
@@ -39,6 +35,7 @@ def report_calls(fc, arguments):
     print(f'{type_:>6}   {number:24}{time:>18}{duration:>12}\n')
     for call in calls:
         print(call)
+    print()
 
 
 def dial_number(fc, number):
@@ -47,24 +44,7 @@ def dial_number(fc, number):
     print('dialing done, please wait for signal.')
 
 
-def get_cli_arguments():
-    parser = argparse.ArgumentParser(description='FritzBox Callhistory')
-    parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=None, const=None,
-                        dest='address',
-                        help='ip-address of the FritzBox to connect to. '
-                             'Default: %s' % FRITZ_IP_ADDRESS)
-    parser.add_argument('--port',
-                        nargs='?', default=None, const=None,
-                        dest='port',
-                        help='port of the FritzBox to connect to. '
-                             'Default: %s' % FRITZ_TCP_PORT)
-    parser.add_argument('-u', '--username',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication username')
-    parser.add_argument('-p', '--password',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication password')
+def add_arguments(parser):
     parser.add_argument('-n', '--num',
                         nargs='?', default=None, const=None,
                         help='max number of calls in the call-list')
@@ -77,22 +57,18 @@ def get_cli_arguments():
     parser.add_argument('-c', '--call',
                         nargs='?', default=None, const=None,
                         help='phone number to call')
-    parser.add_argument('-e', '--encrypt',
-                        nargs='?', default=False, const=True,
-                        help='use secure connection')
-    args = parser.parse_args()
-    return args
 
 
 def main():
-    arguments = get_cli_arguments()
+    arguments = get_cli_arguments(add_arguments)
     if not arguments.password:
         print('Exit: password required.')
         return
-    fc = get_fritzcall(arguments)
+    fc = get_instance(FritzCall, arguments)
     if arguments.call:
         dial_number(fc, arguments.call)
     else:
+        print_header(fc)
         report_calls(fc, arguments)
 
 
