@@ -13,5 +13,3 @@ __version__ = '1.3.1a1'
 
 # import shortcut
 from .core.fritzconnection import FritzConnection
-
-package_version = __version__
