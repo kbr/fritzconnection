@@ -10,25 +10,12 @@ License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
 
-
-import argparse
-
-from .. import package_version
 from ..lib.fritzhosts import FritzHosts
-from ..core.fritzconnection import (
-    FRITZ_IP_ADDRESS,
-    FRITZ_TCP_PORT,
-)
+from . utils import get_cli_arguments, get_instance, print_header
 
 
-def print_status(arguments):
-    print(f'\nFritzConnection v{package_version}')
-    fh = FritzHosts(address=arguments.address,
-                    port=arguments.port,
-                    user=arguments.username,
-                    password=arguments.password,
-                    use_tls=arguments.encrypt)
-    print(f'FritzHosts for {fh.fc}:\n')
+def print_status(fh):
+    print('FritzHosts:')
     print('List of registered hosts:\n')
     print('{:>3}: {:<16} {:<28} {:<17}   {}\n'.format(
         'n', 'ip', 'name', 'mac', 'status'))
@@ -42,37 +29,14 @@ def print_status(arguments):
     print('\n')
 
 
-def get_cli_arguments():
-    parser = argparse.ArgumentParser(description='FritzBox Hosts')
-    parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=None, const=None,
-                        dest='address',
-                        help='ip-address of the FritzBox to connect to. '
-                             'Default: %s' % FRITZ_IP_ADDRESS)
-    parser.add_argument('--port',
-                        nargs='?', default=None, const=None,
-                        dest='port',
-                        help='port of the FritzBox to connect to. '
-                             'Default: %s' % FRITZ_TCP_PORT)
-    parser.add_argument('-u', '--username',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication username')
-    parser.add_argument('-p', '--password',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication password')
-    parser.add_argument('-e', '--encrypt',
-                        nargs='?', default=False, const=True,
-                        help='use secure connection')
-    args = parser.parse_args()
-    return args
-
-
 def main():
-    arguments = get_cli_arguments()
-    if not arguments.password:
+    args = get_cli_arguments()
+    if not args.password:
         print('Exit: password required.')
     else:
-        print_status(arguments)
+        fh = get_instance(FritzHosts, args)
+        print_header(fh)
+        print_status(fh)
 
 
 if __name__ == '__main__':
