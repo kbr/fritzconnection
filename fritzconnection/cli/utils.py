@@ -1,3 +1,12 @@
+"""
+utils.py
+
+This module is part of the FritzConnection package.
+https://github.com/kbr/fritzconnection
+License: MIT (https://opensource.org/licenses/MIT)
+Author: Klaus Bremer
+"""
+
 import argparse
 import os
 
@@ -15,6 +24,7 @@ def print_header(instance):
         print(instance)
     else:
         print(instance.fc)
+    print()
 
 
 def get_instance(cls, args):

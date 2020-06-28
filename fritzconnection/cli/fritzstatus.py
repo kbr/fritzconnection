@@ -10,16 +10,13 @@ License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
 
-from ..core.exceptions import (
-    FritzServiceError,
-    FritzActionError,
-)
+from ..core.exceptions import FritzServiceError, FritzActionError
 from ..lib.fritzstatus import FritzStatus
 from . utils import get_cli_arguments, get_instance, print_header
 
 
 def print_status(fs):
-    print('\nFritzStatus:\n')
+    print('FritzStatus:\n')
     status_informations = [
         ('is linked', 'is_linked'),
         ('is connected', 'is_connected'),
@@ -36,7 +33,7 @@ def print_status(fs):
         except (FritzServiceError, FritzActionError):
             information = f'unsupported attribute "{attribute}"'
         print(f'    {status:20}: {information}')
-    print('\n')
+    print()
 
 
 def main():

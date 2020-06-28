@@ -1,16 +1,20 @@
+"""
+fritzwlan.py
 
-import argparse
+Module to inspect the FritzBox API for wlan devices.
+CLI interface.
+
+This module is part of the FritzConnection package.
+https://github.com/kbr/fritzconnection
+License: MIT (https://opensource.org/licenses/MIT)
+Author: Klaus Bremer
+"""
+
 import itertools
 
-from ..lib.fritzwlan import (
-    FritzWLAN,
-    SERVICE,
-)
 from ..core.exceptions import FritzServiceError
-from ..core.fritzconnection import (
-    FRITZ_IP_ADDRESS,
-    FRITZ_TCP_PORT,
-)
+from ..lib.fritzwlan import FritzWLAN, SERVICE
+from . utils import get_cli_arguments, get_instance, print_header
 
 
 def get_header():
@@ -42,17 +46,10 @@ def report_wlanconfiguration(fw, extension):
         print()
 
 
-def report_devices(arguments):
-    fw = FritzWLAN(address=arguments.address,
-                   port=arguments.port,
-                   user=arguments.username,
-                   password=arguments.password,
-                   service=arguments.service,
-                   use_tls=arguments.encrypt)
-    print(fw.fc)
-    if arguments.service:
+def report_devices(fw, args):
+    if args.service:
         try:
-            report_wlanconfiguration(fw, arguments.service)
+            report_wlanconfiguration(fw, args.service)
         except FritzServiceError as err:
             print(f'Error: {err}')
     else:
@@ -63,40 +60,20 @@ def report_devices(arguments):
                 break
 
 
-def get_cli_arguments():
-    parser = argparse.ArgumentParser(description='FritzBox HomeAuto')
-    parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=None, const=None,
-                        dest='address',
-                        help='ip-address of the FritzBox to connect to. '
-                             'Default: %s' % FRITZ_IP_ADDRESS)
-    parser.add_argument('--port',
-                        nargs='?', default=None, const=None,
-                        dest='port',
-                        help='port of the FritzBox to connect to. '
-                             'Default: %s' % FRITZ_TCP_PORT)
-    parser.add_argument('-u', '--username',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication username')
-    parser.add_argument('-p', '--password',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication password')
+def add_arguments(parser):
     parser.add_argument('-s', '--service',
                         nargs='?', default=0, const=None,
                         help='WLANConfiguration service number')
-    parser.add_argument('-e', '--encrypt',
-                        nargs='?', default=False, const=True,
-                        help='use secure connection')
-    args = parser.parse_args()
-    return args
 
 
 def main():
-    arguments = get_cli_arguments()
-    if not arguments.password:
+    args = get_cli_arguments(add_arguments)
+    if not args.password:
         print('Exit: password required.')
     else:
-        report_devices(arguments)
+        fw = get_instance(FritzWLAN, args)
+        print_header(fw)
+        report_devices(fw, args)
 
 
 if __name__ == '__main__':
