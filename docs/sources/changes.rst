@@ -4,6 +4,13 @@ Version History
 ===============
 
 
+1.3.1a1
+-------
+
+- authorisation now works with 'myfritz.net' access (#48)
+- internal refactorings
+
+
 1.3.0
 -----
 
