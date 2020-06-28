@@ -23,7 +23,7 @@ class FritzInspection:
     """
     # pylint: disable=invalid-name  # self.fc is ok.
 
-    def __init__(self, fc)
+    def __init__(self, fc):
         self.fc = fc
 
     def view_servicenames(self):
@@ -98,7 +98,7 @@ class FritzInspection:
                 self.view_actionarguments(service_name, action_name)
 
 
-def add_arguments():
+def add_arguments(parser):
     parser.add_argument('-r', '--reconnect',
                         action='store_true',
                         help='Reconnect and get a new ip')
@@ -124,7 +124,7 @@ def add_arguments():
 
 
 def run_inspector(inspector, args):
-    inspector.view_header()
+    print_header(inspector.fc)
     if args.services:
         inspector.view_servicenames()
     elif args.serviceactions:
@@ -139,6 +139,7 @@ def run_inspector(inspector, args):
     elif args.reconnect:
         inspector.fc.reconnect()
         print('reconnect the router.')
+    print()
 
 
 def main():
@@ -146,9 +147,7 @@ def main():
     args = get_cli_arguments(add_arguments)
     fc = get_instance(FritzConnection, args)
     inspector = FritzInspection(fc=fc)
-    if inspector:
-        run_inspector(inspector, args)
-    print() # print an empty line
+    run_inspector(inspector, args)
 
 
 if __name__ == '__main__':
