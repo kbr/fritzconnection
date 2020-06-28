@@ -10,19 +10,8 @@ CLI interface.
 # Authors: Klaus Bremer, David M. Straub
 
 
-import argparse
-
-from .. import package_version
 from ..lib.fritzphonebook import FritzPhonebook
-from ..core.fritzconnection import (
-    FRITZ_IP_ADDRESS,
-    FRITZ_TCP_PORT,
-)
-
-
-def print_header(fpb):
-    print(f'\nFritzConnection v{package_version}')
-    print(f'FritzPhonebook for {fpb.fc}\n')
+from . utils import get_cli_arguments, get_instance, print_header
 
 
 def print_phonebooks(fpb):
@@ -57,24 +46,7 @@ def print_search_number(fpb, arguments):
         print(f'number {arguments.number} not found.')
 
 
-def get_cli_arguments():
-    parser = argparse.ArgumentParser(description='Fritz!Box Phonebook')
-    parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=None, const=None,
-                        dest='address',
-                        help='ip-address of the FritzBox to connect to. '
-                             'Default: %s' % FRITZ_IP_ADDRESS)
-    parser.add_argument('--port',
-                        nargs='?', default=None, const=None,
-                        dest='port',
-                        help='port of the FritzBox to connect to. '
-                             'Default: %s' % FRITZ_TCP_PORT)
-    parser.add_argument('-u', '--username',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication username')
-    parser.add_argument('-p', '--password',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication password')
+def add_arguments(parser):
     parser.add_argument('-a', '--all',
                         action='store_true',
                         help='List all phone books ')
@@ -84,30 +56,22 @@ def get_cli_arguments():
     parser.add_argument('--number',
                         nargs='?', default=0,
                         help='Number for name search')
-    parser.add_argument('-e', '--encrypt',
-                        nargs='?', default=False, const=True,
-                        help='use secure connection')
-    args = parser.parse_args()
-    return args
 
 
 def main():
-    arguments = get_cli_arguments()
-    if not arguments.password:
+    args = get_cli_arguments(add_arguments)
+    if not args.password:
         print('Exit: password required.')
         return
-    fpb = FritzPhonebook(address=arguments.address,
-                         port=arguments.port,
-                         user=arguments.username,
-                         password=arguments.password,
-                         use_tls=arguments.encrypt)
+    fpb = get_instance(FritzPhonebook, args)
     print_header(fpb)
-    if arguments.all:
+    print('FritzPhonebook:\n')
+    if args.all:
         print_phonebooks(fpb)
-    elif arguments.name:
-        print_search_name(fpb, arguments)
-    elif arguments.number:
-        print_search_number(fpb, arguments)
+    elif args.name:
+        print_search_name(fpb, args)
+    elif args.number:
+        print_search_number(fpb, args)
     print()  # blank line for better readability
 
 
