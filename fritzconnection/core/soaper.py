@@ -46,6 +46,29 @@ def uuid_convert(value):
     return value.split(':')[-1]
 
 
+CONVERSION_TABLE = {
+    'datetime': datetime_convert,
+    'boolean': boolean_convert,
+    'uuid': uuid_convert,
+    'i4': int,
+    'ui1': int,
+    'ui2': int,
+    'ui4': int,
+}
+
+
+def get_converted_value(data_type, value):
+    """
+    Try to convert the value from string to the given data_type. The
+    data_type is used as key in the CONVERSION_TABLE dictionary. In case
+    the data_type is unknown, the original value is returned.
+    """
+    try:
+        return CONVERSION_TABLE[data_type](value)
+    except KeyError:
+        return value
+
+
 def encode_boolean(value):
     """
     Returns 1 or 0 if the value is True or False.
@@ -67,6 +90,22 @@ def preprocess_arguments(arguments):
     Returns a new dictionary with the processed values.
     """
     return {k: encode_boolean(v) for k, v in arguments.items()}
+
+
+def get_argument_value(root, argument_name):
+    """
+    Takes an etree-root object, which is a parsed sopa-response from the
+    Fritz!Box, and an argument_name, which corresponds to a node-name in
+    the element-tree hierarchy. Returns the text-attribute of the node
+    as a string.
+    Raise an AttributeError in case that a node is not found.
+    """
+    # root.find will() raise the AttributeError on unknown nodes
+    value = root.find(f'.//{argument_name}').text
+    if value is None:
+        # this will be the case on empty tags: <tag></tag>
+        value = ''
+    return value
 
 
 def raise_fritzconnection_error(response):
@@ -212,16 +251,13 @@ class Soaper:
         root = etree.fromstring(response.content)
         for argument_name in action.arguments:
             try:
-                value = root.find(f'.//{argument_name}').text
+                value = get_argument_value(root, argument_name)
             except AttributeError:
                 continue
             state_variable_name = \
                 action.arguments[argument_name].relatedStateVariable
             state_variable = service.state_variables[state_variable_name]
             data_type = state_variable.dataType.lower()
-            try:
-                value = self.conversion_table[data_type](value)
-            except KeyError:
-                pass
+            value = get_converted_value(data_type, value)
             result[argument_name] = value
         return result

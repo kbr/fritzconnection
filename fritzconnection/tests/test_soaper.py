@@ -1,3 +1,6 @@
+import datetime
+from xml.etree import ElementTree as etree
+
 import pytest
 
 from ..core.exceptions import (
@@ -19,9 +22,11 @@ from ..core.exceptions import (
 )
 
 from ..core.soaper import (
-    raise_fritzconnection_error,
     boolean_convert,
     encode_boolean,
+    get_argument_value,
+    get_converted_value,
+    raise_fritzconnection_error,
 )
 
 
@@ -148,3 +153,47 @@ def test_encode_boolean(value, expected_type):
 def test_encode_boolean2(value, not_expected_type):
     result = encode_boolean(value)
     assert not isinstance(result, not_expected_type)
+
+
+soap_root = etree.fromstring("""<?xml version="1.0"?>
+<data>
+    <container>
+        <year>2010</year>
+        <msg>message text</msg>
+        <number>3.141</number>
+        <ip></ip>
+    </container>
+</data>""")
+
+
+@pytest.mark.parametrize(
+    "argument_name, expected_value", [
+        ('year', '2010'),
+        ('msg', 'message text'),
+        ('number', '3.141'),
+        ('ip', ''),
+    ]
+)
+def test_get_argument_value(argument_name, expected_value):
+     value = get_argument_value(soap_root, argument_name)
+     assert value == expected_value
+
+
+@pytest.mark.parametrize(
+    "data_type, value, expected_value", [
+        ('datetime', '2020-02-02T10:10:10', datetime.datetime(2020, 2, 2, 10, 10, 10)),
+        ('datetime', '2010.02.02-10:10:10', '2010.02.02-10:10:10'),
+        ('boolean', '1', True),
+        ('boolean', '0', False),
+        ('boolean', '', ''),
+        ('uuid', 'uuid:123', '123'),
+        ('uuid', '123', '123'),
+        ('i4', '42', 42),
+        ('ui1', '42', 42),
+        ('ui2', '42', 42),
+        ('ui4', '42', 42),
+    ]
+)
+def test_get_converted_value(data_type, value, expected_value):
+    result = get_converted_value(data_type, value)
+    assert result == expected_value
