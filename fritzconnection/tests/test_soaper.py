@@ -86,14 +86,19 @@ def test_raise_fritzconnection_error(error_code, exception):
     "value, expected_result", [
         ('0', False),
         ('1', True),
-        ('2', True),
-        ('x', 'x'),
-        ('3.1', '3.1'),
     ]
 )
 def test_boolean_convert(value, expected_result):
     result = boolean_convert(value)
     assert result == expected_result
+
+
+@pytest.mark.parametrize(
+    "value", ['2', 'x', '3.1']
+)
+def test_boolean_convert_fails(value):
+    with pytest.raises(ValueError):
+        boolean_convert(value)
 
 
 long_error = """
@@ -182,10 +187,8 @@ def test_get_argument_value(argument_name, expected_value):
 @pytest.mark.parametrize(
     "data_type, value, expected_value", [
         ('datetime', '2020-02-02T10:10:10', datetime.datetime(2020, 2, 2, 10, 10, 10)),
-        ('datetime', '2010.02.02-10:10:10', '2010.02.02-10:10:10'),
         ('boolean', '1', True),
         ('boolean', '0', False),
-        ('boolean', '', ''),
         ('uuid', 'uuid:123', '123'),
         ('uuid', '123', '123'),
         ('i4', '42', 42),
@@ -197,3 +200,14 @@ def test_get_argument_value(argument_name, expected_value):
 def test_get_converted_value(data_type, value, expected_value):
     result = get_converted_value(data_type, value)
     assert result == expected_value
+
+
+@pytest.mark.parametrize(
+    "data_type, value", [
+        ('datetime', '2010.02.02-10:10:10'),  # not ISO 8601
+        ('boolean', ''),  # neither '1' nor '0'
+    ]
+)
+def test_get_converted_value_fails(data_type, value):
+    with pytest.raises(ValueError):
+        get_converted_value(data_type, value)

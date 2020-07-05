@@ -25,20 +25,23 @@ SOAP_NS = "http://schemas.xmlsoap.org/soap/envelope/"
 
 
 def datetime_convert(value):
-    """Converts a string in ISO 8601 format to a datetime-object."""
-    try:
-        return datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S')
-    except ValueError:
-        return value
+    """
+    Converts a string in ISO 8601 format to a datetime-object.
+    Raise ValueError if value does not match ISO 8601.
+    """
+    return datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S')
 
 
 def boolean_convert(value):
-    """Converts a string like '1' or '0' to a boolean value"""
-    try:
+    """
+    Converts a string like '1' or '0' to a boolean value.
+    Raise ValueError if it is something else than '1' or '0', because
+    this violates the data_type according to the AVM documentation.
+    """
+    if value == '1' or value == '0':
         return bool(int(value))
-    except ValueError:
-        # should not happen: leave value as is
-        return value
+    msg = f"value '{value}' does not match '1' or '0'."
+    raise ValueError(msg)
 
 
 def uuid_convert(value):
@@ -258,6 +261,10 @@ class Soaper:
                 action.arguments[argument_name].relatedStateVariable
             state_variable = service.state_variables[state_variable_name]
             data_type = state_variable.dataType.lower()
-            value = get_converted_value(data_type, value)
+            try:
+                value = get_converted_value(data_type, value)
+            except ValueError:
+                # ignore malformed value and return 'as is'.
+                pass
             result[argument_name] = value
         return result
