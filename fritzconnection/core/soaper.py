@@ -97,7 +97,7 @@ def preprocess_arguments(arguments):
 
 def get_argument_value(root, argument_name):
     """
-    Takes an etree-root object, which is a parsed sopa-response from the
+    Takes an etree-root object, which is a parsed soap-response from the
     Fritz!Box, and an argument_name, which corresponds to a node-name in
     the element-tree hierarchy. Returns the text-attribute of the node
     as a string.
