@@ -4,6 +4,12 @@ Version History
 ===============
 
 
+1.3.2
+-----
+
+- bugfix: converting arguments returned from soap calls (#58)
+
+
 1.3.1
 -----
 
@@ -17,9 +23,9 @@ Version History
 - Library class FritzStatus reports the sent and received bytes now as 64 bit integers and provides easy access to realtime monitor data.
 - Library class FritzHost provides more methods to access devices, including *wake on LAN* and net topology informations.
 - Library class FritzPhonebook has a new method *get_all_name_numbers()* to fix a bug of *get_all_names()* reporting just one name in case that a phonebook holds multiple entries of the same name.
-- Boolean arguments send to the router as *1* and *0* can also be given as the Python datatypes *True* and *False*.
+- Boolean arguments send to the router as *1* and *0* can also be given as the Python datatypes *True* and *False* (#30).
 - Flag -c added to fritzconnection cli interface to report the complete api.
-- pip installation no longer includes the tests.
+- pip installation no longer includes the tests (#39).
 - pypi classifier changed to *Development Status :: 5 - Production/Stable*
 
 
