@@ -224,7 +224,7 @@ class Soaper:
         arguments = ''.join(self.argument_template.format(name=k, value=v)
                             for k, v in arguments.items())
         body = self.get_body(service, action_name, arguments)
-        envelope = self.envelope.format(body=body)
+        envelope = self.envelope.format(body=body).encode('utf-8')
         url = f'{self.address}:{self.port}{service.controlURL}'
         if self.session:
             with self.session.post(
