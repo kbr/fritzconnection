@@ -4,6 +4,13 @@ Version History
 ===============
 
 
+1.3.3
+-----
+
+- bugfix: soap-xml encoding corrected (#59)
+- bugfix: soap-xml tag-attribute separation fixed (#60)
+
+
 1.3.2
 -----
 
