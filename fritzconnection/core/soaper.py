@@ -168,7 +168,7 @@ class Soaper:
         <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
                     xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">{body}
         </s:Envelope>
-        """)
+        """).replace('/"xmlns:', '/" xmlns:')
 
     body_template = re.sub(r'\s +', '', """
         <s:Body>
