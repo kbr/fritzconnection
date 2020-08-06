@@ -228,7 +228,7 @@ class Soaper:
         url = f'{self.address}:{self.port}{service.controlURL}'
         if self.session:
             with self.session.post(
-                url, data=envelope, headers=headers
+                url, data=envelope, headers=headers, timeout=self.timeout
             ) as response:
                 return handle_response(response)
         else:

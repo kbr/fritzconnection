@@ -35,7 +35,7 @@ def get_content_from(url, timeout=None, session=None):
         return response.text
 
     if session:
-        with session.get(url) as response:
+        with session.get(url, timeout=timeout) as response:
             return handle_response(response)
     response = requests.get(url, timeout=timeout, verify=False)
     return handle_response(response)
