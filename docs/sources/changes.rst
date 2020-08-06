@@ -4,6 +4,12 @@ Version History
 ===============
 
 
+1.3.4
+-----
+
+- bugfix: session ignored timeout settings (#63)
+
+
 1.3.3
 -----
 
