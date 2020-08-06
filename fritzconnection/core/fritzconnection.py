@@ -73,9 +73,11 @@ class FritzConnection:
         the avm-default-username will be used. If no password is given
         the Environment gets checked for a FRITZ_PASSWORD setting. So
         password can be used without using configuration-files or even
-        hardcoding. The optional parameter `timeout` is a floating
+        hardcoding. The optional parameter `timeout` is a floating point
         number in seconds limiting the time waiting for a router
-        response. This is a global setting for the internal
+        response. The timeout can also be a tuple for different values
+        for connection- and read-timeout values: (connect timeout, read
+        timeout). The timeout is a global setting for the internal
         communication with the router. In case of a timeout a
         `requests.ConnectTimeout` exception gets raised. `use_tls`
         accepts a boolean for using encrypted communication with the
