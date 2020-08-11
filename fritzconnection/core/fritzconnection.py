@@ -99,7 +99,6 @@ class FritzConnection:
         # (significantly for tls):
         session = requests.Session()
         session.verify = False
-        session.timeout = timeout
         if password:
             session.auth = HTTPDigestAuth(user, password)
         # store as instance attributes for use by library modules
