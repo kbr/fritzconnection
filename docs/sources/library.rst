@@ -1,11 +1,11 @@
 Library Modules
 ===============
 
-The library is a package with modules on top of FritzConnection to address specific tasks. They can be used as examples on how to use FritzConnection and to write more specialised modules.
+The library is a package with modules on top of FritzConnection to address specific tasks. The library-modules may not serve every need, but should be seen as examples on how to use FritzConnection and how to write more specialised modules.
 
 **Performance considerations:**
 
-Creating a FritzConnection instance will inspect the Fritz!Box API to get informations about all availabe services and corresponding actions. As this is i/o based it's generally slow. However this has to be done for initialisation. But once an instance is created, it can be reused for all tasks. Creating a single FritzConnection instance for an application may be sufficient for most tasks. For this all library classes can optionally initialised with an existing FritzConnection instance: ::
+Creating a FritzConnection instance will inspect the Fritz!Box API to get informations about all availabe services and corresponding actions. As this is i/o based it's generally slow. But once an instance is created, it can be reused for all tasks. Therefore the library classes can optionally initialised with an existing FritzConnection instance, to not inspect the router-API multiple times: ::
 
     from fritzconnection import FritzConnection
     from fritzconnection.lib.fritzhomeauto import FritzHomeAutomation
@@ -17,7 +17,7 @@ Creating a FritzConnection instance will inspect the Fritz!Box API to get inform
     fw = FritzWLAN(fc)
     print(fw.total_host_number)
 
-    fh = FritzHomeAutomation(fc)
+    fh = FritzHomeAutomation(fc)  # same here: use existing instance for initialisÌation
     ain = '11657 0240192'  # assume the AIN of the switch is known
     fh.set_switch(ain, on=True)
 

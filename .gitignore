@@ -12,6 +12,7 @@ __pycache__/*
 bin
 build/*
 dist/*
+docs/_build/*
 fritzconnection.egg-info/*
 include
 lib_

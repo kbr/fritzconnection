@@ -25,6 +25,12 @@ To access the router in a local network, fritzconnection use some default values
 The ip-adress is a fallback-value common to every fritzbox-router, regardless of the individual configuration. In case of more than a single router in the local network (i.e. multiple Fritz!Boxes building a Mesh or connected by LAN building multiple WLAN access-points) the option ``-i`` (for the command line) or the keyword-parameter ``address`` (module usage) is required to address the router, otherwise it is not defined which one of the devices will respond.
 
 
+Usernames and passwords
+-----------------------
+
+For some operations a username and/or a password is required. This can be given on the command line as parameters or, by using a module, as arguments. To not present these informations in clear text, username and password can get stored in the environment variables ``FRITZ_USERNAME`` and ``FRITZ_PASSWORD``. FritzConnection will check for these environment variables first and, if set, will use the corresponding values. 
+
+
 Command line inspection
 -----------------------
 
@@ -264,6 +270,10 @@ This is convenient for calls with multiple arguments for the in-direction, or fo
     fc.call_action('WLANConfiguration1', 'SetEnable', arguments=arguments)
 
 
+.. note ::
+    Even if the router reports that a service exists, calling actions on this service may raise FritzActionErrors in case that the service is not in use. 
+
+
 
 Example: Writing a module
 .........................
@@ -331,8 +341,8 @@ FritzConnection can raise several exceptions. For example using a service not pr
 All exceptions are inherited from ``FritzConnectionException``. ``FritzServiceError`` and ``FritzActionError`` are superseding the older ``ServiceError`` and ``ActionError`` exceptions, that are still existing for backward compatibility. These exceptions are raised by calling unknown services and actions. All other exceptions are raised according to errors reported from the router. ``FritzLookUpError`` and ``FritzArrayIndexError`` are conceptually the same as a Python ``KeyError`` or ``IndexError``. Because of this they are also inherited from these Exceptions.
 
 
-Using TLS
----------
+TLS-Encryption
+--------------
 
 FritzConnection supports encrypted communication with Fritz!Box devices by providing the option ``use_tls`` (*new in 1.2.0*): ::
 
@@ -342,5 +352,8 @@ The default setting for ``use_tls`` is ``False``. For the command line tools enc
 
 
 .. note ::
-    - Using TLS will slow down the communication with the router. Especially getting a new FritzConnection instance will take longer by setting ``use_tls=True``. Tip: reuse instances.
-    - Since the routers currently create self-signed certificates, certificate-verification is disabled.
+    - Using TLS will slow down the communication with the router. Especially getting a new FritzConnection instance will take longer by setting ``use_tls=True``. Hint: reuse instances.
+    - Since the router uses a self-signed certificate, currently certificate-verification is disabled.
+    - In case the client communicates with the router by WLAN and WPA is enabled, the communication is already encrypted.
+    - In case the client communicates by VPN there is also no need to add an additional encryption layer.
+    - The Fritz!Box backend allows to download the self signed certificate and to upload your own certificates: "Internet->Freigaben->FRITZ!Box-Dienste".
