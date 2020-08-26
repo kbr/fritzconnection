@@ -6,7 +6,7 @@ import time
 
 from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
-from .fritztools import format_num, format_rate
+from .fritztools import format_num, format_rate, format_dB
 
 
 def _integer_or_original(value):
@@ -197,3 +197,51 @@ class FritzStatus(AbstractLibraryBase):
     def reconnect(self):
         """Makes a reconnection with a new external ip."""
         self.fc.reconnect()
+
+    @property
+    def noise_margin(self):
+        """
+        Tuple of noise margin. First item
+        is upstream, second item downstream.
+        """
+        status = self.fc.call_action('WANDSLInterfaceConfig1',
+                                     'GetInfo')
+        upstream = status['NewUpstreamNoiseMargin']
+        downstream = status['NewDownstreamNoiseMargin']
+        return upstream, downstream
+    
+    @property
+    def str_noise_margin(self):
+        """
+        Human readable noise margin in dB. Value is a tuple, first item
+        is upstream, second item downstream.
+        """
+        upstream, downstream = self.noise_margin
+        return (
+            format_dB(upstream), 
+            format_dB(downstream)
+        )
+        
+    @property
+    def attenuation(self):
+        """
+        Tuple of attenuation. First item
+        is upstream, second item downstream.
+        """
+        status = self.fc.call_action('WANDSLInterfaceConfig1',
+                                     'GetInfo')
+        upstream = status['NewUpstreamAttenuation']
+        downstream = status['NewDownstreamAttenuation']
+        return upstream, downstream
+    
+    @property
+    def str_attenuation(self):
+        """
+        Human readable attenuation in dB. Value is a tuple, first item
+        is upstream, second item downstream.
+        """
+        upstream, downstream = self.attenuation
+        return (
+            format_dB(upstream), 
+            format_dB(downstream)
+        )
