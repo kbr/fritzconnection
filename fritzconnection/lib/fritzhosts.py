@@ -148,6 +148,19 @@ class FritzHosts(AbstractLibraryBase):
         }
         self._action('X_AVM-DE_SetHostNameByMACAddress', arguments=args)
 
+    def get_host_name(self, mac_address):
+        """
+        Returns a String with the host_name of the device with the given mac_address
+        """
+        host = list
+        try:
+            host = self.get_specific_host_entry(mac_address)
+        except:
+            host = {
+                'NewHostName': 'Error' # fix this problem --> if the router mac is transferd i got an error with specific host entry method
+            }
+        return host['NewHostName']
+
     def run_host_update(self, mac_address):
         """
         Triggers the host with the given `mac_address` to run a system
