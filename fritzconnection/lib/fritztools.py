@@ -28,3 +28,11 @@ def format_rate(num, unit='bytes'):
     If 'num' is bits, set unit='bits'.
     """
     return format_num(num, unit=unit) + '/s'
+
+def format_dB(num):
+    """
+    Returns a human readable string of dB. The value is divided
+    by 10 to get first decimal digit
+    """
+    num /= 10
+    return f'{num:3.1f} {"dB"}' 
