@@ -4,6 +4,13 @@ Version History
 ===============
 
 
+1.4.0_dev
+---------
+
+- Test integrated for Python 3.9 (#73)
+- additional properties for FritzStatus (#69)
+
+
 1.3.4
 -----
 
