@@ -26,7 +26,7 @@ setup(
     description = 'Communicate with the AVM FRITZ!Box',
     long_description = get_long_description(),
     author = 'Klaus Bremer',
-    author_email = 'bremer@bremer-media.de',
+    author_email = 'bremer@bremer-media.com',
     url = 'https://github.com/kbr/fritzconnection',
     classifiers = [
         'Development Status :: 5 - Production/Stable',
@@ -39,6 +39,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords = 'AVM FRITZ!Box fritzbox fritz',
