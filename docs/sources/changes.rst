@@ -7,8 +7,8 @@ Version History
 1.4.0_dev
 ---------
 
-- Test integrated for Python 3.9 (#73)
-- additional properties for FritzStatus (#69)
+- Test extended for Python 3.9 (#73)
+- Library class FritzStatus has additional properties: *attenuation*, *str_attenuation*, *noise_margin* and *str_noise_margin* (#69).
 
 
 1.3.4
