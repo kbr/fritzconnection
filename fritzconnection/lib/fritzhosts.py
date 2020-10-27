@@ -152,14 +152,7 @@ class FritzHosts(AbstractLibraryBase):
         """
         Returns a String with the host_name of the device with the given mac_address
         """
-        host = list
-        try:
-            host = self.get_specific_host_entry(mac_address)
-        except:
-            host = {
-                'NewHostName': 'Error' # fix this problem --> if the router mac is transferd i got an error with specific host entry method
-            }
-        return host['NewHostName']
+        return self.get_specific_host_entry(mac_address)['NewHostName']
 
     def run_host_update(self, mac_address):
         """
