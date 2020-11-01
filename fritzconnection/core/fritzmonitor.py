@@ -89,7 +89,7 @@ class FritzMonitor:
     ):
         """
         Start the monitor thread and return a Queue instance with the given size
-        to report the fritzcall events.
+        to report the call_monitor events.
         Raises an OSError if the socket can not get connected in a given timeout.
         Raises a RuntimeError if start() get called a second time without calling
         stop() first.
@@ -106,7 +106,7 @@ class FritzMonitor:
             "block_on_filled_queue": block_on_filled_queue,
         }
         # clear event object in case the instance gets 'reused':
-        # self.stop_flag.clear()
+        self.stop_flag.clear()
         self.monitor_thread = threading.Thread(target=self._monitor, kwargs=kwargs)
         self.monitor_thread.start()
         return monitor_queue
@@ -118,7 +118,7 @@ class FritzMonitor:
         if self.monitor_thread:
             if self.monitor_thread.is_alive():
                 self.stop_flag.set()  # tell thread to terminate
-                self.monitor_thread.join()  # wait to terminate without timeout
+                self.monitor_thread.join()  # wait for termination without timeout
             self.monitor_thread = None
 
     def _get_connected_socket(self, sock=None):

@@ -4,18 +4,19 @@ import threading
 import time
 
 import pytest
-import requests
 
 from ..core.fritzmonitor import FritzMonitor, EventReporter
 
 
 class MockSocket:
-    def __init__(self, mock_data=None, timeout=None):
+    def __init__(self, mock_data=None, timeout=None, raise_connect_timeout=False):
         self.mock_data = mock_data
         self.timeout = timeout
+        self.raise_connect_timeout = raise_connect_timeout
 
     def connect(self, *args):
-        pass
+        if self.raise_connect_timeout:
+            raise socket.timeout("mock failed socket.connect")
 
     def close(self):
         pass
@@ -72,6 +73,20 @@ def test_start_stop():
     fm.stop()
     assert thread.is_alive() is False
     assert fm.monitor_thread is None
+
+
+def test_start_twice():
+    mock_socket = MockSocket(timeout=0.01)
+    fm = FritzMonitor()
+    _ = fm.start(sock=mock_socket)
+    pytest.raises(RuntimeError, fm.start)
+    fm.stop()
+
+
+def test_failed_connection():
+    mock_socket = MockSocket(raise_connect_timeout=True)
+    fm = FritzMonitor()
+    pytest.raises(OSError, fm.start, sock=mock_socket)
 
 
 @pytest.mark.parametrize(
