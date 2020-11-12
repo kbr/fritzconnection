@@ -148,6 +148,12 @@ class FritzHosts(AbstractLibraryBase):
         }
         self._action('X_AVM-DE_SetHostNameByMACAddress', arguments=args)
 
+    def get_host_name(self, mac_address):
+        """
+        Returns a String with the host_name of the device with the given mac_address
+        """
+        return self.get_specific_host_entry(mac_address)['NewHostName']
+
     def run_host_update(self, mac_address):
         """
         Triggers the host with the given `mac_address` to run a system
