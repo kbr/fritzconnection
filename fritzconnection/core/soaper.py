@@ -181,7 +181,7 @@ class Soaper:
         """,
     )
 
-    argument_template = "<s:{name}>{value}</s:{name}>"
+    argument_template = "<{name}>{value}</{name}>"
     method = "post"
 
     conversion_table = {
