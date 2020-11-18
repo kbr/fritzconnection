@@ -117,7 +117,7 @@ Example on how to get informations about the known devices by using a module: ::
     from fritzconnection.lib.fritzhomeauto import FritzHomeAutomation
 
     fha = FritzHomeAutomation(address='192.168.178.1', password=<password>)
-    info = fha.device_informations())
+    info = fha.device_informations()
 
 'info' is a list of dictionaries describing the devices: ::
 
