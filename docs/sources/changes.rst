@@ -7,8 +7,10 @@ Version History
 1.4.0_dev
 ---------
 
+- Library class FritzStatus with additional properties: *attenuation*, *str_attenuation*, *noise_margin* and *str_noise_margin* (#69)
+- Library class FritzHost with additional method *get_host_name* (#75)
+- Namespace prefix for xml-arguments removed (#66)
 - Test extended for Python 3.9 (#73)
-- Library class FritzStatus has additional properties: *attenuation*, *str_attenuation*, *noise_margin* and *str_noise_margin* (#69).
 
 
 1.3.4

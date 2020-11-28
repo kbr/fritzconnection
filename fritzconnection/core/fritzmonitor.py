@@ -16,6 +16,7 @@ deactivate: #96*4*
 import queue
 import socket
 import threading
+import time
 
 
 FRITZ_IP_ADDRESS = "169.254.1.1"
@@ -23,6 +24,9 @@ FRITZ_MONITOR_PORT = 1012
 FRITZ_MONITOR_QUEUE_SIZE = 256
 FRITZ_MONITOR_CHUNK_SIZE = 1024 * 4
 FRITZ_MONITOR_SOCKET_TIMEOUT = 10
+
+RECONNECT_DELAY = 60  # time in seconds to wait for retry after connection lost
+RECONNECT_TRIES = 5  # number of tries to reconnect before giving up
 
 
 class EventReporter:
@@ -81,10 +85,28 @@ class FritzMonitor:
         self.monitor_thread = None
         self.encoding = encoding
 
+    @property
+    def has_monitor_thread(self):
+        """
+        Returns True if a monitor-thread has been created.
+        That should be the case after calling start() and before calling stop().
+        """
+        return bool(self.monitor_thread)
+
+    @property
+    def is_alive(self):
+        """
+        Returns True if there is a monitor-thread and the thread is running.
+        Returns False otherwise.
+        """
+        return self.has_monitor_thread and self.monitor_thread.is_alive()
+
     def start(
         self,
         queue_size=FRITZ_MONITOR_QUEUE_SIZE,
         block_on_filled_queue=False,
+        reconnect_delay=RECONNECT_DELAY,
+        reconnect_tries=RECONNECT_TRIES,
         sock=None,
     ):
         """
@@ -104,6 +126,8 @@ class FritzMonitor:
             "monitor_queue": monitor_queue,
             "sock": sock,
             "block_on_filled_queue": block_on_filled_queue,
+            "reconnect_delay": reconnect_delay,
+            "reconnect_tries": reconnect_tries,
         }
         # clear event object in case the instance gets 'reused':
         self.stop_flag.clear()
@@ -137,7 +161,35 @@ class FritzMonitor:
             raise OSError(msg)
         return sock
 
-    def _monitor(self, monitor_queue, sock, block_on_filled_queue):
+    def _reconnect_socket(
+        self, sock, reconnect_delay=RECONNECT_DELAY, reconnect_tries=RECONNECT_TRIES
+    ):
+        """
+        Try to reconnect a lost connection on the given socket.
+        Returns True on success and False otherwise.
+        """
+        while reconnect_tries > 0:
+            time.sleep(reconnect_delay)
+            try:
+                self._get_connected_socket(sock)
+            except OSError:
+                reconnect_tries -= 1
+            else:
+                return True
+        return False
+
+    def _monitor(
+        self,
+        monitor_queue,
+        sock,
+        block_on_filled_queue,
+        reconnect_delay,
+        reconnect_tries,
+    ):
+        """
+        The internal monitor routine running in a separate thread.
+        """
+        # Instantiat an EventReporter to push event to the event_queue.
         event_reporter = EventReporter(
             monitor_queue=monitor_queue, block_on_filled_queue=block_on_filled_queue
         )
@@ -147,15 +199,28 @@ class FritzMonitor:
             except socket.timeout:
                 # without a timeout an open socket will never return from a
                 # connection closed by a router (may be of limited resources).
+                # Therefore be sure to set a timeout at socket creation (elsewhere).
                 # So just try again after timeout.
                 continue
             if not raw_data:
                 # empty response indicates a lost connection.
                 # try to reconnect.
-                ...
+                success = self._reconnect_socket(
+                    sock,
+                    reconnect_delay=reconnect_delay,
+                    reconnect_tries=reconnect_tries,
+                )
+                if not success:
+                    # reconnet has failed: terminate the thread
+                    break
             else:
                 # sock.recv returns a bytearray to decode:
                 response = raw_data.decode(self.encoding)
                 event_reporter.add(response)
         # clean up on terminating thread:
-        sock.close()
+        try:
+            sock.close()
+        except OSError:
+            pass
+        # reset monitor_thread to be able to restart the again
+        self.monitor_thread = None
