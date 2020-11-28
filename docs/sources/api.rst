@@ -9,6 +9,7 @@ fritzconnection is structured into subpackages: ::
                       |-- core --|-- devices
                       |          |-- exceptions
                       |          |-- fritzconnection
+                      |          |-- fritzmonitor
                       |          |-- processor
                       |          |-- soaper
                       |          |-- utils
@@ -23,7 +24,7 @@ The package ``cli`` implements the entry-points for command line usage, the test
 Public API
 ----------
 
-The public interface is provided by the FritzConnection class and the exceptions module.
+The public interface is provided by the FritzConnection class, the fritzmonitor- and the exceptions-module.
 
 As a shortcut FritzConnection can get imported by: ::
 
@@ -35,6 +36,25 @@ fritzconnection
 
 .. automodule:: fritzconnection.core.fritzconnection
     :members:
+
+
+fritzmonitor
+............
+
+The FritzMonitor class provides an event-queue with call-events. Events are of type string. ::
+
+    from fritzconnection.core.fritzmonitor import FritzMonitor
+
+    fm = FritzMonitor()
+    event_queue = fm.start()
+    # handle events from the queue for further processing here ...
+    fm.stop()
+
+For a more detailed example refer to 'fritzconnection.cli.fritzmonitor.py'.
+
+.. automodule:: fritzconnection.core.fritzmonitor
+    :members:
+
 
 
 exceptions

@@ -7,6 +7,7 @@ Version History
 1.4.0_dev
 ---------
 
+- New core module fritzmonitor for reporting real time phone call events (related to #76).
 - Library class FritzStatus with additional properties: *attenuation*, *str_attenuation*, *noise_margin* and *str_noise_margin* (#69)
 - Library class FritzHost with additional method *get_host_name* (#75)
 - Namespace prefix for xml-arguments removed (#66)

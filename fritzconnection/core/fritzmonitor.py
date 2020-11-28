@@ -1,4 +1,4 @@
-""""
+"""
 Module to communicate with the AVM Fritz!Box service providing real time
 phone-call events.
 
@@ -33,7 +33,7 @@ class EventReporter:
     """
     Takes a Queue and implements a buffer for line-separated data.
     If at least one line is in the buffer, the line gets put into the 
-    Queue for further processing elsewhere (by the Queue-reader).
+    Queue for further processing elsewhere (by a routine reading the queue).
     """
 
     def __init__(self, monitor_queue, block_on_filled_queue=False):
@@ -50,8 +50,8 @@ class EventReporter:
     def add(self, data):
         """
         Adds the given 'data' to the buffer. If the buffer holds at least one
-        line (separated by '\n'), the lines are put into the 'monitor_queue' to
-        be processed from a reader elsewhere.
+        line (separated by newline-character), the line (or lines) are put into the
+        'monitor_queue' as events to be processed from a reader elsewhere.
         """
         self.buffer += data
         *parts, self.buffer = self.buffer.split("\n")
@@ -74,13 +74,11 @@ class FritzMonitor:
         address=FRITZ_IP_ADDRESS,
         port=FRITZ_MONITOR_PORT,
         timeout=FRITZ_MONITOR_SOCKET_TIMEOUT,
-        logger=None,
         encoding="utf-8",
     ):
         self.address = address
         self.port = port
         self.timeout = timeout
-        self.logger = logger
         self.stop_flag = threading.Event()
         self.monitor_thread = None
         self.encoding = encoding
@@ -111,10 +109,15 @@ class FritzMonitor:
     ):
         """
         Start the monitor thread and return a Queue instance with the given size
-        to report the call_monitor events.
-        Raises an OSError if the socket can not get connected in a given timeout.
-        Raises a RuntimeError if start() get called a second time without calling
-        stop() first.
+        to report the call_monitor events. Events are of type string. Raises an
+        `OSError` if the socket can not get connected in a given timeout. Raises a
+        `RuntimeError` if start() get called a second time without calling stop()
+        first. `queue_size` is the number of events the queue can store. If
+        `block_on_filled_queue` is True a `queue.Full` exception will get raised
+        in case of no free block. `reconnect_delay` defines the time intervall
+        in seconds between reconnection tries, in case that a socket-connection
+        gets lost. `reconnect_tries` defines the number of consecutive to
+        reconnect a socket before giving up.
         """
         if self.monitor_thread:
             # It's an error to create a second thread for monitoring
