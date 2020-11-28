@@ -137,7 +137,7 @@ class FritzMonitor:
 
     def stop(self):
         """
-        Stop the current running _monitor-thread.
+        Stop the current running monitor_thread.
         """
         if self.monitor_thread:
             if self.monitor_thread.is_alive():
@@ -146,8 +146,14 @@ class FritzMonitor:
             self.monitor_thread = None
 
     def _get_connected_socket(self, sock=None):
+        """
+        Takes the given socket and builds a connection to address and port defined
+        at instanciation. If no socket is given a new one gets created.
+        Returns the socket.
+        """
         if sock is None:
             sock = socket.socket()
+            # these options should work on all platforms:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
             # socket actions can fail for different reasons,
             # without a timeout they can hang a long time.
