@@ -2,7 +2,7 @@
 Module to communicate with the AVM Fritz!Box service providing real time
 phone-call events.
 
-To run this, the CallMonitor service of the box has to be activated.
+To run fritzmonitor, the CallMonitor service of the box has to be activated.
 This can be done with any registered Phone by typing the following codes:
 activate: #96*5*
 deactivate: #96*4* 
@@ -116,12 +116,13 @@ class FritzMonitor:
         """
         Start the monitor thread and return a Queue instance with the given size
         to report the call_monitor events. Events are of type string. Raises an
-        `OSError` if the socket can not get connected in a given timeout. Raises a
-        `RuntimeError` if start() get called a second time without calling stop()
-        first. `queue_size` is the number of events the queue can store. If
-        `block_on_filled_queue` is True a `queue.Full` exception will get raised
-        in case of no free block. `reconnect_delay` defines the time intervall
-        in seconds between reconnection tries, in case that a socket-connection
+        `OSError` if the socket can not get connected in a given timeout. Raises
+        a `RuntimeError` if start() get called a second time without calling
+        stop() first. `queue_size` is the number of events the queue can store.
+        If `block_on_filled_queue` is False the event will get discarded in case
+        of no free block (default). On True the EventReporter will block until a
+        slot is awailable. `reconnect_delay` defines the time intervall in
+        seconds between reconnection tries, in case that a socket-connection
         gets lost. `reconnect_tries` defines the number of consecutive to
         reconnect a socket before giving up.
         """

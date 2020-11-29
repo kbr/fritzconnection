@@ -26,9 +26,10 @@ Public API
 
 The public interface is provided by the FritzConnection class, the fritzmonitor- and the exceptions-module.
 
-As a shortcut FritzConnection can get imported by: ::
+There are shortcuts to import FritzConnection and FritzMonitor: ::
 
     from fritzconnection import FritzConnection
+    from fritzconnection import FritzMonitor
 
 
 fritzconnection
@@ -40,17 +41,6 @@ fritzconnection
 
 fritzmonitor
 ............
-
-The FritzMonitor class provides an event-queue with call-events. Events are of type string. ::
-
-    from fritzconnection.core.fritzmonitor import FritzMonitor
-
-    fm = FritzMonitor()
-    event_queue = fm.start()
-    # handle events from the queue for further processing here ...
-    fm.stop()
-
-For a more detailed example refer to 'fritzconnection.cli.fritzmonitor.py'.
 
 .. automodule:: fritzconnection.core.fritzmonitor
     :members:
