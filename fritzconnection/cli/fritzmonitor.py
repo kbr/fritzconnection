@@ -34,6 +34,7 @@ def print_header(args):
     print(f"start fritzmonitor on address: {args.address}")
     print(f"settings for socket-timeout: {args.timeout} [sec]")
     print(f"settings for healthcheck-timeout: {args.healthcheck} [sec]")
+    print("(to stop press ^C)\n")
 
 
 def get_cli_arguments():
@@ -67,39 +68,24 @@ def get_cli_arguments():
         default=HEALTHCHECK_TIMEOUT,
         const=None,
         dest="healthcheck",
-        help="Setting for internal health-check timeout [sec]."
+        help="Setting for internal health-check interval [sec]."
         "Default: %s" % HEALTHCHECK_TIMEOUT,
     )
     args = parser.parse_args()
     return args
 
 
-def read_events(fm, event_queue, healthcheck_timeout):
-    """
-    Report events to stdout in real time.
-    Runs until connection to the router fails or terminated by keyboard-interrupt.
-    """
+def process_events(monitor, event_queue, healthcheck_interval):
     while True:
         try:
-            event = event_queue.get(timeout=healthcheck_timeout)
+            event = event_queue.get(timeout=healthcheck_interval)
         except queue.Empty:
             # check health:
-            if not fm.is_alive:
-                print("Error: fritzmonitor connection failed")
-                break
+            if not monitor.is_alive:
+                raise OSError("Error: fritzmonitor connection failed")
         else:
+            # do event processing here:
             print(event)
-
-
-def start_read_events(fm, event_queue, healthcheck_timeout):
-    """
-    Runs until connection to the router fails or terminted by keyboard-interrupt.
-    """
-    try:
-        read_events(fm, event_queue, healthcheck_timeout)
-    except KeyboardInterrupt:
-        fm.stop()
-    print("\nexit fritzmonitor.\n")
 
 
 def main():
@@ -110,19 +96,13 @@ def main():
     print_header(args)
     # create a FritzMonitor instance and get the event_queue by calling start().
     # start() returns the queue for the events.
-    fm = FritzMonitor(address=args.address, timeout=args.timeout)
     try:
-        event_queue = fm.start()
-    except OSError as err:
-        # unable to start:
+        with FritzMonitor(address=args.address, timeout=args.timeout) as monitor:
+            event_queue = monitor.start()
+            process_events(monitor, event_queue, healthcheck_interval=args.healthcheck)
+    except (OSError, KeyboardInterrupt) as err:
         print(err)
-    else:
-        # on success read events from the queue:
-        print(
-            "start listening for events "
-            "(to stop press ^C, for stopping reaction time may be up to socket-timeout):\n"
-        )
-        start_read_events(fm, event_queue, healthcheck_timeout=args.healthcheck)
+    print("exit fritzmonitor")
 
 
 if __name__ == "__main__":

@@ -83,6 +83,12 @@ class FritzMonitor:
         self.monitor_thread = None
         self.encoding = encoding
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.stop()
+
     @property
     def has_monitor_thread(self):
         """

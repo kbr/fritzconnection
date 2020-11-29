@@ -370,3 +370,10 @@ def test_restart_failed_monitor():
     assert fm.is_alive is True
     fm.stop()
 
+
+def test_context_manager():
+    sock = MockSocket(timeout=0.01)
+    with FritzMonitor() as fm:
+        fm.start(sock=sock)
+        assert fm.is_alive is True
+    assert fm.is_alive is False
