@@ -24,7 +24,7 @@ For more informations refer to `Installation <sources/install.html>`_ and `Intro
 
 The package also provides a fritzmonitor module to access the call monitor interface of the Fritz!Box to get realtime informations about incoming and outgoing phone calls: ::
 
-   from fritzconnection.core.fritzmonitor import FritzMonitor
+   from fritzconnection import FritzMonitor
 
    fm = FritzMonitor(address='192.168.178.1')  # default ip for most routers
    queue = fm.start()  # start monitoring
@@ -33,7 +33,9 @@ The package also provides a fritzmonitor module to access the call monitor inter
 
 This is described in more detail in `call monitoring <sources/call_monitoring.html>`_. 
 
-**Note:** fritzconnection is neither related to nor supported by AVM. Also AVM reserves the right to add, modify or remove features of their products at any time without notice.
+
+.. note::
+   fritzconnection is neither related nor supported by AVM. Also AVM reserves the right to add, modify or remove features of their products at any time without notice.
 
 
 .. toctree::
@@ -43,8 +45,8 @@ This is described in more detail in `call monitoring <sources/call_monitoring.ht
 
    sources/install
    sources/introduction
-   sources/library
    sources/call_monitoring
+   sources/library
    sources/api
    sources/further_reading
    sources/changes

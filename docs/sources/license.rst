@@ -12,7 +12,7 @@ In short that means:
 
 Here is the long version:
 
-    Copyright (c) 2012-2019 Klaus Bremer
+    Copyright (c) 2012-now Klaus Bremer
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal

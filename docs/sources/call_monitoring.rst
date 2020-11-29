@@ -1,22 +1,10 @@
 
-Call monitoring
+Call Monitoring
 ---------------
 
-The FritzMonitor class is a core-extension for fritzconnection to communicate with the Fritz!Box to access real-time informations about incoming and outgoing phone-calls. This extension is based on a separate socket-connection to the router and does not communicate by TR-064. 
+The fritzmonitor-module is a core module of fritzconnection to provide real-time informations about incoming and outgoing phone-calls. This functionality is based on a separate socket-connection to the router and does not communicate by TR-064. 
 
-**Note:** To use this extension, the CallMonitor service of the box has to be activated.
-This can be done with any registered Phone by typing the following codes: ::
-
-    activate: #96*5*
-    deactivate: #96*4*
-
-FritzMonitor provides a queue for accessing CallMonitor events. Every event is a string with specific informations provided from the router like: ::
-
-    28.11.20 15:17:43;RING;2;12345;6789;SIP0;
-    28.11.20 15:17:47;CONNECT;2;4;6789;
-    28.11.20 15:17:50;DISCONNECT;2;4;
-
-To check the events send from the router fritzconnection comes with a fritzmonitor command line tool. The next block shows a typical session: ::
+FritzMonitor provides a queue of type ``queue.Queue`` for accessing CallMonitor events. To check the events send from the router, fritzconnection comes with a ``fritzmonitor`` command line tool. The next block shows a typical session: ::
 
     $ fritzmonitor -i 192.168.178.1
 
@@ -31,50 +19,48 @@ To check the events send from the router fritzconnection comes with a fritzmonit
     28.11.20 15:17:50;DISCONNECT;2;4;
     ...
 
-Here is a very basic example how to use an instance of FritzMonitor: ::
+The events are of type ``string`` in a format defined by AVM.
+The option ``-i`` specifies the ip address of the router. The option ``-h`` provides a help menu. 
+
+Here is a basic example how to use FritzMonitor in a module to pull events: ::
 
     from fritzconnection.core.fritzmonitor import FritzMonitor
 
-    fm = FritzMonitor(address='192.168.178.1')  # default ip for most routers
-    queue = fm.start()  # start the monitor thread
-    for _ in range(10):  # report the next ten events
-        event = queue.get()  # blocking without a timeout
-        print(event)
-    fm.stop()  # important: tear down the monitor thread
-
-The events are of type string (i.e. ``28.11.20 15:17:43;RING;2;12345;6789;SIP0;``) reporting a single event.
-
-To make it error-proof or even run the queue-pulling in a separate thread of a program, there is more work to do.
-
-Here is an example to pull events permanently: ::
-
-    from fritzconnection.core.fritzmonitor import FritzMonitor
-
-    def read_events(fm, event_queue, healthcheck_timeout):
+    def process_events(monitor, event_queue, healthcheck_interval=10):
         while True:
             try:
-                event = event_queue.get(timeout=healthcheck_timeout)
+                event = event_queue.get(timeout=healthcheck_interval)
             except queue.Empty:
                 # check health:
-                if not fm.is_alive:
-                    break
+                if not monitor.is_alive:
+                    raise OSError("Error: fritzmonitor connection failed")
             else:
-                print(event)  # process events here ...
+                # do event processing here:
+                print(event)
 
     def main():
-        fm = FritzMonitor(address='192.168.178.1')  # default ip for most routers
+        """Entry point: example to use FritzMonitor.
+        """
         try:
-            event_queue = fm.start()  # start the monitor thread
-        except OSError as err:
-            # unable to start:
+            # as a context manager FritzMonitor will shut down the monitor thread
+            with FritzMonitor(address='192.168.178.1') as monitor:
+                event_queue = monitor.start()
+                process_events(monitor, event_queue)
+        except (OSError, KeyboardInterrupt) as err:
             print(err)
-        else:
-            read_events(fm, event_queue, healthcheck_timeout=10)
 
     if __name__ == "__main__":
         main()
 
 
-The source code at ``fritzconnection.cli.fritzmonitor`` is mainly an example for using FritzMonitor. It provides more comments, error handling and a clean way to shut down. The FritzMonitor API is also documented in `Structure and API <api.html>`_.
+The FritzMonitor API is also documented in `Structure and API <api.html>`_.
+
+
+.. note ::
+    To do call monitoring, the CallMonitor service of the Fritz!Box has to be activated.
+    This can be done with any registered phone by typing the following codes: ::
+
+        activate: #96*5*
+        deactivate: #96*4*
 
 
