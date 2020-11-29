@@ -204,7 +204,7 @@ class FritzMonitor:
         """
         The internal monitor routine running in a separate thread.
         """
-        # Instantiat an EventReporter to push event to the event_queue.
+        # Instantiate an EventReporter to push event to the event_queue.
         event_reporter = EventReporter(
             monitor_queue=monitor_queue, block_on_filled_queue=block_on_filled_queue
         )
@@ -226,7 +226,7 @@ class FritzMonitor:
                     reconnect_tries=reconnect_tries,
                 )
                 if not success:
-                    # reconnet has failed: terminate the thread
+                    # reconnect has failed: terminate the thread
                     break
             else:
                 # sock.recv returns a bytearray to decode:
@@ -237,5 +237,5 @@ class FritzMonitor:
             sock.close()
         except OSError:
             pass
-        # reset monitor_thread to be able to restart the again
+        # reset monitor_thread to be able to restart
         self.monitor_thread = None
