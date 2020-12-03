@@ -37,7 +37,7 @@ def delayer(
     multiplier=RECONNECT_DELAY_FACTOR,
 ):
     """
-    delay generator with increasing time.sleeps.
+    delay generator with increasing sleep-times.
     """
     delay = min(min_delay, max_delay)
     while True:

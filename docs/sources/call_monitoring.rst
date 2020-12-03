@@ -12,10 +12,10 @@ FritzMonitor provides a queue of type ``queue.Queue`` for accessing CallMonitor 
     start fritzmonitor on address: 192.168.178.1
     settings for socket-timeout: 10 [sec]
     settings for healthcheck-timeout: 10 [sec]
-    start listening for events (to stop press ^C, for stopping reaction time may be up to socket-timeout):
+    (to stop press ^C)
 
-    28.11.20 15:17:43;RING;2;12345;6789;SIP0;
-    28.11.20 15:17:47;CONNECT;2;4;6789;
+    28.11.20 15:17:43;RING;2;<calling number>;<called number>;SIP0;
+    28.11.20 15:17:47;CONNECT;2;4;<calling number>;
     28.11.20 15:17:50;DISCONNECT;2;4;
     ...
 
@@ -24,6 +24,7 @@ The option ``-i`` specifies the ip address of the router. The option ``-h`` prov
 
 Here is a basic example how to use FritzMonitor in a module to pull events: ::
 
+    import queue
     from fritzconnection.core.fritzmonitor import FritzMonitor
 
     def process_events(monitor, event_queue, healthcheck_interval=10):
