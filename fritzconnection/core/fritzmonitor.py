@@ -25,8 +25,25 @@ FRITZ_MONITOR_QUEUE_SIZE = 256
 FRITZ_MONITOR_CHUNK_SIZE = 1024 * 4
 FRITZ_MONITOR_SOCKET_TIMEOUT = 10
 
-RECONNECT_DELAY = 60  # time in seconds to wait for retry after connection lost
-RECONNECT_TRIES = 5  # number of tries to reconnect before giving up
+MIN_RECONNECT_DELAY = 0.02  # minimum delay in seconds
+MAX_RECONNECT_DELAY = 60  # maximum delay in seconds
+RECONNECT_DELAY_FACTOR = 10  # factor to increase delays between reconnection tries
+RECONNECT_TRIES = 10  # number of tries to reconnect before giving up
+
+
+def delayer(
+    min_delay=MIN_RECONNECT_DELAY,
+    max_delay=MAX_RECONNECT_DELAY,
+    multiplier=RECONNECT_DELAY_FACTOR,
+):
+    """
+    delay generator with increasing time.sleeps.
+    """
+    delay = min(min_delay, max_delay)
+    while True:
+        time.sleep(delay)
+        yield
+        delay = min(delay * multiplier, max_delay)
 
 
 class EventReporter:
@@ -109,7 +126,7 @@ class FritzMonitor:
         self,
         queue_size=FRITZ_MONITOR_QUEUE_SIZE,
         block_on_filled_queue=False,
-        reconnect_delay=RECONNECT_DELAY,
+        reconnect_delay=MAX_RECONNECT_DELAY,
         reconnect_tries=RECONNECT_TRIES,
         sock=None,
     ):
@@ -121,7 +138,7 @@ class FritzMonitor:
         stop() first. `queue_size` is the number of events the queue can store.
         If `block_on_filled_queue` is False the event will get discarded in case
         of no free block (default). On True the EventReporter will block until a
-        slot is awailable. `reconnect_delay` defines the time intervall in
+        slot is awailable. `reconnect_delay` defines the maximum time intervall in
         seconds between reconnection tries, in case that a socket-connection
         gets lost. `reconnect_tries` defines the number of consecutive to
         reconnect a socket before giving up.
@@ -178,14 +195,18 @@ class FritzMonitor:
         return sock
 
     def _reconnect_socket(
-        self, sock, reconnect_delay=RECONNECT_DELAY, reconnect_tries=RECONNECT_TRIES
+        self,
+        sock,
+        max_reconnect_delay=MAX_RECONNECT_DELAY,
+        reconnect_tries=RECONNECT_TRIES,
     ):
         """
         Try to reconnect a lost connection on the given socket.
         Returns True on success and False otherwise.
         """
+        reconnect_delay = delayer(max_delay=max_reconnect_delay)
         while reconnect_tries > 0:
-            time.sleep(reconnect_delay)
+            next(reconnect_delay)
             try:
                 self._get_connected_socket(sock)
             except OSError:
@@ -223,7 +244,7 @@ class FritzMonitor:
                 # try to reconnect.
                 success = self._reconnect_socket(
                     sock,
-                    reconnect_delay=reconnect_delay,
+                    max_reconnect_delay=reconnect_delay,
                     reconnect_tries=reconnect_tries,
                 )
                 if not success:
