@@ -49,7 +49,7 @@ def delayer(
 class EventReporter:
     """
     Takes a Queue and implements a buffer for line-separated data.
-    If at least one line is in the buffer, the line gets put into the 
+    If at least one line is in the buffer, the line gets put into the
     Queue for further processing elsewhere (by a routine reading the queue).
     """
 
@@ -129,6 +129,8 @@ class FritzMonitor:
         reconnect_delay=MAX_RECONNECT_DELAY,
         reconnect_tries=RECONNECT_TRIES,
         sock=None,
+        callback_event=None,
+        callback_reconnect=None,
     ):
         """
         Start the monitor thread and return a Queue instance with the given size
@@ -141,7 +143,10 @@ class FritzMonitor:
         slot is awailable. `reconnect_delay` defines the maximum time intervall in
         seconds between reconnection tries, in case that a socket-connection
         gets lost. `reconnect_tries` defines the number of consecutive to
-        reconnect a socket before giving up.
+        reconnect a socket before giving up. `callback_event` defines a callback function
+        that is called when a new call_monitor event occurrs with the corresponding event
+        data. `callback_reconnect` defines a callback function that is called when the
+        connection has been lost with the relevant socket.
         """
         if self.monitor_thread:
             # It's an error to create a second thread for monitoring
@@ -155,12 +160,16 @@ class FritzMonitor:
             "block_on_filled_queue": block_on_filled_queue,
             "reconnect_delay": reconnect_delay,
             "reconnect_tries": reconnect_tries,
+            "callback_event": callback_event,
+            "callback_reconnect": callback_reconnect,
         }
         # clear event object in case the instance gets 'reused':
         self.stop_flag.clear()
         self.monitor_thread = threading.Thread(target=self._monitor, kwargs=kwargs)
         self.monitor_thread.start()
-        return monitor_queue
+
+        if not callback_event:
+            return monitor_queue
 
     def stop(self):
         """
@@ -222,6 +231,8 @@ class FritzMonitor:
         block_on_filled_queue,
         reconnect_delay,
         reconnect_tries,
+        callback_event,
+        callback_reconnect,
     ):
         """
         The internal monitor routine running in a separate thread.
@@ -240,20 +251,26 @@ class FritzMonitor:
                 # So just try again after timeout.
                 continue
             if not raw_data:
-                # empty response indicates a lost connection.
-                # try to reconnect.
-                success = self._reconnect_socket(
-                    sock,
-                    max_reconnect_delay=reconnect_delay,
-                    reconnect_tries=reconnect_tries,
-                )
-                if not success:
-                    # reconnect has failed: terminate the thread
-                    break
+                if callback_reconnect:
+                    callback_reconnect(sock)
+                else:
+                    # empty response indicates a lost connection.
+                    # try to reconnect.
+                    success = self._reconnect_socket(
+                        sock,
+                        max_reconnect_delay=reconnect_delay,
+                        reconnect_tries=reconnect_tries,
+                    )
+                    if not success:
+                        # reconnect has failed: terminate the thread
+                        break
             else:
                 # sock.recv returns a bytearray to decode:
                 response = raw_data.decode(self.encoding)
-                event_reporter.add(response)
+                if callback_event:
+                    callback_event(response)
+                else:
+                    event_reporter.add(response)
         # clean up on terminating thread:
         try:
             sock.close()
