@@ -38,6 +38,15 @@ In general FritzConnection can execute every action provided by the (model-speci
 
 The package comes with a library providing some modules as examples how to implement applications on top of FritzConnection.
 
+The package also allows to monitor phone calls in real time by means of the FritzMonitor class (`new in 1.4.0`): ::
+
+   from fritzconnection import FritzMonitor
+
+   fm = FritzMonitor(address='192.168.178.1')  # default ip for most routers
+   queue = fm.start()  # start monitoring: provides a queue.Queue instance
+   # do queue handling here
+   fm.stop()  # stop monitoring
+
 
 Documentation
 -------------

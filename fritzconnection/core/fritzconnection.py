@@ -22,16 +22,17 @@ from .soaper import Soaper
 # disable InsecureRequestWarning from urllib3
 # because of skipping certificate verification:
 import urllib3
+
 urllib3.disable_warnings()
 
 
 # FritzConnection defaults:
-FRITZ_IP_ADDRESS = '169.254.1.1'
+FRITZ_IP_ADDRESS = "169.254.1.1"
 FRITZ_TCP_PORT = 49000
 FRITZ_TLS_PORT = 49443
-FRITZ_USERNAME = 'dslf-config'
-FRITZ_IGD_DESC_FILE = 'igddesc.xml'
-FRITZ_TR64_DESC_FILE = 'tr64desc.xml'
+FRITZ_USERNAME = "dslf-config"
+FRITZ_IGD_DESC_FILE = "igddesc.xml"
+FRITZ_TR64_DESC_FILE = "tr64desc.xml"
 FRITZ_DESCRIPTIONS = [FRITZ_IGD_DESC_FILE, FRITZ_TR64_DESC_FILE]
 
 
@@ -56,8 +57,15 @@ class FritzConnection:
     (`New in version 1.2`)
     """
 
-    def __init__(self, address=None, port=None, user=None, password=None,
-                       timeout=None, use_tls=False):
+    def __init__(
+        self,
+        address=None,
+        port=None,
+        user=None,
+        password=None,
+        timeout=None,
+        use_tls=False,
+    ):
         """
         Initialisation of FritzConnection: reads all data from the box
         and also the api-description (the servicenames and according
@@ -86,9 +94,9 @@ class FritzConnection:
         if address is None:
             address = FRITZ_IP_ADDRESS
         if user is None:
-            user = os.getenv('FRITZ_USERNAME', FRITZ_USERNAME)
+            user = os.getenv("FRITZ_USERNAME", FRITZ_USERNAME)
         if password is None:
-            password = os.getenv('FRITZ_PASSWORD', '')
+            password = os.getenv("FRITZ_PASSWORD", "")
         if port is None and use_tls:
             port = FRITZ_TLS_PORT
         elif port is None:
@@ -113,7 +121,7 @@ class FritzConnection:
         self.device_manager = DeviceManager(timeout=timeout, session=session)
 
         for description in FRITZ_DESCRIPTIONS:
-            source = f'{address}:{port}/{description}'
+            source = f"{address}:{port}/{description}"
             try:
                 self.device_manager.add_description(source)
             except FritzConnectionException:
@@ -128,8 +136,10 @@ class FritzConnection:
 
     def __repr__(self):
         """Return a readable representation"""
-        return f"{self.modelname} at {self.soaper.address}\n" \
-               f"FRITZ!OS: {self.system_version}"
+        return (
+            f"{self.modelname} at {self.soaper.address}\n"
+            f"FRITZ!OS: {self.system_version}"
+        )
 
     @property
     def services(self):
@@ -158,11 +168,11 @@ class FritzConnection:
         Returns the normalized service name. E.g. WLANConfiguration and
         WLANConfiguration:1 will get converted to WLANConfiguration1.
         """
-        if ':' in name:
-            name, number = name.split(':', 1)
+        if ":" in name:
+            name, number = name.split(":", 1)
             name = name + number
         elif name[-1] not in string.digits:
-            name = name + '1'
+            name = name + "1"
         return name
 
     @staticmethod
@@ -172,25 +182,23 @@ class FritzConnection:
         and returns the modified `url`. Does not check whether the `url`
         given as parameter is correct.
         """
-        http = 'http://'
-        https = 'https://'
+        http = "http://"
+        https = "https://"
         if url.startswith(http):
-            url = url[len(http):]
+            url = url[len(http) :]
         elif url.startswith(https):
-            url = url[len(https):]
+            url = url[len(https) :]
         if use_tls:
-            url = f'{https}{url}'
+            url = f"{https}{url}"
         else:
-            url = f'{http}{url}'
+            url = f"{http}{url}"
         return url
-
 
     # -------------------------------------------
     # public api:
     # -------------------------------------------
 
-    def call_action(self, service_name, action_name, *,
-                    arguments=None, **kwargs):
+    def call_action(self, service_name, action_name, *, arguments=None, **kwargs):
         """
         Executes the given action of the given service. Both parameters
         are required. Arguments are optional and can be provided as a
@@ -222,4 +230,5 @@ class FritzConnection:
         """
         Terminate the connection and reconnects with a new ip.
         """
-        self.call_action('WANIPConn1', 'ForceTermination')
+        self.call_action("WANIPConn1", "ForceTermination")
+

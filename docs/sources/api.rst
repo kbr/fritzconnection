@@ -9,6 +9,7 @@ fritzconnection is structured into subpackages: ::
                       |-- core --|-- devices
                       |          |-- exceptions
                       |          |-- fritzconnection
+                      |          |-- fritzmonitor
                       |          |-- processor
                       |          |-- soaper
                       |          |-- utils
@@ -23,11 +24,12 @@ The package ``cli`` implements the entry-points for command line usage, the test
 Public API
 ----------
 
-The public interface is provided by the FritzConnection class and the exceptions module.
+The public interface is provided by the FritzConnection class, the fritzmonitor- and the exceptions-module.
 
-As a shortcut FritzConnection can get imported by: ::
+There are shortcuts to import FritzConnection and FritzMonitor: ::
 
     from fritzconnection import FritzConnection
+    from fritzconnection import FritzMonitor
 
 
 fritzconnection
@@ -35,6 +37,14 @@ fritzconnection
 
 .. automodule:: fritzconnection.core.fritzconnection
     :members:
+
+
+fritzmonitor
+............
+
+.. automodule:: fritzconnection.core.fritzmonitor
+    :members:
+
 
 
 exceptions

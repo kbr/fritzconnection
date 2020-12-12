@@ -11,6 +11,9 @@ FritzConnection manages the inspection of a given Fritz!Box and can access all a
 
 The installation of fritzconnection (using pip) will also install a command line tool for the Fritz!Box api-inspection. The next sections will give an introduction to this command line tool and how to write modules on top of fritzconnection.
 
+.. note::
+    To use the TR-064 interface of the Fritz!Box, the settings for `Allow access for applications` and `Transmit status information over UPnP` in the `Home Network` -> `Network` -> `Network Settings` menu have to be activated. 
+
 
 Internal defaults
 -----------------

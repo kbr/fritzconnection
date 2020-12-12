@@ -29,7 +29,7 @@ def datetime_convert(value):
     Converts a string in ISO 8601 format to a datetime-object.
     Raise ValueError if value does not match ISO 8601.
     """
-    return datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S')
+    return datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
 
 
 def boolean_convert(value):
@@ -38,7 +38,7 @@ def boolean_convert(value):
     Raise ValueError if it is something else than '1' or '0', because
     this violates the data_type according to the AVM documentation.
     """
-    if value == '1' or value == '0':
+    if value == "1" or value == "0":
         return bool(int(value))
     msg = f"value '{value}' does not match '1' or '0'."
     raise ValueError(msg)
@@ -46,17 +46,17 @@ def boolean_convert(value):
 
 def uuid_convert(value):
     """Strips the leading 'uuid:' part from the string."""
-    return value.split(':')[-1]
+    return value.split(":")[-1]
 
 
 CONVERSION_TABLE = {
-    'datetime': datetime_convert,
-    'boolean': boolean_convert,
-    'uuid': uuid_convert,
-    'i4': int,
-    'ui1': int,
-    'ui2': int,
-    'ui4': int,
+    "datetime": datetime_convert,
+    "boolean": boolean_convert,
+    "uuid": uuid_convert,
+    "i4": int,
+    "ui1": int,
+    "ui2": int,
+    "ui4": int,
 }
 
 
@@ -104,10 +104,10 @@ def get_argument_value(root, argument_name):
     Raise an AttributeError in case that a node is not found.
     """
     # root.find will() raise the AttributeError on unknown nodes
-    value = root.find(f'.//{argument_name}').text
+    value = root.find(f".//{argument_name}").text
     if value is None:
         # this will be the case on empty tags: <tag></tag>
-        value = ''
+        value = ""
     return value
 
 
@@ -128,19 +128,19 @@ def raise_fritzconnection_error(response):
         # some service in the box, but rather not allowed to
         # access the box at all.
         # Whatever it is, report it here:
-        detail = re.sub(r'<.*?>', '', response.text)
-        msg = f'Unable to perform operation. {detail}'
+        detail = re.sub(r"<.*?>", "", response.text)
+        msg = f"Unable to perform operation. {detail}"
         raise FritzConnectionException(msg)
-    detail = root.find('.//detail')
+    detail = root.find(".//detail")
     children = detail.iter()
-    next(children) # skip detail itself
+    next(children)  # skip detail itself
     for node in children:
         tag = localname(node)
         text = node.text.strip()
         if tag == "errorCode":
             error_code = text
-        parts.append(f'{tag}: {text}')
-    message = '\n'.join(parts)
+        parts.append(f"{tag}: {text}")
+    message = "\n".join(parts)
     # try except:KeyError not possible,
     # because one of the raised Exceptions may inherit from KeyError.
     exception = FRITZ_ERRORS.get(error_code, FritzConnectionException)
@@ -157,41 +157,44 @@ class Soaper:
     parameters will get set by FritzConnection,)
     """
 
-    headers = {
-        'soapaction': '',
-        'content-type': 'text/xml',
-        'charset': 'utf-8'
-    }
+    headers = {"soapaction": "", "content-type": "text/xml", "charset": "utf-8"}
 
-    envelope = re.sub(r'\s +', '', """
+    envelope = re.sub(
+        r"\s +",
+        "",
+        """
         <?xml version="1.0" encoding="utf-8"?>
         <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
                     xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">{body}
         </s:Envelope>
-        """).replace('/"xmlns:', '/" xmlns:')
+        """,
+    ).replace('/"xmlns:', '/" xmlns:')
 
-    body_template = re.sub(r'\s +', '', """
+    body_template = re.sub(
+        r"\s +",
+        "",
+        """
         <s:Body>
         <u:{action_name} xmlns:u="{service_type}">{arguments}
         </u:{action_name}>
         </s:Body>
-        """)
+        """,
+    )
 
-    argument_template = "<s:{name}>{value}</s:{name}>"
-    method = 'post'
+    argument_template = "<{name}>{value}</{name}>"
+    method = "post"
 
     conversion_table = {
-        'datetime': datetime_convert,
-        'boolean': boolean_convert,
-        'uuid': uuid_convert,
-        'i4': int,
-        'ui1': int,
-        'ui2': int,
-        'ui4': int,
+        "datetime": datetime_convert,
+        "boolean": boolean_convert,
+        "uuid": uuid_convert,
+        "i4": int,
+        "ui1": int,
+        "ui2": int,
+        "ui4": int,
     }
 
-    def __init__(self, address, port, user, password,
-                 timeout=None, session=None):
+    def __init__(self, address, port, user, password, timeout=None, session=None):
         self.address = address
         self.port = port
         self.user = user
@@ -204,7 +207,7 @@ class Soaper:
         return self.body_template.format(
             service_type=service.serviceType,
             action_name=action_name,
-            arguments=arguments
+            arguments=arguments,
         )
 
     def execute(self, service, action_name, arguments):
@@ -213,19 +216,21 @@ class Soaper:
         Numeric and boolean values are converted from strings to Python
         datatypes.
         """
+
         def handle_response(response):
             if response.status_code != 200:
                 raise_fritzconnection_error(response)
             return self.parse_response(response, service, action_name)
 
         headers = self.headers.copy()
-        headers['soapaction'] = f'{service.serviceType}#{action_name}'
+        headers["soapaction"] = f"{service.serviceType}#{action_name}"
         arguments = preprocess_arguments(arguments)
-        arguments = ''.join(self.argument_template.format(name=k, value=v)
-                            for k, v in arguments.items())
+        arguments = "".join(
+            self.argument_template.format(name=k, value=v) for k, v in arguments.items()
+        )
         body = self.get_body(service, action_name, arguments)
-        envelope = self.envelope.format(body=body).encode('utf-8')
-        url = f'{self.address}:{self.port}{service.controlURL}'
+        envelope = self.envelope.format(body=body).encode("utf-8")
+        url = f"{self.address}:{self.port}{service.controlURL}"
         if self.session:
             with self.session.post(
                 url, data=envelope, headers=headers, timeout=self.timeout
@@ -237,8 +242,12 @@ class Soaper:
             else:
                 auth = None
             response = requests.post(
-                url, data=envelope, headers=headers, auth=auth,
-                timeout=self.timeout, verify=False
+                url,
+                data=envelope,
+                headers=headers,
+                auth=auth,
+                timeout=self.timeout,
+                verify=False,
             )
             return handle_response(response)
 
@@ -257,8 +266,7 @@ class Soaper:
                 value = get_argument_value(root, argument_name)
             except AttributeError:
                 continue
-            state_variable_name = \
-                action.arguments[argument_name].relatedStateVariable
+            state_variable_name = action.arguments[argument_name].relatedStateVariable
             state_variable = service.state_variables[state_variable_name]
             data_type = state_variable.dataType.lower()
             try:
