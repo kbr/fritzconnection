@@ -20,18 +20,23 @@ The available services are depending on the Fritz!Box model and the according sy
     fc.reconnect()  # get a new external ip from the provider
     print(fc)  # print router model informations
 
-For more informations refer to `Installation <sources/install.html>`_ and `Introduction <sources/introduction.html>`_.
+The *reconnect()* method wraps the *call_action()* method. With the *call_action()* method every service/action combination documented by the `AVM support-page (Apps/TR-064) <https://avm.de/service/schnittstellen/>`_ can get executed. A reconnection by means of *call_action()* would look like this: ::
 
-The library also provides a fritzmonitor module for accessing the call-monitor interface of the Fritz!Box to get realtime informations about incoming and outgoing phone calls: ::
+    fc = FritzConnection(address='192.168.178.1')
+    fc.call_action("WANIPConn1", "ForceTermination")
+
+For more information refer to `Introduction <sources/introduction.html>`_.
+
+fritzconnection comes with a `library <sources/library.html>`_ to make some common tasks easier and to serve as examples how to use fritzconnection. The library also provides a fritzmonitor module for accessing the call-monitor interface of the Fritz!Box to get realtime informations about incoming and outgoing phone calls: ::
 
    from fritzconnection import FritzMonitor
 
    fm = FritzMonitor(address='192.168.178.1')
    event_queue = fm.start()  # start monitoring
-   # do event handling here ...
+   # event_queue is queue.Queue instance, do event handling here ...
    fm.stop()  # stop monitoring
 
-This is described in more detail in `Call Monitoring <sources/call_monitoring.html>`_. 
+This is described in more detail in `Call Monitoring <sources/call_monitoring.html>`_.
 
 
 .. note::

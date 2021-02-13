@@ -14,3 +14,6 @@ Additional authors having contributed to this project:
 * `Bernd Strebel <https://bitbucket.org/bstrebel>`_
 * Julian Tatsch
 
+
+Since moving from bitbucket to github, an up to date list of contributers is listed here: `https://github.com/kbr/fritzconnection/graphs/contributors <https://github.com/kbr/fritzconnection/graphs/contributors>`_.
+
