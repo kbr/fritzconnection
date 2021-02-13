@@ -4,6 +4,12 @@ Version History
 ===============
 
 
+1.4.1
+-----
+
+- change: Output of bitrate changed to log10 based calculation (#45, #52)
+
+
 1.4.0
 -----
 
