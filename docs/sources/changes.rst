@@ -7,6 +7,7 @@ Version History
 1.4.1
 -----
 
+- bugfix: FritzStatus library now returns a 32 bit value for *bytes_received* for older Fritz!OS versions not providing the newer 64 bit information instead of raising an exception. (bug introduced with version 1.3.0) (#82)
 - change: Output of bitrate changed to log10 based calculation (#45, #52)
 
 
