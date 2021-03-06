@@ -8,13 +8,19 @@ def byte_formatter(value):
     """
     Gets a large integer als value and returns a tuple with the value as
     float and the matching dimension as string, i.e.
-
     >>> byte_formatter(242981246)
     (242.981246, 'MB')
+    Expects positive integer as input. Negative numbers are interpreted
+    as positive numbers. values < 1 are interpreted as 0.
     """
     dim = ['B', 'KB', 'MB', 'GB', 'TB']
-    log = min(int(math.log10(value) / 3), len(dim))
-    num = value / 1000 ** log
+    value = abs(value)
+    if value < 1:
+        log = 0
+        num = 0
+    else:
+        log = min(int(math.log10(value) / 3), len(dim))
+        num = value / 1000 ** log
     try:
         dimension = dim[log]
     except IndexError:

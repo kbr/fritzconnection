@@ -18,6 +18,12 @@ from ..lib.fritztools import byte_formatter, format_num
         (42e12, 42.0, 'TB'),
         (42e15, 42.0, 'PB'),
         (42e18, 42000.0, 'PB'),
+        (1.0, 1.0, 'B'),
+        (0.1, 0, 'B'),
+        (0.01, 0, 'B'),
+        (0.001, 0, 'B'),
+        (0, 0, 'B'),
+        (-10, 10, 'B'),
     ]
 )
 def test_byte_formatter(value, result, dimension):
@@ -41,7 +47,6 @@ def test_byte_formatter(value, result, dimension):
         (45e18, '45000.0 PB'),
     ]
 )
-
 def test_format_num(num, formated_num):
     assert formated_num == format_num(num)
 
