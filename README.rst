@@ -36,6 +36,11 @@ Using fritzconnection is as easy as: ::
 
 In general FritzConnection can execute every action provided by the (model-specific) API. For i.e. this can be WLAN settings, internet connection and device status informations, home automation services and much more.
 
+The central method FritzConnection provides to access the FritzOS-API is the `call_action()` method. A reconnection by means of *call_action()* would look like this: ::
+
+    fc = FritzConnection(address='192.168.178.1')
+    fc.call_action("WANIPConn1", "ForceTermination")
+
 The package comes with a library providing some modules as examples how to implement applications on top of FritzConnection.
 
 The package also allows to monitor phone calls in real time by means of the FritzMonitor class (`new in 1.4.0`): ::

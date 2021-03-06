@@ -3,6 +3,11 @@
 Version History
 ===============
 
+1.4.2
+-----
+
+- bugfix: byte_formatter may return wrong numbers on values < 1 and has raised math domain error on values == 0. (bug introduced with version 1.4.1) (#87)
+
 
 1.4.1
 -----
