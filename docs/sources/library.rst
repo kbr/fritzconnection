@@ -17,7 +17,7 @@ Creating a FritzConnection instance will inspect the Fritz!Box API to get inform
     fw = FritzWLAN(fc)
     print(fw.total_host_number)
 
-    fh = FritzHomeAutomation(fc)  # same here: use existing instance for initialisÌation
+    fh = FritzHomeAutomation(fc)  # same here: use existing instance for initialisation
     ain = '11657 0240192'  # assume the AIN of the switch is known
     fh.set_switch(ain, on=True)
 
