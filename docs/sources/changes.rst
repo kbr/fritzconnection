@@ -3,6 +3,12 @@
 Version History
 ===============
 
+1.5.0
+-----
+
+- Compatibility with Fritz!OS 7.24 and newer: takes the last logged in username as default in case that a username is not provided.
+
+
 1.4.2
 -----
 

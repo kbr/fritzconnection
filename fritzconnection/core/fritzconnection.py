@@ -32,7 +32,7 @@ urllib3.disable_warnings()
 FRITZ_IP_ADDRESS = "169.254.1.1"
 FRITZ_TCP_PORT = 49000
 FRITZ_TLS_PORT = 49443
-FRITZ_USERNAME = "dslf-config"
+FRITZ_USERNAME = "dslf-config"  # for Fritz!OS < 7.24
 FRITZ_IGD_DESC_FILE = "igddesc.xml"
 FRITZ_TR64_DESC_FILE = "tr64desc.xml"
 FRITZ_DESCRIPTIONS = [FRITZ_IGD_DESC_FILE, FRITZ_TR64_DESC_FILE]
@@ -58,6 +58,13 @@ class FritzConnection:
     `use_tls` accepts a boolean for using encrypted communication with
     the Fritz!Box. Default is `False`.
     (`New in version 1.2`)
+
+    For some actions the Fritz!Box needs a password and since Fritz!OS
+    7.24 also requires a username, the previous default username is just
+    valid for OS versions < 7.24. In case the username is not given and
+    the system version is 7.24 or newer, FritzConnection uses the last
+    logged in username as default.
+    (`New in version 1.5`)
     """
 
     def __init__(

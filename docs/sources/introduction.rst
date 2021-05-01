@@ -12,7 +12,7 @@ FritzConnection manages the inspection of a given Fritz!Box and can access all a
 The installation of fritzconnection (using pip) will also install a command line tool for the Fritz!Box api-inspection. The next sections will give an introduction to this command line tool and how to write modules on top of fritzconnection.
 
 .. note::
-    To use the TR-064 interface of the Fritz!Box, the settings for `Allow access for applications` and `Transmit status information over UPnP` in the `Home Network` -> `Network` -> `Network Settings` menu have to be activated. 
+    To use the TR-064 interface of the Fritz!Box, the settings for `Allow access for applications` and `Transmit status information over UPnP` in the `Home Network` -> `Network` -> `Network Settings` menu have to be activated.
 
 
 Internal defaults
@@ -23,7 +23,7 @@ To access the router in a local network, fritzconnection use some default values
     FRITZ_IP_ADDRESS = '169.254.1.1'
     FRITZ_TCP_PORT = 49000
     FRITZ_TLS_PORT = 49443
-    FRITZ_USERNAME = 'dslf-config'
+    FRITZ_USERNAME = 'dslf-config'  # for Fritz!OS < 7.24
 
 The ip-adress is a fallback-value common to every fritzbox-router, regardless of the individual configuration. In case of more than a single router in the local network (i.e. multiple Fritz!Boxes building a Mesh or connected by LAN building multiple WLAN access-points) the option ``-i`` (for the command line) or the keyword-parameter ``address`` (module usage) is required to address the router, otherwise it is not defined which one of the devices will respond.
 
@@ -31,7 +31,9 @@ The ip-adress is a fallback-value common to every fritzbox-router, regardless of
 Usernames and passwords
 -----------------------
 
-For some operations a username and/or a password is required. This can be given on the command line as parameters or, by using a module, as arguments. To not present these informations in clear text, username and password can get stored in the environment variables ``FRITZ_USERNAME`` and ``FRITZ_PASSWORD``. FritzConnection will check for these environment variables first and, if set, will use the corresponding values. 
+For some operations a username and/or a password is required. This can be given on the command line as parameters or, by using a module, as arguments. To not present these informations in clear text, username and password can get stored in the environment variables ``FRITZ_USERNAME`` and ``FRITZ_PASSWORD``. FritzConnection will check for these environment variables first and, if set, will use the corresponding values.
+
+For Fritz!OS < 7.24 the username was optional and a default username gets used in this case. For newer versions an individual username is required. If a username is not provided, FritzConnection will read the username of the last logged in user from the Fritz!Box and will take this username as default.
 
 
 Command line inspection
@@ -274,7 +276,7 @@ This is convenient for calls with multiple arguments for the in-direction, or fo
 
 
 .. note ::
-    Even if the router reports that a service exists, calling actions on this service may raise FritzActionErrors in case that the service is not in use. 
+    Even if the router reports that a service exists, calling actions on this service may raise FritzActionErrors in case that the service is not in use.
 
 
 
