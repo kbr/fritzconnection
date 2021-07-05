@@ -2,11 +2,14 @@
 Modul to read status-informations from an AVM FritzBox.
 """
 
+import logging
 import time
 
 from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
 from .fritztools import format_num, format_rate, format_dB
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def _integer_or_original(value):
@@ -89,10 +92,24 @@ class FritzStatus(AbstractLibraryBase):
         return self.fc.call_action("WANIPConn", "X_AVM_DE_GetIPv6Prefix")
 
     @property
-    def uptime(self):
-        """Uptime in seconds."""
+    def wan_uptime(self):
+        """WAN uptime in seconds."""
         status = self.fc.call_action("WANIPConn", "GetStatusInfo")
         return status["NewUptime"]
+
+    @property
+    def uptime(self):
+        """WAN uptime in seconds (deprecated)."""
+        _LOGGER.warning(
+            '"uptime()" is deprecated and will be removed in 1.6.0, please update code to use "wan_uptime" instead'
+        )
+        return self.wan_uptime()
+
+    @property
+    def device_uptime(self):
+        """Device uptime in seconds."""
+        status = self.fc.call_action("DeviceInfo1", "GetInfo")
+        return status["NewUpTime"]
 
     @property
     def str_uptime(self):
