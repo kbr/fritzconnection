@@ -1,0 +1,8 @@
+flake8==3.9.2
+black==21.6b0
+isort==5.9.1
+pylint==2.9.3
+pylint-strict-informational==0.1
+pre-commit==2.13.0
+requests
+mypy==0.910
