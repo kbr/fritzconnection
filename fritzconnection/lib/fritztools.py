@@ -13,7 +13,7 @@ def byte_formatter(value):
     Expects positive integer as input. Negative numbers are interpreted
     as positive numbers. values < 1 are interpreted as 0.
     """
-    dim = ['B', 'KB', 'MB', 'GB', 'TB']
+    dim = ["B", "KB", "MB", "GB", "TB"]
     value = abs(value)
     if value < 1:
         log = 0
@@ -24,30 +24,30 @@ def byte_formatter(value):
     try:
         dimension = dim[log]
     except IndexError:
-        dimension = 'PB'
+        dimension = "PB"
     return num, dimension
 
 
-def format_num(num, unit='bytes'):
+def format_num(num: int, unit="bytes") -> str:
     """
     Returns a human readable string of a byte-value.
     If 'num' is bits, set unit='bits'.
     """
     num, dim = byte_formatter(num)
-    if unit != 'bytes':
-        dim += 'it'  # then its Bit by default
-    return f'{num:3.1f} {dim}'
+    if unit != "bytes":
+        dim += "it"  # then its Bit by default
+    return f"{num:3.1f} {dim}"
 
 
-def format_rate(num, unit='bytes'):
+def format_rate(num:int, unit="bytes") -> str:
     """
     Returns a human readable string of a byte/bits per second.
     If 'num' is bits, set unit='bits'.
     """
-    return format_num(num, unit=unit) + '/s'
+    return format_num(num, unit=unit) + "/s"
 
 
-def format_dB(num):
+def format_dB(num:int) -> str:
     """
     Returns a human readable string of dB. The value is divided
     by 10 to get first decimal digit

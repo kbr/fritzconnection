@@ -8,20 +8,19 @@ Module for read-only access to the contents of the Fritz!Box phonebooks.
 
 
 from ..core.processor import (
-    processor,
-    process_node,
     InstanceAttributeFactory,
     Storage,
     ValueSequencer,
+    process_node,
+    processor,
 )
 from ..core.utils import get_xml_root
 from .fritzbase import AbstractLibraryBase
 
+__all__ = ["FritzPhonebook"]
 
-__all__ = ['FritzPhonebook']
 
-
-SERVICE = 'X_AVM-DE_OnTel1'
+SERVICE = "X_AVM-DE_OnTel1"
 
 
 class FritzPhonebook(AbstractLibraryBase):
@@ -33,6 +32,7 @@ class FritzPhonebook(AbstractLibraryBase):
     password, `timeout` a timeout as floating point number in seconds,
     `use_tls` a boolean indicating to use TLS (default False).
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.phonebook = None
@@ -48,9 +48,9 @@ class FritzPhonebook(AbstractLibraryBase):
         compatibility. The property `list_phonebooks` is deprecated and
         may get removed in the future.
         """
-        result = self._action('GetPhonebookList')
+        result = self._action("GetPhonebookList")
         try:
-            res = result['NewPhonebookList'].split(',')
+            res = result["NewPhonebookList"].split(",")
             res = [int(x) for x in res]
         except KeyError:
             return []
@@ -65,23 +65,20 @@ class FritzPhonebook(AbstractLibraryBase):
         phonebook with integer `id`. Returns a dictionary with the keys
         `name`, `url` and `xid`.
         """
-        result = self._action('GetPhonebook', NewPhonebookId=id)
+        result = self._action("GetPhonebook", NewPhonebookId=id)
         return {
-            'name': result.get('NewPhonebookName'),
-            'url': result.get('NewPhonebookURL'),
-            'xid': result.get('NewPhonebookExtraID')
+            "name": result.get("NewPhonebookName"),
+            "url": result.get("NewPhonebookURL"),
+            "xid": result.get("NewPhonebookExtraID"),
         }
 
     def get_all_name_numbers(self, id):
         """
         Returns all entries from the phonebook with the given id as a list of tuples. The first item of every tuple is the contact name and the second item is the list of numbers for this contact.
         """
-        url = self.phonebook_info(id)['url']
+        url = self.phonebook_info(id)["url"]
         self._read_phonebook(url)
-        return [
-            (contact.name, contact.numbers)
-            for contact in self.phonebook.contacts
-        ]
+        return [(contact.name, contact.numbers) for contact in self.phonebook.contacts]
 
     def get_all_names(self, id):
         """
@@ -133,6 +130,7 @@ class Services:
     """
     Services container. So far just for an associated email-address.
     """
+
     def __init__(self):
         self.email = None
 
@@ -142,6 +140,7 @@ class Person:
     """
     Data storage for a contact name and an image.
     """
+
     def __init__(self):
         self.realName = None
         self.imageURL = None
@@ -152,7 +151,8 @@ class Telephony:
     """
     Data storage for the phone numbers of the contact and services.
     """
-    number = ValueSequencer('numbers')
+
+    number = ValueSequencer("numbers")
 
     def __init__(self):
         self.numbers = list()
@@ -187,6 +187,7 @@ class Phonebook(Storage):
     Represents a phonebook with a timestamp indicating the last
     modification and a list of Contact instances.
     """
+
     contact = InstanceAttributeFactory(Contact)
 
     def __init__(self):

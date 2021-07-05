@@ -9,6 +9,7 @@ Module handling the SOAP based communication with the router.
 
 import datetime
 import re
+from typing import Any
 
 import requests
 from requests.auth import HTTPDigestAuth
@@ -194,7 +195,7 @@ class Soaper:
         "ui4": int,
     }
 
-    def __init__(self, address, port, user, password, timeout=None, session=None):
+    def __init__(self, address:str | None, port:int | None, user:str| None, password:str|None, timeout=None, session=None) -> None:
         self.address = address
         self.port = port
         self.user = user
@@ -210,14 +211,14 @@ class Soaper:
             arguments=arguments,
         )
 
-    def execute(self, service, action_name, arguments):
+    def execute(self, service: str, action_name:str, arguments: Any) -> dict:
         """
         Builds the soap request and returns the response as dictionary.
         Numeric and boolean values are converted from strings to Python
         datatypes.
         """
 
-        def handle_response(response):
+        def handle_response(response) -> dict:
             if response.status_code != 200:
                 raise_fritzconnection_error(response)
             return self.parse_response(response, service, action_name)

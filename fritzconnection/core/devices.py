@@ -22,14 +22,14 @@ class DeviceManager:
     will not get used.
     """
 
-    def __init__(self, timeout=None, session=None):
+    def __init__(self, timeout=None, session=None) -> None:
         self.descriptions = []
         self.services = {}
         self.timeout = timeout
         self.session = session
 
     @property
-    def modelname(self):
+    def modelname(self) -> str:
         """
         Take the root-device of the first description and return the
         according modelname. This is the name of the Fritz!Box itself.
@@ -39,7 +39,7 @@ class DeviceManager:
         return self.descriptions[0].device_model_name
 
     @property
-    def system_version(self):
+    def system_version(self) -> str:
         """
         Returns the system-version as string with minor- and
         patch-level. This corresponds to the OS version reported by the
@@ -66,7 +66,7 @@ class DeviceManager:
                 return system_info
         return None
 
-    def add_description(self, source):
+    def add_description(self, source) -> None:
         """
         Adds description data about the devices and the according
         services. 'source' is a string with the xml-data, like the
@@ -75,7 +75,7 @@ class DeviceManager:
         root = get_xml_root(source, timeout=self.timeout, session=self.session)
         self.descriptions.append(Description(root))
 
-    def scan(self):
+    def scan(self) -> None:
         """
         Scans all available services defined by the description files.
         Must get called after all xml-descriptions are added.
@@ -83,7 +83,7 @@ class DeviceManager:
         for description in self.descriptions:
             self.services.update(description.services)
 
-    def load_service_descriptions(self, address, port):
+    def load_service_descriptions(self, address:str, port:int) -> None:
         """
         Triggers the load of the scpd files of the services, so they
         known their actions.

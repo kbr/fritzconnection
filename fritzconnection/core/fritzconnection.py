@@ -9,6 +9,7 @@ Module to communicate with the AVM Fritz!Box.
 
 import os
 import string
+from typing import Any
 import xml.etree.ElementTree as ElementTree
 
 import requests
@@ -69,13 +70,13 @@ class FritzConnection:
 
     def __init__(
         self,
-        address=None,
-        port=None,
-        user=None,
-        password=None,
-        timeout=None,
-        use_tls=False,
-    ):
+        address: str | None=None,
+        port:int | None =None,
+        user:str | None =None,
+        password:str | None =None,
+        timeout:int | None =None,
+        use_tls:bool =False,
+    ) -> None:
         """
         Initialisation of FritzConnection: reads all data from the box
         and also the api-description (the servicenames and according
@@ -147,7 +148,7 @@ class FritzConnection:
         self._reset_user(user, password)
 
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return a readable representation"""
         return (
             f"{self.modelname} at {self.soaper.address}\n"
@@ -155,28 +156,28 @@ class FritzConnection:
         )
 
     @property
-    def services(self):
+    def services(self) -> dict:
         """
         Dictionary of service instances. Keys are the service names.
         """
         return self.device_manager.services
 
     @property
-    def modelname(self):
+    def modelname(self) -> str:
         """
         Returns the modelname of the router.
         """
         return self.device_manager.modelname
 
     @property
-    def system_version(self):
+    def system_version(self) -> str:
         """
         Returns system version if known, otherwise None.
         """
         return self.device_manager.system_version
 
     @staticmethod
-    def normalize_name(name):
+    def normalize_name(name: str) -> str:
         """
         Returns the normalized service name. E.g. WLANConfiguration and
         WLANConfiguration:1 will get converted to WLANConfiguration1.
@@ -189,7 +190,7 @@ class FritzConnection:
         return name
 
     @staticmethod
-    def set_protocol(url, use_tls):
+    def set_protocol(url:str, use_tls: bool) -> str:
         """
         Sets the protocol of the `url` according to the `use_tls`-flag
         and returns the modified `url`. Does not check whether the `url`
@@ -207,7 +208,7 @@ class FritzConnection:
             url = f"{http}{url}"
         return url
 
-    def _reset_user(self, user, password):
+    def _reset_user(self, user:str, password:str) -> None:
         """
         For Fritz!OS >= 7.24: if a password is given and the username is
         the historic FRITZ_USERNAME, then check for the last logged-in
@@ -245,7 +246,7 @@ class FritzConnection:
     # public api:
     # -------------------------------------------
 
-    def call_action(self, service_name, action_name, *, arguments=None, **kwargs):
+    def call_action(self, service_name:str, action_name:str, *, arguments=None, **kwargs:Any) -> dict:
         """
         Executes the given action of the given service. Both parameters
         are required. Arguments are optional and can be provided as a
@@ -273,7 +274,7 @@ class FritzConnection:
             raise FritzServiceError(f'unknown service: "{service_name}"')
         return self.soaper.execute(service, action_name, arguments)
 
-    def reconnect(self):
+    def reconnect(self) -> None:
         """
         Terminate the connection and reconnects with a new ip.
         """

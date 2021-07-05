@@ -1,4 +1,3 @@
-
 from ..core.fritzconnection import FritzConnection
 
 
@@ -12,17 +11,24 @@ class AbstractLibraryBase:
     point number in seconds, `use_tls` a boolean indicating to use TLS
     (default False).
     """
-    def __init__(self, fc=None, address=None, port=None, user=None,
-                 password=None, timeout=None, use_tls=False):
+
+    def __init__(
+        self,
+        fc: FritzConnection | None = None,
+        address: str | None = None,
+        port:int | None = None,
+        user:str | None = None,
+        password:str | None = None,
+        timeout:int | None = None,
+        use_tls:bool | None = None,
+    ) -> None:
         if fc is None:
-            kwargs = {
-                k:v for k, v in locals().items() if k not in ('self', 'fc')
-            }
+            kwargs = {k: v for k, v in locals().items() if k not in ("self", "fc")}
             fc = FritzConnection(**kwargs)
         self.fc = fc
 
     @property
-    def modelname(self):
+    def modelname(self) -> str:
         """
         The device modelname. Every library module derived from
         `AbstractLibraryBase` inherits this property.

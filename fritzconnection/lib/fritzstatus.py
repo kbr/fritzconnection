@@ -1,15 +1,15 @@
 """
-Modul to read status-informations from an AVM FritzBox.
+Module to read status-informations from an AVM FritzBox.
 """
+from __future__ import annotations
 
-import time
+from typing import Any
 
-from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
-from .fritztools import format_num, format_rate, format_dB
+from .fritztools import format_dB, format_num, format_rate
 
 
-def _integer_or_original(value):
+def _integer_or_original(value: Any) -> Any:
     """
     Tries to convert value to an integer. Returns this integer on
     success, otherwise returns the original value.
@@ -32,37 +32,37 @@ class FritzStatus(AbstractLibraryBase):
     """
 
     @property
-    def is_linked(self):
+    def is_linked(self) -> bool:
         """
         A boolean whether the FritzBox is physically linked to
         the provider.
         """
         status = self.fc.call_action("WANCommonIFC", "GetCommonLinkProperties")
-        return status["NewPhysicalLinkStatus"] == "Up"
+        return bool(status["NewPhysicalLinkStatus"] == "Up")
 
     @property
-    def is_connected(self):
+    def is_connected(self) -> bool:
         """
         A boolean whether the FritzBox has established an
         internet-connection.
         """
         status = self.fc.call_action("WANIPConn", "GetStatusInfo")
-        return status["NewConnectionStatus"] == "Connected"
+        return bool(status["NewConnectionStatus"] == "Connected")
 
     @property
-    def external_ip(self):
+    def external_ip(self) -> str:
         """The external v4 ip-address."""
-        return self.fc.call_action("WANIPConn", "GetExternalIPAddress")[
-            "NewExternalIPAddress"
-        ]
+        return str(self.fc.call_action("WANIPConn", "GetExternalIPAddress")[
+            "NewExternalIPAddress"])
+        
 
     @property
-    def external_ipv6(self):
+    def external_ipv6(self) -> str:
         """The external v6 ip-address."""
-        return self.external_ipv6_info["NewExternalIPv6Address"]
+        return str(self.external_ipv6_info["NewExternalIPv6Address"])
 
     @property
-    def external_ipv6_info(self):
+    def external_ipv6_info(self) -> dict[Any, Any]:
         """
         Returns the ipv6 external address informations as a dictionary with the keys:
         NewExternalIPv6Address                   out ->     string
@@ -70,15 +70,16 @@ class FritzStatus(AbstractLibraryBase):
         NewValidLifetime                         out ->     ui4
         NewPreferedLifetime                      out ->     ui4
         """
-        return self.fc.call_action("WANIPConn", "X_AVM_DE_GetExternalIPv6Address")
+        ipv6_info: dict[Any,Any] = self.fc.call_action("WANIPConn", "X_AVM_DE_GetExternalIPv6Address")
+        return ipv6_info
 
     @property
-    def ipv6_prefix(self):
+    def ipv6_prefix(self) -> str:
         """The internal v6 prefix."""
-        return self.ipv6_prefix_info["NewIPv6Prefix"]
+        return str(self.ipv6_prefix_info["NewIPv6Prefix"])
 
     @property
-    def ipv6_prefix_info(self):
+    def ipv6_prefix_info(self) -> dict[Any, Any]:
         """
         Returns the ipv6 prefix informations as a dictionary with the keys:
         NewIPv6Prefix                            out ->     string
@@ -86,43 +87,42 @@ class FritzStatus(AbstractLibraryBase):
         NewValidLifetime                         out ->     ui4
         NewPreferedLifetime                      out ->     ui4
         """
-        return self.fc.call_action("WANIPConn", "X_AVM_DE_GetIPv6Prefix")
+        ipv6_prefix_info: dict[Any,Any] = self.fc.call_action("WANIPConn", "X_AVM_DE_GetIPv6Prefix")
+        return ipv6_prefix_info
 
     @property
-    def uptime(self):
+    def uptime(self) -> int:
         """Uptime in seconds."""
         status = self.fc.call_action("WANIPConn", "GetStatusInfo")
-        return status["NewUptime"]
+        return int(status["NewUptime"])
 
     @property
-    def str_uptime(self):
+    def str_uptime(self) -> str:
         """Uptime in seconds and in human readable format."""
         mins, secs = divmod(self.uptime, 60)
         hours, mins = divmod(mins, 60)
         return "%02d:%02d:%02d" % (hours, mins, secs)
 
     @property
-    def bytes_sent(self):
+    def bytes_sent(self) -> int:
         """Total number of send bytes."""
         status = self.fc.call_action("WANCommonIFC1", "GetAddonInfos")
-        return _integer_or_original(status["NewX_AVM_DE_TotalBytesSent64"])
+        return int(status["NewX_AVM_DE_TotalBytesSent64"])
 
     @property
-    def bytes_received(self):
+    def bytes_received(self) -> int:
         """Total number of received bytes."""
         try:
             status = self.fc.call_action("WANCommonIFC1", "GetAddonInfos")
             value = status["NewX_AVM_DE_TotalBytesReceived64"]
         except KeyError:
             # fallback for older FritzOS Versions not providing a 64 bit value:
-            status = self.fc.call_action(
-                "WANCommonIFC1", "GetTotalBytesReceived"
-            )
+            status = self.fc.call_action("WANCommonIFC1", "GetTotalBytesReceived")
             value = status["NewTotalBytesReceived"]
-        return _integer_or_original(value)
+        return int(value)
 
     @property
-    def transmission_rate(self):
+    def transmission_rate(self) -> tuple:
         """
         The upstream and downstream values as a tuple in bytes per
         second. Use this for periodical calling.
@@ -133,7 +133,7 @@ class FritzStatus(AbstractLibraryBase):
         return upstream, downstream
 
     @property
-    def str_transmission_rate(self):
+    def str_transmission_rate(self) -> tuple:
         """
         Tuple of human readable transmission rate in bytes. First item
         is upstream, second item downstream.
@@ -142,22 +142,22 @@ class FritzStatus(AbstractLibraryBase):
         return (format_num(upstream), format_num(downstream))
 
     @property
-    def max_linked_bit_rate(self):
+    def max_linked_bit_rate(self) -> tuple:
         """
-        Tuple with the maximun upstream- and downstream-rate
+        Tuple with the maximum upstream- and downstream-rate
         of the physical link. The rate is given in bits/sec.
         """
         return self._get_max_bit_rate("WANCommonInterfaceConfig")
 
     @property
-    def max_bit_rate(self):
+    def max_bit_rate(self) -> tuple:
         """
-        Tuple with the maximun upstream- and downstream-rate
+        Tuple with the maximum upstream- and downstream-rate
         of the given connection. The rate is given in bits/sec.
         """
         return self._get_max_bit_rate("WANCommonIFC")
 
-    def _get_max_bit_rate(self, servicename):
+    def _get_max_bit_rate(self, servicename: str) -> tuple:
         """
         internal method to get the upstream and downstream-rates for
         different services of the WANCommonInterfaceConfig1 ServiceType.
@@ -168,7 +168,7 @@ class FritzStatus(AbstractLibraryBase):
         return upstream, downstream
 
     @property
-    def max_byte_rate(self):
+    def max_byte_rate(self) -> tuple:
         """
         Same as max_bit_rate but rate is given in bytes/sec.
         """
@@ -176,7 +176,7 @@ class FritzStatus(AbstractLibraryBase):
         return upstream / 8.0, downstream / 8.0
 
     @property
-    def str_max_linked_bit_rate(self):
+    def str_max_linked_bit_rate(self) -> tuple:
         """
         Human readable maximum of the physical upstream- and
         downstream-rate in bits/sec. Value is a tuple, first item is
@@ -189,7 +189,7 @@ class FritzStatus(AbstractLibraryBase):
         )
 
     @property
-    def str_max_bit_rate(self):
+    def str_max_bit_rate(self) -> tuple:
         """
         Human readable maximum of the upstream- and downstream-rate in
         bits/sec, as given by the provider. Value is a tuple, first item
@@ -201,7 +201,7 @@ class FritzStatus(AbstractLibraryBase):
             format_rate(downstream, unit="bits"),
         )
 
-    def get_monitor_data(self, sync_group_index=0):
+    def get_monitor_data(self, sync_group_index: int=0) -> Any:
         """
         Returns a dictionary with realtime data about the current up-
         and downstream rates.
@@ -222,12 +222,12 @@ class FritzStatus(AbstractLibraryBase):
                     monitor_data[key] = items
         return monitor_data
 
-    def reconnect(self):
+    def reconnect(self) -> None:
         """Makes a reconnection with a new external ip."""
         self.fc.reconnect()
 
     @property
-    def noise_margin(self):
+    def noise_margin(self) -> tuple:
         """
         Tuple of noise margin. First item
         is upstream, second item downstream.
@@ -238,7 +238,7 @@ class FritzStatus(AbstractLibraryBase):
         return upstream, downstream
 
     @property
-    def str_noise_margin(self):
+    def str_noise_margin(self) -> tuple:
         """
         Human readable noise margin in dB. Value is a tuple, first item
         is upstream, second item downstream.
@@ -247,7 +247,7 @@ class FritzStatus(AbstractLibraryBase):
         return (format_dB(upstream), format_dB(downstream))
 
     @property
-    def attenuation(self):
+    def attenuation(self) -> tuple:
         """
         Tuple of attenuation. First item
         is upstream, second item downstream.
@@ -258,11 +258,10 @@ class FritzStatus(AbstractLibraryBase):
         return upstream, downstream
 
     @property
-    def str_attenuation(self):
+    def str_attenuation(self) -> tuple:
         """
         Human readable attenuation in dB. Value is a tuple, first item
         is upstream, second item downstream.
         """
         upstream, downstream = self.attenuation
         return (format_dB(upstream), format_dB(downstream))
-

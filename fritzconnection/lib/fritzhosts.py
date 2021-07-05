@@ -8,12 +8,9 @@ Modul to access and control the known hosts.
 
 
 import itertools
-from ..core.exceptions import (
-    FritzArgumentError,
-    FritzLookUpError,
-)
-from .fritzbase import AbstractLibraryBase
 
+from ..core.exceptions import FritzArgumentError, FritzLookUpError
+from .fritzbase import AbstractLibraryBase
 
 SERVICE = "Hosts1"
 

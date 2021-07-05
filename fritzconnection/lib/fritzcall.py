@@ -10,17 +10,11 @@ missed ones.
 
 import datetime
 
-from ..core.processor import (
-    processor,
-    process_node,
-    InstanceAttributeFactory,
-    Storage,
-)
+from ..core.processor import InstanceAttributeFactory, Storage, process_node, processor
 from ..core.utils import get_xml_root
 from .fritzbase import AbstractLibraryBase
 
-
-__all__ = ['FritzCall', 'Call']
+__all__ = ["FritzCall", "Call"]
 
 
 ALL_CALL_TYPES = 0
@@ -31,19 +25,19 @@ ACTIVE_RECEIVED_CALL_TYPE = 9
 REJECTED_CALL_TYPE = 10
 ACTIVE_OUT_CALL_TYPE = 11
 
-SERVICE = 'X_AVM-DE_OnTel1'
+SERVICE = "X_AVM-DE_OnTel1"
 
 
 def datetime_converter(date_string):
     if not date_string:
         return date_string
-    return datetime.datetime.strptime(date_string, '%d.%m.%y %H:%M')
+    return datetime.datetime.strptime(date_string, "%d.%m.%y %H:%M")
 
 
 def timedelta_converter(duration_string):
     if not duration_string:
         return duration_string
-    hours, minutes = [int(part) for part in duration_string.split(':', 1)]
+    hours, minutes = [int(part) for part in duration_string.split(":", 1)]
     return datetime.timedelta(hours=hours, minutes=minutes)
 
 
@@ -57,22 +51,22 @@ class FritzCall(AbstractLibraryBase):
     password, `timeout` a timeout as floating point number in seconds,
     `use_tls` a boolean indicating to use TLS (default False).
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.calls = None
 
     def _update_calls(self, num=None, days=None):
-        result = self.fc.call_action(SERVICE, 'GetCallList')
-        url = result['NewCallListURL']
+        result = self.fc.call_action(SERVICE, "GetCallList")
+        url = result["NewCallListURL"]
         if days:
-            url += f'&days={days}'
+            url += f"&days={days}"
         elif num:
-            url += f'&max={num}'
+            url += f"&max={num}"
         root = get_xml_root(url, session=self.fc.session)
         self.calls = CallCollection(root)
 
-    def get_calls(self, calltype=ALL_CALL_TYPES, update=True,
-                        num=None, days=None):
+    def get_calls(self, calltype=ALL_CALL_TYPES, update=True, num=None, days=None):
         """
         Return a list of Call instances of type calltypes. If calltype
         is 0 all calls are listet. If *update* is True, all calls are
@@ -126,14 +120,15 @@ class FritzCall(AbstractLibraryBase):
         Fritz!Box on failure. **Note:** The dial-help of the Fritz!Box
         must be activated to make this work.
         """
-        arg = {'NewX_AVM-DE_PhoneNumber': number}
-        self.fc.call_action('X_VoIP1', 'X_AVM-DE_DialNumber', arguments=arg)
+        arg = {"NewX_AVM-DE_PhoneNumber": number}
+        self.fc.call_action("X_VoIP1", "X_AVM-DE_DialNumber", arguments=arg)
 
 
 class AttributeConverter:
     """
     Data descriptor returning converted attribute values.
     """
+
     def __init__(self, attribute_name, converter=str):
         self.attribute_name = attribute_name
         self.converter = converter
@@ -162,10 +157,11 @@ class Call:
     as integer, *date* returning the Date as datetime-instance,
     *duration* returning the Duration as timedelta-instance.
     """
-    id = AttributeConverter('Id', int)
-    type = AttributeConverter('Type', int)
-    date = AttributeConverter('Date', datetime_converter)
-    duration = AttributeConverter('Duration', timedelta_converter)
+
+    id = AttributeConverter("Id", int)
+    type = AttributeConverter("Type", int)
+    date = AttributeConverter("Date", datetime_converter)
+    duration = AttributeConverter("Duration", timedelta_converter)
 
     def __init__(self):
         self.Id = None
@@ -186,13 +182,14 @@ class Call:
         duration = self.Duration if self.type != 2 else "-"
         if not number:
             number = "-"
-        return f'{self.Type:>6}   {number:24}{self.Date:>18}{duration:>12}'
+        return f"{self.Type:>6}   {number:24}{self.Date:>18}{duration:>12}"
 
 
 class CallCollection(Storage):
     """
     Container for a sequence of Call instances.
     """
+
     Call = InstanceAttributeFactory(Call)
 
     def __init__(self, root):

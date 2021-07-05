@@ -8,10 +8,10 @@ Modul to access home-automation devices
 
 
 import itertools
+
 from .fritzbase import AbstractLibraryBase
 
-
-SERVICE = 'X_AVM-DE_Homeauto1'
+SERVICE = "X_AVM-DE_Homeauto1"
 
 
 class FritzHomeAutomation(AbstractLibraryBase):
@@ -36,7 +36,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         'NewAllowedCharsAIN': string with all allowed chars for state
         variable AIN
         """
-        return self._action('GetInfo')
+        return self._action("GetInfo")
 
     def get_device_information_by_index(self, index):
         """
@@ -45,7 +45,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         Raise a FritzArrayIndexError (subclass of IndexError) on invalid
         index values.
         """
-        return self._action('GetGenericDeviceInfos', NewIndex=index)
+        return self._action("GetGenericDeviceInfos", NewIndex=index)
 
     def get_device_information_by_identifier(self, identifier):
         """
@@ -53,7 +53,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         AVM documentation (x_homeauto) with the given identifier (AIN).
         Raise an FritzArgumentError on invalid identifier.
         """
-        return self._action('GetSpecificDeviceInfos', NewAIN=identifier)
+        return self._action("GetSpecificDeviceInfos", NewAIN=identifier)
 
     def device_informations(self):
         """
@@ -76,8 +76,5 @@ class FritzHomeAutomation(AbstractLibraryBase):
         This method has no return value.
         Raise a FritzArgumentError on invalid identifier.
         """
-        arguments = {
-            'NewAIN': identifier,
-            'NewSwitchState': 'ON' if on else 'OFF'
-        }
-        self._action('SetSwitch', arguments=arguments)
+        arguments = {"NewAIN": identifier, "NewSwitchState": "ON" if on else "OFF"}
+        self._action("SetSwitch", arguments=arguments)

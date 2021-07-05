@@ -8,12 +8,12 @@ Module to get informations about WLAN devices.
 
 
 import itertools
+
 from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
 
-
 # important: don't set an extension number here:
-SERVICE = 'WLANConfiguration'
+SERVICE = "WLANConfiguration"
 
 
 class FritzWLAN(AbstractLibraryBase):
@@ -28,12 +28,13 @@ class FritzWLAN(AbstractLibraryBase):
     for 2.4 GHz, 2 for 5 GHz and 3 for a guest network. This can vary
     depending on the router model and change with future standards.
     """
+
     def __init__(self, *args, service=1, **kwargs):
         super().__init__(*args, **kwargs)
         self.service = service
 
     def _action(self, actionname, **kwargs):
-        service = f'{SERVICE}{self.service}'
+        service = f"{SERVICE}{self.service}"
         return self.fc.call_action(service, actionname, **kwargs)
 
     @property
@@ -42,8 +43,8 @@ class FritzWLAN(AbstractLibraryBase):
         Number of registered wlan devices for the active
         WLANConfiguration.
         """
-        result = self._action('GetTotalAssociations')
-        return result['NewTotalAssociations']
+        result = self._action("GetTotalAssociations")
+        return result["NewTotalAssociations"]
 
     @property
     def total_host_number(self):
@@ -62,26 +63,25 @@ class FritzWLAN(AbstractLibraryBase):
         self.service = _service
         return total
 
-
     @property
     def ssid(self):
         """The WLAN SSID"""
-        result = self._action('GetSSID')
-        return result['NewSSID']
+        result = self._action("GetSSID")
+        return result["NewSSID"]
 
     @ssid.setter
     def ssid(self, value):
-        self._action('SetSSID', NewSSID=value)
+        self._action("SetSSID", NewSSID=value)
 
     @property
     def channel(self):
         """The WLAN channel in use"""
-        return self.channel_infos()['NewChannel']
+        return self.channel_infos()["NewChannel"]
 
     @property
     def alternative_channels(self):
         """Alternative channels (as string)"""
-        return self.channel_infos()['NewPossibleChannels']
+        return self.channel_infos()["NewPossibleChannels"]
 
     def channel_infos(self):
         """
@@ -89,14 +89,14 @@ class FritzWLAN(AbstractLibraryBase):
         *NewPossibleChannels* indicating the active channel and
         alternative ones.
         """
-        return self._action('GetChannelInfo')
+        return self._action("GetChannelInfo")
 
     def set_channel(self, number):
         """
         Set a new channel. *number* must be a valid channel number for
         the active WLAN. (Valid numbers are listed by *alternative_channels*.)
         """
-        self._action('SetChannel', NewChannel=number)
+        self._action("SetChannel", NewChannel=number)
 
     def get_generic_host_entry(self, index):
         """
@@ -104,8 +104,7 @@ class FritzWLAN(AbstractLibraryBase):
         internally stored at the position 'index'.
         """
         result = self._action(
-            'GetGenericAssociatedDeviceInfo',
-            NewAssociatedDeviceIndex=index
+            "GetGenericAssociatedDeviceInfo", NewAssociatedDeviceIndex=index
         )
         return result
 
@@ -115,8 +114,7 @@ class FritzWLAN(AbstractLibraryBase):
         with the given 'mac_address'.
         """
         result = self._action(
-            'GetSpecificAssociatedDeviceInfo',
-            NewAssociatedDeviceMACAddress=mac_address
+            "GetSpecificAssociatedDeviceInfo", NewAssociatedDeviceMACAddress=mac_address
         )
         return result
 
@@ -131,13 +129,15 @@ class FritzWLAN(AbstractLibraryBase):
                 host = self.get_generic_host_entry(index)
             except IndexError:
                 break
-            informations.append({
-                'service': self.service,
-                'index': index,
-                'status': host['NewAssociatedDeviceAuthState'],
-                'mac': host['NewAssociatedDeviceMACAddress'],
-                'ip': host['NewAssociatedDeviceIPAddress'],
-                'signal': host['NewX_AVM-DE_SignalStrength'],
-                'speed': host['NewX_AVM-DE_Speed']
-            })
+            informations.append(
+                {
+                    "service": self.service,
+                    "index": index,
+                    "status": host["NewAssociatedDeviceAuthState"],
+                    "mac": host["NewAssociatedDeviceMACAddress"],
+                    "ip": host["NewAssociatedDeviceIPAddress"],
+                    "signal": host["NewX_AVM-DE_SignalStrength"],
+                    "speed": host["NewX_AVM-DE_Speed"],
+                }
+            )
         return informations
