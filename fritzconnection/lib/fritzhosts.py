@@ -113,6 +113,8 @@ class FritzHosts(AbstractLibraryBase):
         path = result["NewX_AVM-DE_MeshListPath"]
         url = f"{self.fc.address}:{self.fc.port}{path}"
         with self.fc.session.get(url) as response:
+            if not response.ok:
+                return
             return response.text if raw else response.json()
 
     def get_wakeonlan_status(self, mac_address):
