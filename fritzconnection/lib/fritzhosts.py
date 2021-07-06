@@ -19,6 +19,17 @@ from .fritzbase import AbstractLibraryBase
 SERVICE = "Hosts1"
 
 
+def _get_mesh_by_mac(topology, mac):
+    if topology is None:
+        return None, None
+
+    for node in topology["nodes"]:
+        if node["device_mac_address"] == mac:
+            return node["is_meshed"], node["mesh_role"]
+
+    return None, None
+
+
 class FritzHosts(AbstractLibraryBase):
     """
     Class to access the registered hosts. All parameters are optional. If
@@ -77,19 +88,21 @@ class FritzHosts(AbstractLibraryBase):
     def get_active_hosts(self):
         """
         Returns a list of dicts with information about the active
-        devices. The dict-keys are: 'ip', 'name', 'mac', 'status'
+        devices. The dict-keys are: 'ip', 'name', 'mac', 'status', 'is_meshed', 'mesh_role'
         """
         return [host for host in self.get_hosts_info() if host["status"]]
 
     def get_hosts_info(self):
         """
         Returns a list of dicts with information about the known hosts.
-        The dict-keys are: 'ip', 'name', 'mac', 'status'
+        The dict-keys are: 'ip', 'name', 'mac', 'status', 'is_meshed', 'mesh_role'
         """
         result = []
+        topology = self.get_mesh_topology()
         for index in itertools.count():
             try:
                 host = self.get_generic_host_entry(index)
+                is_meshed, mesh_role = _get_mesh_by_mac(topology, host["NewMACAddress"])
             except IndexError:
                 # no more host entries:
                 break
@@ -99,6 +112,8 @@ class FritzHosts(AbstractLibraryBase):
                     "name": host["NewHostName"],
                     "mac": host["NewMACAddress"],
                     "status": host["NewActive"],
+                    "is_meshed": is_meshed,
+                    "mesh_role": mesh_role
                 }
             )
         return result
