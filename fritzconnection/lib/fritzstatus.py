@@ -2,14 +2,11 @@
 Modul to read status-informations from an AVM FritzBox.
 """
 
-import logging
 import time
 
 from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
 from .fritztools import format_num, format_rate, format_dB
-
-_LOGGER = logging.getLogger(__name__)
 
 
 def _integer_or_original(value):
