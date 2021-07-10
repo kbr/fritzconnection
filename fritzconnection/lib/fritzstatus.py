@@ -92,18 +92,15 @@ class FritzStatus(AbstractLibraryBase):
         return self.fc.call_action("WANIPConn", "X_AVM_DE_GetIPv6Prefix")
 
     @property
-    def wan_uptime(self):
-        """WAN uptime in seconds."""
+    def connection_uptime(self):
+        """Connection uptime in seconds."""
         status = self.fc.call_action("WANIPConn", "GetStatusInfo")
         return status["NewUptime"]
 
     @property
     def uptime(self):
-        """WAN uptime in seconds (deprecated)."""
-        _LOGGER.warning(
-            '"uptime()" is deprecated and will be removed in 1.6.0, please update code to use "wan_uptime" instead'
-        )
-        return self.wan_uptime()
+        """Connection uptime in seconds (alias)."""
+        return self.connection_uptime()
 
     @property
     def device_uptime(self):
