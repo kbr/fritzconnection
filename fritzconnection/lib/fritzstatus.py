@@ -103,7 +103,7 @@ class FritzStatus(AbstractLibraryBase):
 
     @property
     def bytes_sent(self):
-        """Total number of send bytes."""
+        """Total number of sent bytes."""
         try:
             status = self.fc.call_action("WANCommonIFC1", "GetAddonInfos")
             value = status["NewX_AVM_DE_TotalBytesSent64"]
