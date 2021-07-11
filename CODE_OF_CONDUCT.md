@@ -3,7 +3,7 @@
 
 ## tldr:
 
-There are a lot of CoC files out there and the essence is: be nice to others and keep in mind that written communication differs from in person communication.
+There are a lot of CoC files out there and the essence is: be nice and respectful to others and keep in mind that written communication differs from in person communication.
 
 So in comments please don't be negative but neutral, or –even better– all the time friendly. Because every other mode can get misunderstood (and everything misunderstandable will get misunderstood).
 

@@ -1,7 +1,7 @@
 # Contributing
 
-Thank you for taking your time and contributing to this project.
-The project is not large enought to need a lot of rules, but here are some guidelines.
+Thank you for taking your time to contribute to this project.
+The project is not large enought to need a lot of rules, but here are some guidelines:
 
 
 ## Pull requests
@@ -23,12 +23,12 @@ But every action supported by AVM can get executed without the library. So best 
 ## Style guide
 
 - In general the style guide is PEP 8.
-- Recommended line length is 80 something.
+- Recommended maximum line length is 80 something.
 
 
 ## Comments
 
-No new function, method or class should get undocumented. Write meaningful content: what the code does, about the arguments and return values, and -important- the corresponding types.
+No new function, method or class should get undocumented. Write meaningful comments: what the code does, about the arguments and return values, and -important- the corresponding types.
 
 
 ## Type hints
@@ -38,5 +38,5 @@ This project started long ago without type hints. Keep it this way. The project 
 
 ## Tests
 
-This project comes with tests. The test framework is tox/pytest. For development run `pip install -r requirements.txt` to install both libraries. Add your own tests for your code and don't change existing tests. Before committing run the tests.
+This project comes with tests. The test framework is tox/pytest. For development run `pip install -r requirements.txt` to install both libraries. As far as possible, the code should get tests. Before committing run the tests.
 
