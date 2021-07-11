@@ -104,8 +104,16 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def bytes_sent(self):
         """Total number of send bytes."""
-        status = self.fc.call_action("WANCommonIFC1", "GetAddonInfos")
-        return _integer_or_original(status["NewX_AVM_DE_TotalBytesSent64"])
+        try:
+            status = self.fc.call_action("WANCommonIFC1", "GetAddonInfos")
+            value = status["NewX_AVM_DE_TotalBytesSent64"]
+        except KeyError:
+            # fallback for older FritzOS Versions not providing a 64 bit value:
+            status = self.fc.call_action(
+                "WANCommonIFC1", "GetTotalBytesSent"
+            )
+            value = status["NewTotalBytesSent"]
+        return _integer_or_original(value)
 
     @property
     def bytes_received(self):
