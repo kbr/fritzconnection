@@ -8,6 +8,7 @@ Modul to access and control the known hosts.
 
 
 import itertools
+from typing import Tuple
 from ..core.exceptions import (
     FritzActionError,
     FritzArgumentError,
@@ -17,17 +18,16 @@ from .fritzbase import AbstractLibraryBase
 
 
 SERVICE = "Hosts1"
-
+KNOWN_MESHROLES = ["master", "slave"]
 
 def _get_mesh_by_mac(topology, mac):
-    if topology is None:
-        return None, None
-
     for node in topology["nodes"]:
         if node["device_mac_address"] == mac:
-            return node["is_meshed"], node["mesh_role"]
+            mesh_role: str = node["mesh_role"] if node["mesh_role"] in KNOWN_MESHROLES else "None"
+            is_meshed: bool = node["is_meshed"]
+            return is_meshed, mesh_role
 
-    return None, None
+    return False, "None"
 
 
 class FritzHosts(AbstractLibraryBase):
