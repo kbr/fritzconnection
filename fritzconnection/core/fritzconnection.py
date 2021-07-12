@@ -75,6 +75,7 @@ class FritzConnection:
         password=None,
         timeout=None,
         use_tls=False,
+        concurrent_connections=10,
     ):
         """
         Initialisation of FritzConnection: reads all data from the box
@@ -109,13 +110,17 @@ class FritzConnection:
             password = os.getenv("FRITZ_PASSWORD", "")
         if port is None and use_tls:
             port = FRITZ_TLS_PORT
+            protocol = "https://"
         elif port is None:
             port = FRITZ_TCP_PORT
+            protocol = "http://"
         address = self.set_protocol(address, use_tls)
 
         # session is optional but will speed up connections
         # (significantly for tls):
         session = requests.Session()
+        adapter = requests.adapters.HTTPAdapter(pool_connections=concurrent_connections, pool_maxsize=concurrent_connections)
+        session.mount(protocol, adapter)
         session.verify = False
         if password:
             session.auth = HTTPDigestAuth(user, password)

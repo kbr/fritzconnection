@@ -249,7 +249,6 @@ class Soaper:
                 timeout=self.timeout,
                 verify=False,
             )
-            response.close()
             return handle_response(response)
 
     def parse_response(self, response, service, action_name):
