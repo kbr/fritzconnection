@@ -38,6 +38,7 @@ def get_content_from(url, timeout=None, session=None):
         with session.get(url, timeout=timeout) as response:
             return handle_response(response)
     response = requests.get(url, timeout=timeout, verify=False)
+    response.close()
     return handle_response(response)
 
 
