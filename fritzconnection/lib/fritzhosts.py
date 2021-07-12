@@ -8,7 +8,6 @@ Modul to access and control the known hosts.
 
 
 import itertools
-from typing import Tuple
 from ..core.exceptions import (
     FritzActionError,
     FritzArgumentError,
@@ -18,6 +17,7 @@ from .fritzbase import AbstractLibraryBase
 
 
 SERVICE = "Hosts1"
+
 
 class FritzHosts(AbstractLibraryBase):
     """
