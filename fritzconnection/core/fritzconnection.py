@@ -21,12 +21,6 @@ from .exceptions import (
 )
 from .soaper import Soaper
 
-# disable InsecureRequestWarning from urllib3
-# because of skipping certificate verification:
-import urllib3
-
-urllib3.disable_warnings()
-
 
 # FritzConnection defaults:
 FRITZ_IP_ADDRESS = "169.254.1.1"
