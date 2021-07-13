@@ -133,15 +133,19 @@ class FritzHosts(AbstractLibraryBase):
         In case no topology information is available an empty dictionary gets
         returned.
         """
+        mesh_info = {}
         if topology is None:
             try:
                 topology = self.get_mesh_topology()
             except FritzActionError:
-                return {}
-        return {
-            node["device_mac_address"]: (node["is_meshed"], node["mesh_role"])
-            for node in topology["nodes"]
-        }
+                return mesh_info
+
+        for node in topology["nodes"]:
+            mac_adresses = [interface["mac_address"] for interface in node["node_interfaces"]]
+            for mac in mac_adresses:
+                mesh_info[mac] = (node["is_meshed"], node["mesh_role"])
+
+        return mesh_info
 
     def get_wakeonlan_status(self, mac_address):
         """
