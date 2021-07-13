@@ -17,8 +17,20 @@ def mesh_topology_fixture():
                 'is_meshed': True,
                 'mesh_role': 'master',
                 'meshd_version': '2.25',
-                'node_interfaces': []
-               }]}
+                'node_interfaces': [{'uid': 'ni-237',
+                    'name': 'AP:2G:0',
+                    'type': 'WLAN',
+                    'mac_address': '12:12:12:12:12:12',
+                    'blocking_state': 'UNKNOWN',
+                    'node_links': []},
+                   {'uid': 'ni-236',
+                    'name': 'LANBridge',
+                    'type': 'LAN',
+                    'mac_address': '11:11:11:11:11:11',
+                    'blocking_state': 'UNKNOWN',
+                    'node_links': []}]
+                }],
+            }
 
 
 def test_get_mesh_topology_info(mesh_topology_fixture):
