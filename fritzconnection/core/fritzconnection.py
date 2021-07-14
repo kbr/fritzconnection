@@ -21,6 +21,13 @@ from .exceptions import (
 )
 from .soaper import Soaper
 
+# same defaults as used by requests:
+DEFAULT_POOL_CONNECTIONS = 10
+DEFAULT_POOL_MAXSIZE = 10
+
+# supported protocols:
+PROTOCOLS = ['http://', 'https://']
+
 # disable InsecureRequestWarning from urllib3
 # because of skipping certificate verification:
 import urllib3
@@ -75,7 +82,8 @@ class FritzConnection:
         password=None,
         timeout=None,
         use_tls=False,
-        concurrent_connections=10,
+        pool_connections=DEFAULT_POOL_CONNECTIONS,
+        pool_maxsize=DEFAULT_POOL_MAXSIZE,
     ):
         """
         Initialisation of FritzConnection: reads all data from the box
@@ -110,20 +118,19 @@ class FritzConnection:
             password = os.getenv("FRITZ_PASSWORD", "")
         if port is None and use_tls:
             port = FRITZ_TLS_PORT
-            protocol = "https://"
         elif port is None:
             port = FRITZ_TCP_PORT
-            protocol = "http://"
         address = self.set_protocol(address, use_tls)
 
         # session is optional but will speed up connections
         # (significantly for tls):
         session = requests.Session()
-        adapter = requests.adapters.HTTPAdapter(pool_connections=concurrent_connections, pool_maxsize=concurrent_connections)
-        session.mount(protocol, adapter)
         session.verify = False
         if password:
             session.auth = HTTPDigestAuth(user, password)
+        adapter = requests.adapters.HTTPAdapter(
+            pool_connections=pool_connections, pool_maxsize=pool_maxsize)
+        session.mount(PROTOCOLS[use_tls], adapter)
         # store as instance attributes for use by library modules
         self.address = address
         self.session = session
