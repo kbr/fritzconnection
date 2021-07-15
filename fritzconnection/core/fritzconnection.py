@@ -109,8 +109,8 @@ class FritzConnection:
         `requests.ConnectTimeout` exception gets raised. `use_tls`
         accepts a boolean for using encrypted communication with the
         Fritz!Box. Default is `False`. `pool_connections` and `pool_maxsize`
-        accept integers for changing the default urllib3 settings in
-        order to allow more simultaneous connections to the device.
+        accept integers for changing the default urllib3 settings in order
+        to modify the number of reusable connections.
         """
         if address is None:
             address = FRITZ_IP_ADDRESS
