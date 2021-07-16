@@ -38,6 +38,13 @@ FRITZ_TR64_DESC_FILE = "tr64desc.xml"
 FRITZ_DESCRIPTIONS = [FRITZ_IGD_DESC_FILE, FRITZ_TR64_DESC_FILE]
 FRITZ_USERNAME_REQUIRED_VERSION = 7.24
 
+# same defaults as used by requests:
+DEFAULT_POOL_CONNECTIONS = 10
+DEFAULT_POOL_MAXSIZE = 10
+
+# supported protocols:
+PROTOCOLS = ['http://', 'https://']
+
 
 class FritzConnection:
     """
@@ -75,6 +82,8 @@ class FritzConnection:
         password=None,
         timeout=None,
         use_tls=False,
+        pool_connections=DEFAULT_POOL_CONNECTIONS,
+        pool_maxsize=DEFAULT_POOL_MAXSIZE,
     ):
         """
         Initialisation of FritzConnection: reads all data from the box
@@ -99,7 +108,9 @@ class FritzConnection:
         communication with the router. In case of a timeout a
         `requests.ConnectTimeout` exception gets raised. `use_tls`
         accepts a boolean for using encrypted communication with the
-        Fritz!Box. Default is `False`.
+        Fritz!Box. Default is `False`. `pool_connections` and `pool_maxsize`
+        accept integers for changing the default urllib3 settings in order
+        to modify the number of reusable connections.
         """
         if address is None:
             address = FRITZ_IP_ADDRESS
@@ -119,6 +130,9 @@ class FritzConnection:
         session.verify = False
         if password:
             session.auth = HTTPDigestAuth(user, password)
+        adapter = requests.adapters.HTTPAdapter(
+            pool_connections=pool_connections, pool_maxsize=pool_maxsize)
+        session.mount(PROTOCOLS[use_tls], adapter)
         # store as instance attributes for use by library modules
         self.address = address
         self.session = session
