@@ -72,6 +72,11 @@ class FritzConnection:
     the system version is 7.24 or newer, FritzConnection uses the last
     logged in username as default.
     (`New in version 1.5`)
+
+    For applications where the urllib3 default connection-pool size
+    should get adapted, the arguments `pool_connections` and
+    `pool_maxsize` can get set explicitly.
+    (`New in version 1.6`)
     """
 
     def __init__(
@@ -124,8 +129,8 @@ class FritzConnection:
             port = FRITZ_TCP_PORT
         address = self.set_protocol(address, use_tls)
 
-        # session is optional but will speed up connections
-        # (significantly for tls):
+        # a session will speed up connections (significantly for tls)
+        # and is required to change the default poolsize:
         session = requests.Session()
         session.verify = False
         if password:
