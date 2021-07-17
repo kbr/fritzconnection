@@ -26,6 +26,7 @@ from ..core.soaper import (
     encode_boolean,
     get_argument_value,
     get_converted_value,
+    get_html_safe_value,
     raise_fritzconnection_error,
 )
 
