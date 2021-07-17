@@ -214,17 +214,8 @@ class FritzConnection:
         and returns the modified `url`. Does not check whether the `url`
         given as parameter is correct.
         """
-        http = "http://"
-        https = "https://"
-        if url.startswith(http):
-            url = url[len(http) :]
-        elif url.startswith(https):
-            url = url[len(https) :]
-        if use_tls:
-            url = f"{https}{url}"
-        else:
-            url = f"{http}{url}"
-        return url
+        url = url.split("//", 1)[-1]
+        return PROTOCOLS[use_tls] + url
 
     def _reset_user(self, user, password):
         """
