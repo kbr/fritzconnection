@@ -85,6 +85,17 @@ def encode_boolean(value):
     return value
 
 
+def get_html_safe_value(value):
+    """
+    Returns an xml `encoded value` if it's an encodable value.
+    `value` can be of any type. If it is a boolean or None it
+    gets converted to the integer 1 or 0.
+    If it is a string the characters in the set `&<>'"` are
+    converted to html-safe sequences.
+    Any other datatype get's returned as is.
+    """
+
+
 def preprocess_arguments(arguments):
     """
     Takes a dictionary with arguments for a soap call and converts all
@@ -92,7 +103,7 @@ def preprocess_arguments(arguments):
     1, 0, 0.
     Returns a new dictionary with the processed values.
     """
-    return {k: encode_boolean(v) for k, v in arguments.items()}
+    return {k: get_html_safe_value(v) for k, v in arguments.items()}
 
 
 def get_argument_value(root, argument_name):
