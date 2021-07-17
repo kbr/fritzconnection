@@ -13,6 +13,7 @@ import re
 import requests
 from requests.auth import HTTPDigestAuth
 from xml.etree import ElementTree as etree
+from xml.sax.saxutils import escape
 
 from .exceptions import (
     FritzConnectionException,
@@ -87,12 +88,22 @@ def encode_boolean(value):
 
 def preprocess_arguments(arguments):
     """
-    Takes a dictionary with arguments for a soap call and converts all
-    values which are True, False or None to the according integers:
-    1, 0, 0.
+    Takes a dictionary with arguments for a soap call and
+    1. converts all values which are True, False or None
+    to the according integers: 1, 0, 0.
+    2. escape illegal chars < > & ' ".
     Returns a new dictionary with the processed values.
     """
-    return {k: encode_boolean(v) for k, v in arguments.items()}
+    values = dict()
+    for k, v in arguments.items():
+        if isinstance(v, int):
+            value = {k:v}
+        else:
+            value = {
+                k: escape(encode_boolean(v), entities={"'": "&apos;", '"': "&quot;"}),
+            }
+        values.update(value)
+    return values
 
 
 def get_argument_value(root, argument_name):
