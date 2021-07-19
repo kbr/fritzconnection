@@ -8,6 +8,7 @@ Module handling the SOAP based communication with the router.
 
 
 import datetime
+import html
 import re
 
 import requests
@@ -94,6 +95,10 @@ def get_html_safe_value(value):
     converted to html-safe sequences.
     Any other datatype get's returned as is.
     """
+    value = encode_boolean(value)
+    if isinstance(value, str):
+        value = html.escape(value)
+    return value
 
 
 def preprocess_arguments(arguments):
