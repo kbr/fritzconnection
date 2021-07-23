@@ -6,6 +6,7 @@ Version History
 development
 -----------
 
+- New arguments for FritzConnection `pool_connections` and `pool_maxsize` to adapt the default urllib3 settings (used by requests) (#114).
 - New properties FritzStatus.device_uptime and .connection_uptime; the latter a replacement for .uptime – still existing as an alias (#104)
 - bugfix: return FritzStatus.bytes_sent as 32 bit value on older systems (#110)
 - bugfix: raise FritzActionError on accessing the mesh topology information from a device not having accesss to this information. (#107)
