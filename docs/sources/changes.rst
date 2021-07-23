@@ -3,8 +3,8 @@
 Version History
 ===============
 
-1.5.1 dev
----------
+development
+-----------
 
 - New properties FritzStatus.device_uptime and .connection_uptime; the latter a replacement for .uptime – still existing as an alias (#104)
 - bugfix: return FritzStatus.bytes_sent as 32 bit value on older systems (#110)
