@@ -6,11 +6,12 @@ Version History
 Development Version
 -------------------
 
-- New arguments for FritzConnection: `pool_connections` and `pool_maxsize` to adapt the default urllib3 settings (used by requests) (#114).
-- New properties FritzStatus.device_uptime and .connection_uptime; the latter a replacement for .uptime – still existing as an alias (#104)
-- bugfix: return FritzStatus.bytes_sent as 32 bit value on older systems (#110)
-- bugfix: raise FritzActionError on accessing the mesh topology information from a device not having accesss to this information. (#107)
-- adding code-of-conduct and contributing files to the repository
+- New arguments for FritzConnection: `pool_connections` and `pool_maxsize` to adapt the default urllib3 settings (used by requests). (#114).
+- New properties `FritzStatus.device_uptime` and `FritzStatus.connection_uptime``; the latter a replacement for `FritzStatus.uptime` – still existing as an alias. (#104)
+- bugfix: html-escape arguments in case that special signs are allowed by the protocol. (#115)
+- bugfix: `FritzStatus.bytes_sent` will return the 32 bit value from older Fritz!Box models. (#110)
+- bugfix: raise `FritzActionError` on accessing the mesh topology information from a device not having accesss to this information. (#107)
+- adding code-of-conduct and contributing files to the repository.
 
 
 1.5.0
