@@ -26,6 +26,7 @@ from ..core.soaper import (
     encode_boolean,
     get_argument_value,
     get_converted_value,
+    get_html_safe_value,
     raise_fritzconnection_error,
 )
 
@@ -147,6 +148,28 @@ def test_long_error_message():
 def test_encode_boolean(value, expected_type):
     result = encode_boolean(value)
     assert isinstance(result, expected_type)
+
+
+@pytest.mark.parametrize(
+    "value, expected_results", [
+        (True, 1),
+        (False, 0),
+        (None, 0),
+        (3.141, 3.141),
+        ("hello test", "hello test"),
+        ("2021-07-17T12:00:00", "2021-07-17T12:00:00"),  # redundant, but ISO ;)
+        ("ham, spam & eggs", "ham, spam &amp; eggs"),
+        ("5 > 3", "5 &gt; 3"),
+        ("3 < 5", "3 &lt; 5"),
+        ('say "hello"', "say &quot;hello&quot;"),
+        ("let's test again", ["let&apos; test again", "let&#x27;s test again"])
+    ]
+)
+def test_get_html_safe_value(value, expected_results):
+    if not isinstance(expected_results, list):
+        expected_results = [expected_results]
+    result = get_html_safe_value(value)
+    assert result in expected_results
 
 
 @pytest.mark.parametrize(
