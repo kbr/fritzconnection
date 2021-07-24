@@ -96,7 +96,10 @@ class FritzStatus(AbstractLibraryBase):
 
     @property
     def uptime(self):
-        """Connection uptime in seconds. Alias for self.connection_uptime for backward compatibility."""
+        """
+        Connection uptime in seconds.
+        Alias for self.connection_uptime for backward compatibility.
+        """
         return self.connection_uptime
 
     @property
