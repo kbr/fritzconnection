@@ -1,7 +1,7 @@
 # Contributing
 
 Thank you for taking your time to contribute to this project.
-The project is not large enought to need a lot of rules, but here are some guidelines:
+The project is not large enough to need a lot of rules, but here are some guidelines:
 
 
 ## Pull requests
@@ -33,10 +33,10 @@ No new function, method or class should get undocumented. Write meaningful comme
 
 ## Type hints
 
-This project started long ago without type hints. Keep it this way. The project is small enought, so there is no real benefit. The place for types are in the comments. Readability counts!
+This project started long ago without type hints. Keep it this way. The project is small enough, so there is no real benefit. The place for types are in the comments. Readability counts!
 
 
 ## Tests
 
-This project comes with tests. The test framework is tox/pytest. For development run `pip install -r requirements.txt` to install both libraries. As far as possible, the code should get tests. Before committing run the tests.
+This project comes with tests. The test framework is tox/pytest. For development run `pip install -r requirements_test.txt` to install both libraries. As far as possible, the code should get tests. Before committing run the tests with tox.
 
