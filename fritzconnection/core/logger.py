@@ -1,6 +1,7 @@
 """
 Logging interface for the fritzconnection library.
-On module level an instance of FritzLogger gets created as `fritzlogger`:
+On module level an instance of FritzLogger gets created as `fritzlogger`
+that can get imported by:
 
 >>> from fritzconnection.core.logger import fritzlogger
 
@@ -11,8 +12,9 @@ provided:
 >>> fritzlogger.add_handler(the_handler)
 >>> fritzlogger.log("the message")  # will get logged now
 
-In case that a logger is already in use, this logger can set a parent
-for fritzlogger. fritzlogger will then use the parent handlers.
+In case that another logger is already in use, the other logger can set
+as a parent for fritzlogger. fritzlogger will then use the parent
+handlers.
 
 >>> fritzlogger.set_parent(another_logger)
 >>> fritzlogger.log("the message")  # will get logged now
@@ -79,6 +81,14 @@ class FritzLogger:
     def enable(self):
         """Enables the logger."""
         self.logger.disabled = False
+
+    def set_streamhandler(self):
+        """Sets the StreamHandler logging to stderr."""
+        self.add_handler(logging.StreamHandler())
+
+    def set_filehandler(self, filename):
+        """Sets the FileHandler logging to the given filename."""
+        self.add_handler(logging.FileHandler(filename, encoding="utf-8"))
 
     def add_handler(self, handler):
         """
