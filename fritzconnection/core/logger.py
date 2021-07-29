@@ -1,6 +1,7 @@
 """
 Logging interface for the fritzconnection library.
-On module level an instance of FritzLogger gets created as `fritzlogger`
+
+On module level an instance of `FritzLogger` gets created as `fritzlogger`
 that can get imported by:
 
 >>> from fritzconnection.core.logger import fritzlogger
@@ -18,6 +19,11 @@ handlers.
 
 >>> fritzlogger.set_parent(another_logger)
 >>> fritzlogger.log("the message")  # will get logged now
+
+If logging is activated at debug-level, fritzconnection will log all
+requests and responses. This can produce a lot of output, especial on
+initializing a FritzConnection-instance. To suppress output the methods
+`disable` and `enable` can get called. Default mode is enable.
 
 """
 
