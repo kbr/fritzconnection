@@ -4,6 +4,12 @@ Version History
 ===============
 
 
+Development Version
+-------------------
+
+- New logging module `fritzconnection.core.logger`.
+
+
 1.6.0
 -----
 

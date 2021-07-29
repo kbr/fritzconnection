@@ -13,12 +13,15 @@ provided:
 >>> fritzlogger.add_handler(the_handler)
 >>> fritzlogger.log("the message")  # will get logged now
 
-In case that another logger is already in use, the other logger can set
-as a parent for fritzlogger. fritzlogger will then use the parent
+In case that another logger is already in use, the other logger can get
+set as parent for fritzlogger. fritzlogger will then use the parent
 handlers.
 
 >>> fritzlogger.set_parent(another_logger)
 >>> fritzlogger.log("the message")  # will get logged now
+
+For convenience fritzlogger provides the methods `set_streamhandler` and
+`set_filehandler` to add predefined handler.
 
 If logging is activated at debug-level, fritzconnection will log all
 requests and responses. This can produce a lot of output, especial on
