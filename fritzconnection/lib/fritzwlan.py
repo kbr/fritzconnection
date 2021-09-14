@@ -62,7 +62,6 @@ class FritzWLAN(AbstractLibraryBase):
         self.service = _service
         return total
 
-
     @property
     def ssid(self):
         """The WLAN SSID"""
@@ -141,3 +140,15 @@ class FritzWLAN(AbstractLibraryBase):
                 'speed': host['NewX_AVM-DE_Speed']
             })
         return informations
+
+    def enable(self):
+        """Enables the associated network."""
+        self._set_enable(True)
+
+    def disable(self):
+        """Disables the associated network."""
+        self._set_enable(False)
+
+    def _set_enable(self, status):
+        """Helper function for enable|disable."""
+        self._action("SetEnable", arguments={"NewEnable": status})
