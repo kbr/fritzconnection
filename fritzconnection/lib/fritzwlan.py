@@ -8,6 +8,7 @@ Module to get informations about WLAN devices.
 
 import itertools
 import random
+import string
 
 from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
@@ -16,7 +17,7 @@ from .fritzbase import AbstractLibraryBase
 # important: don't set an extension number here:
 SERVICE = 'WLANConfiguration'
 PRESHARED_KEY_LENGTH = 64
-PRESHARED_KEY_CHARACTERS = "1234567890ABCDEF"
+PRESHARED_KEY_CHARACTERS = string.hexdigits
 
 
 class FritzWLAN(AbstractLibraryBase):
@@ -185,4 +186,4 @@ class FritzWLAN(AbstractLibraryBase):
         """
         return "".join(
             random.choices(PRESHARED_KEY_CHARACTERS, k=PRESHARED_KEY_LENGTH)
-        )
+        ).upper()
