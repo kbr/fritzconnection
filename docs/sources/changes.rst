@@ -8,6 +8,7 @@ Development Version
 -------------------
 
 - New logging module `fritzconnection.core.logger`.
+- New FritzWLAN-methods: `enable` and `disable`.
 
 
 1.6.0
