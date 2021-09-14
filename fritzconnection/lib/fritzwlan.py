@@ -6,14 +6,17 @@ Module to get informations about WLAN devices.
 # License: MIT (https://opensource.org/licenses/MIT)
 # Author: Bernd Strebel, Klaus Bremer
 
-
 import itertools
+import random
+
 from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
 
 
 # important: don't set an extension number here:
 SERVICE = 'WLANConfiguration'
+PRESHARED_KEY_LENGTH = 64
+PRESHARED_KEY_CHARACTERS = "1234567890ABCDEF"
 
 
 class FritzWLAN(AbstractLibraryBase):
@@ -152,3 +155,34 @@ class FritzWLAN(AbstractLibraryBase):
     def _set_enable(self, status):
         """Helper function for enable|disable."""
         self._action("SetEnable", arguments={"NewEnable": status})
+
+    def get_password(self):
+        """Returns the current password of the associated wlan."""
+        return self._action("GetSecurityKeys")["NewKeyPassphrase"]
+
+    def set_password(self, password):
+        """
+        Sets a new password for the associated wlan.
+        Also creates a new preshared key.
+        """
+        preshared_key = self._create_preshared_key()
+        arguments = {
+            "NewKeyPassphrase": password,
+            "NewPreSharedKey": preshared_key,
+            "NewWEPKey0": "",
+            "NewWEPKey1": "",
+            "NewWEPKey2": "",
+            "NewWEPKey3": "",
+        }
+        self._action("SetSecurityKeys", arguments=arguments)
+
+    @staticmethod
+    def _create_preshared_key():
+        """
+        Returns a new preshared key for setting a new password.
+        The sequence is of uppercase characters as this is default on FritzOS
+        at time of writing.
+        """
+        return "".join(
+            random.choices(PRESHARED_KEY_CHARACTERS, k=PRESHARED_KEY_LENGTH)
+        )
