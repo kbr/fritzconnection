@@ -381,9 +381,37 @@ A common usecase for wlan-informations is device tracking. The following is a ba
         main()
 
 
+Example: activate a guest network
+.................................
+
+This only works with devices providing more than one access point and additionally a guest network. If the latter is not provided the class `FritzGuestWLAN` will just handle the access point with highest internal service id, as this is typically the access point for guests.
+
+The following example enables the guest access point and if a password is given will set this as the new password. If the guest access point is already active just a new password is set: ::
+
+    from fritzconnection.lib.fritzwlan import FritzGuestWLAN
+
+    def enable_guest_access_point(new_password=None):
+        guest_wlan = FritzGuestWLAN(address="192.168.178.1", user="user", password="the_password")
+        if not guest_wlan.is_enabled:
+            guest_wlan.enable()
+        if new_password:
+            guest_wlan.set_password(new_password)
+
+    enable_guest_access_point(new_password="new_strong_password")
+
+
 FritzWLAN API
 .............
 
 .. automodule:: fritzconnection.lib.fritzwlan
+    :members:
+
+
+FritzBase
+---------
+
+An internal module providing the `AbstractLibraryBase` class. This is an abstract class that should not get instantiated but should serve as a base class for library classes providing a common initialisation.
+
+.. automodule:: fritzconnection.lib.fritzbase
     :members:
 
