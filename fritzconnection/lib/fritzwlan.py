@@ -16,8 +16,6 @@ from .fritzbase import AbstractLibraryBase
 
 # important: don't set an extension number here:
 SERVICE = 'WLANConfiguration'
-PRESHARED_KEY_LENGTH = 64
-PRESHARED_KEY_CHARACTERS = string.hexdigits
 
 
 class FritzWLAN(AbstractLibraryBase):
@@ -125,8 +123,9 @@ class FritzWLAN(AbstractLibraryBase):
 
     def get_hosts_info(self):
         """
-        Returns a list of dictionaries with information about the known hosts.
-        The dict-keys are: 'service', 'index', 'status', 'mac', 'ip', 'signal', 'speed'
+        Returns a list of dictionaries with information about the known
+        hosts. The dict-keys are: 'service', 'index', 'status', 'mac',
+        'ip', 'signal', 'speed'
         """
         informations = []
         for index in itertools.count():
@@ -144,6 +143,18 @@ class FritzWLAN(AbstractLibraryBase):
                 'speed': host['NewX_AVM-DE_Speed']
             })
         return informations
+
+    def get_info(self):
+        """
+        Returns a dictionary with general internal informations about
+        the current wlan network according to the AVM documentation.
+        """
+        return self._action("GetInfo")
+
+    @property
+    def is_enabled(self):
+        """Returns whether the guest network is enabled."""
+        return self.get_info()["NewEnable"]
 
     def enable(self):
         """Enables the associated network."""
@@ -177,13 +188,45 @@ class FritzWLAN(AbstractLibraryBase):
         }
         self._action("SetSecurityKeys", arguments=arguments)
 
-    @staticmethod
-    def _create_preshared_key():
+    def _create_preshared_key(self):
         """
         Returns a new preshared key for setting a new password.
         The sequence is of uppercase characters as this is default on FritzOS
         at time of writing.
         """
-        return "".join(
-            random.choices(PRESHARED_KEY_CHARACTERS, k=PRESHARED_KEY_LENGTH)
-        ).upper()
+        info = self.get_info()
+        characters = info["NewAllowedCharsPSK"]
+        length = info["NewMaxCharsPSK"]
+        return "".join(random.choices(characters, k=length)).upper()
+
+
+class FritzGuestWLAN(FritzWLAN):
+    """
+    Extension class of FritzWLAN for devices providing a guest network.
+    On devices not providing a guest network this class will not fail,
+    but handle the wlan network with the highest internal service number
+    (which is the guest network on providing devices).
+
+    All parameters are optional. If given, they have the following
+    meaning: `fc` is an instance of FritzConnection, `address` the ip of
+    the Fritz!Box, `port` the port to connect to, `user` the username,
+    `password` the password, `timeout` a timeout as floating point
+    number in seconds, `use_tls` a boolean indicating to use TLS
+    (default False).
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize a the guest wlan instance. All parameters are
+        optional. If given, they have the following meaning: `fc` is an
+        instance of FritzConnection, `address` the ip of the Fritz!Box,
+        `port` the port to connect to, `user` the username, `password`
+        the password, `timeout` a timeout as floating point number in
+        seconds, `use_tls` a boolean indicating to use TLS (default
+        False).
+        """
+        super().__init__(*args, **kwargs)
+        for n in itertools.count(1):
+            service = self.fc.services.get(f"{SERVICE}{n}")
+            if service is None:
+                self.service = n - 1
+                break
