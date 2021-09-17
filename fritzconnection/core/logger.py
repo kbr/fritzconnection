@@ -21,7 +21,7 @@ handlers.
 >>> fritzlogger.log("the message")  # will get logged now
 
 For convenience fritzlogger provides the methods `set_streamhandler` and
-`set_filehandler` to add predefined handler.
+`set_filehandler` to add predefined handlers.
 
 If logging is activated at debug-level, fritzconnection will log all
 requests and responses. This can produce a lot of output, especial on
