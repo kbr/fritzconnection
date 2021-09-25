@@ -289,3 +289,8 @@ class FritzConnection:
         """
         self.call_action("WANIPConn1", "ForceTermination")
 
+    def reboot(self):
+        """
+        Reboot the system.
+        """
+        self.call_action("DeviceConfig1", "Reboot")
