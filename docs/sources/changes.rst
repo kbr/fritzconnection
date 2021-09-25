@@ -4,16 +4,17 @@ Version History
 ===============
 
 
-Development Version
--------------------
+1.7.0
+-----
 
-- New logging module `fritzconnection.core.logger`.
 - New FritzWLAN-methods:
 
   - `enable` and `disable` to enable and disable a wlan network.
   - `get_password` and `set_password` to get the current password or set a new one for a wlan network.
 
-- New FritzGuestWLAN class.
+- New FritzGuestWLAN library class.
+- New FritzConnection method `reboot`.
+- New logging module `fritzconnection.core.logger`.
 
 
 1.6.0
