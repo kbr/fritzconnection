@@ -16,6 +16,7 @@ from .fritzbase import AbstractLibraryBase
 
 # important: don't set an extension number here:
 SERVICE = 'WLANConfiguration'
+DEFAULT_PASSWORD_LENGTH = 12
 
 
 class FritzWLAN(AbstractLibraryBase):
@@ -172,12 +173,15 @@ class FritzWLAN(AbstractLibraryBase):
         """Returns the current password of the associated wlan."""
         return self._action("GetSecurityKeys")["NewKeyPassphrase"]
 
-    def set_password(self, password):
+    def set_password(self, password=None, length=DEFAULT_PASSWORD_LENGTH):
         """
         Sets a new password for the associated wlan.
-        Also creates a new preshared key.
+        If no password is given a new one is created with the given
+        length (the new password can get read with a subsequent call of
+        `get_password`). Also creates a new preshared key.
         """
         preshared_key = self._create_preshared_key()
+        password = password or self._create_password(length)
         arguments = {
             "NewKeyPassphrase": password,
             "NewPreSharedKey": preshared_key,
@@ -198,6 +202,17 @@ class FritzWLAN(AbstractLibraryBase):
         characters = info["NewAllowedCharsPSK"]
         length = info["NewMaxCharsPSK"]
         return "".join(random.choices(characters, k=length)).upper()
+
+    @staticmethod
+    def _create_password(length):
+        """
+        Returns a human readable password with the given length.
+        """
+        # add just two human readable special characters.
+        # password strength increases with the length.
+        # character permutations are: 64**length
+        characters = string.ascii_letters + string.digits + "@#"
+        return "".join(random.choices(characters, k=length))
 
 
 class FritzGuestWLAN(FritzWLAN):
