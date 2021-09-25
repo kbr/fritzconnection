@@ -217,10 +217,11 @@ class FritzWLAN(AbstractLibraryBase):
 
 class FritzGuestWLAN(FritzWLAN):
     """
-    Extension class of FritzWLAN for devices providing a guest network.
-    On devices not providing a guest network this class will not fail,
-    but handle the wlan network with the highest internal service number
-    (which is the guest network on providing devices).
+    Inherits from FritzWLAN and provides all the same methods but for
+    the guest network. On devices not providing a guest network this
+    class will not fail, but handle the wlan network with the highest
+    internal service number (which is by default the guest network on
+    guest network providing devices).
 
     All parameters are optional. If given, they have the following
     meaning: `fc` is an instance of FritzConnection, `address` the ip of
