@@ -38,6 +38,13 @@ FRITZ_TR64_DESC_FILE = "tr64desc.xml"
 FRITZ_DESCRIPTIONS = [FRITZ_IGD_DESC_FILE, FRITZ_TR64_DESC_FILE]
 FRITZ_USERNAME_REQUIRED_VERSION = 7.24
 
+# same defaults as used by requests:
+DEFAULT_POOL_CONNECTIONS = 10
+DEFAULT_POOL_MAXSIZE = 10
+
+# supported protocols:
+PROTOCOLS = ['http://', 'https://']
+
 
 class FritzConnection:
     """
@@ -65,6 +72,11 @@ class FritzConnection:
     the system version is 7.24 or newer, FritzConnection uses the last
     logged in username as default.
     (`New in version 1.5`)
+
+    For applications where the urllib3 default connection-pool size
+    should get adapted, the arguments `pool_connections` and
+    `pool_maxsize` can get set explicitly.
+    (`New in version 1.6`)
     """
 
     def __init__(
@@ -75,6 +87,8 @@ class FritzConnection:
         password=None,
         timeout=None,
         use_tls=False,
+        pool_connections=DEFAULT_POOL_CONNECTIONS,
+        pool_maxsize=DEFAULT_POOL_MAXSIZE,
     ):
         """
         Initialisation of FritzConnection: reads all data from the box
@@ -99,7 +113,9 @@ class FritzConnection:
         communication with the router. In case of a timeout a
         `requests.ConnectTimeout` exception gets raised. `use_tls`
         accepts a boolean for using encrypted communication with the
-        Fritz!Box. Default is `False`.
+        Fritz!Box. Default is `False`. `pool_connections` and `pool_maxsize`
+        accept integers for changing the default urllib3 settings in order
+        to modify the number of reusable connections.
         """
         if address is None:
             address = FRITZ_IP_ADDRESS
@@ -113,12 +129,15 @@ class FritzConnection:
             port = FRITZ_TCP_PORT
         address = self.set_protocol(address, use_tls)
 
-        # session is optional but will speed up connections
-        # (significantly for tls):
+        # a session will speed up connections (significantly for tls)
+        # and is required to change the default poolsize:
         session = requests.Session()
         session.verify = False
         if password:
             session.auth = HTTPDigestAuth(user, password)
+        adapter = requests.adapters.HTTPAdapter(
+            pool_connections=pool_connections, pool_maxsize=pool_maxsize)
+        session.mount(PROTOCOLS[use_tls], adapter)
         # store as instance attributes for use by library modules
         self.address = address
         self.session = session
@@ -195,17 +214,8 @@ class FritzConnection:
         and returns the modified `url`. Does not check whether the `url`
         given as parameter is correct.
         """
-        http = "http://"
-        https = "https://"
-        if url.startswith(http):
-            url = url[len(http) :]
-        elif url.startswith(https):
-            url = url[len(https) :]
-        if use_tls:
-            url = f"{https}{url}"
-        else:
-            url = f"{http}{url}"
-        return url
+        url = url.split("//", 1)[-1]
+        return PROTOCOLS[use_tls] + url
 
     def _reset_user(self, user, password):
         """
@@ -279,3 +289,8 @@ class FritzConnection:
         """
         self.call_action("WANIPConn1", "ForceTermination")
 
+    def reboot(self):
+        """
+        Reboot the system.
+        """
+        self.call_action("DeviceConfig1", "Reboot")

@@ -89,23 +89,45 @@ class FritzStatus(AbstractLibraryBase):
         return self.fc.call_action("WANIPConn", "X_AVM_DE_GetIPv6Prefix")
 
     @property
-    def uptime(self):
-        """Uptime in seconds."""
+    def connection_uptime(self):
+        """Connection uptime in seconds."""
         status = self.fc.call_action("WANIPConn", "GetStatusInfo")
         return status["NewUptime"]
 
     @property
+    def uptime(self):
+        """
+        Connection uptime in seconds.
+        Alias for self.connection_uptime for backward compatibility.
+        """
+        return self.connection_uptime
+
+    @property
+    def device_uptime(self):
+        """Device uptime in seconds."""
+        status = self.fc.call_action("DeviceInfo1", "GetInfo")
+        return status["NewUpTime"]
+
+    @property
     def str_uptime(self):
-        """Uptime in seconds and in human readable format."""
+        """Connection uptime in human readable format."""
         mins, secs = divmod(self.uptime, 60)
         hours, mins = divmod(mins, 60)
         return "%02d:%02d:%02d" % (hours, mins, secs)
 
     @property
     def bytes_sent(self):
-        """Total number of send bytes."""
-        status = self.fc.call_action("WANCommonIFC1", "GetAddonInfos")
-        return _integer_or_original(status["NewX_AVM_DE_TotalBytesSent64"])
+        """Total number of sent bytes."""
+        try:
+            status = self.fc.call_action("WANCommonIFC1", "GetAddonInfos")
+            value = status["NewX_AVM_DE_TotalBytesSent64"]
+        except KeyError:
+            # fallback for older FritzOS Versions not providing a 64 bit value:
+            status = self.fc.call_action(
+                "WANCommonIFC1", "GetTotalBytesSent"
+            )
+            value = status["NewTotalBytesSent"]
+        return _integer_or_original(value)
 
     @property
     def bytes_received(self):

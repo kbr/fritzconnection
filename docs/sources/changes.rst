@@ -3,6 +3,31 @@
 Version History
 ===============
 
+
+1.7.0
+-----
+
+- New FritzWLAN-methods:
+
+  - `enable` and `disable` to enable and disable a wlan network.
+  - `get_password` and `set_password` to get the current password or set a new one for a wlan network.
+
+- New FritzGuestWLAN library class.
+- New FritzConnection method `reboot`.
+- New logging module `fritzconnection.core.logger`.
+
+
+1.6.0
+-----
+
+- New arguments for FritzConnection: `pool_connections` and `pool_maxsize` to adapt the default urllib3 settings (used by requests). (#114).
+- New properties `FritzStatus.device_uptime` and `FritzStatus.connection_uptime``; the latter a replacement for `FritzStatus.uptime` – still existing as an alias. (#104)
+- bugfix: html-escape arguments in case that special characters are allowed by the protocol. (#115)
+- bugfix: `FritzStatus.bytes_sent` will return the 32 bit value from older Fritz!Box models. (#110)
+- bugfix: raise `FritzActionError` on accessing the mesh topology information from a device not having accesss to this information. (#107)
+- adding code-of-conduct and contributing files to the repository.
+
+
 1.5.0
 -----
 

@@ -10,6 +10,7 @@ fritzconnection is structured into subpackages: ::
                       |          |-- exceptions
                       |          |-- fritzconnection
                       |          |-- fritzmonitor
+                      |          |-- logger
                       |          |-- processor
                       |          |-- soaper
                       |          |-- utils
@@ -79,6 +80,13 @@ devices
 .......
 
 .. automodule:: fritzconnection.core.devices
+    :members:
+
+
+logger
+......
+
+.. automodule:: fritzconnection.core.logger
     :members:
 
 

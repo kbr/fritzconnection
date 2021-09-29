@@ -8,6 +8,7 @@ Module handling the SOAP based communication with the router.
 
 
 import datetime
+import html
 import re
 
 import requests
@@ -18,6 +19,7 @@ from .exceptions import (
     FritzConnectionException,
     FRITZ_ERRORS,
 )
+from .logger import fritzlogger
 from .utils import localname
 
 
@@ -85,6 +87,21 @@ def encode_boolean(value):
     return value
 
 
+def get_html_safe_value(value):
+    """
+    Returns an xml `encoded value` if it's an encodable value.
+    `value` can be of any type. If it is a boolean or None it
+    gets converted to the integer 1 or 0.
+    If it is a string the characters in the set `&<>'"` are
+    converted to html-safe sequences.
+    Any other datatype get's returned as is.
+    """
+    value = encode_boolean(value)
+    if isinstance(value, str):
+        value = html.escape(value)
+    return value
+
+
 def preprocess_arguments(arguments):
     """
     Takes a dictionary with arguments for a soap call and converts all
@@ -92,7 +109,7 @@ def preprocess_arguments(arguments):
     1, 0, 0.
     Returns a new dictionary with the processed values.
     """
-    return {k: encode_boolean(v) for k, v in arguments.items()}
+    return {k: get_html_safe_value(v) for k, v in arguments.items()}
 
 
 def get_argument_value(root, argument_name):
@@ -218,6 +235,8 @@ class Soaper:
         """
 
         def handle_response(response):
+            fritzlogger.log(f"response status: {response.status_code}", "debug")
+            fritzlogger.log(response.text, "debug")
             if response.status_code != 200:
                 raise_fritzconnection_error(response)
             return self.parse_response(response, service, action_name)
@@ -231,6 +250,8 @@ class Soaper:
         body = self.get_body(service, action_name, arguments)
         envelope = self.envelope.format(body=body).encode("utf-8")
         url = f"{self.address}:{self.port}{service.controlURL}"
+        fritzlogger.log(f"\n{url}", "debug")
+        fritzlogger.log(envelope, "debug")
         if self.session:
             with self.session.post(
                 url, data=envelope, headers=headers, timeout=self.timeout

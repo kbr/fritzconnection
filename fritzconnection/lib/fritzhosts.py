@@ -9,6 +9,7 @@ Modul to access and control the known hosts.
 
 import itertools
 from ..core.exceptions import (
+    FritzActionError,
     FritzArgumentError,
     FritzLookUpError,
 )
@@ -113,6 +114,9 @@ class FritzHosts(AbstractLibraryBase):
         path = result["NewX_AVM-DE_MeshListPath"]
         url = f"{self.fc.address}:{self.fc.port}{path}"
         with self.fc.session.get(url) as response:
+            if not response.ok:
+                message = f"Error {response.status_code}: Device has no access to topology information."
+                raise FritzActionError(message)
             return response.text if raw else response.json()
 
     def get_wakeonlan_status(self, mac_address):
