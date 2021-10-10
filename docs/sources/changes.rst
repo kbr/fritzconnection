@@ -4,6 +4,12 @@ Version History
 ===============
 
 
+1.7.1
+-----
+
+- Tests extended for Python 3.10
+
+
 1.7.0
 -----
 
