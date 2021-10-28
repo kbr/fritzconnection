@@ -47,7 +47,7 @@ class FritzLogger:
             cls._instance = super().__new__(cls, *args, **kwargs)
         return cls._instance
 
-    def __init__(self, level=logging.DEBUG):
+    def __init__(self, level=logging.INFO):
         """Creates the internal logger state."""
         self.logger = logging.getLogger("fritzconnection")
         self.logger.addHandler(logging.NullHandler())
