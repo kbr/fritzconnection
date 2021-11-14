@@ -4,6 +4,12 @@ Version History
 ===============
 
 
+development
+-----------
+
+- bugfix: logger deactivated by default (#123)
+
+
 1.7.1
 -----
 

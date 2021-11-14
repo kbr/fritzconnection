@@ -59,6 +59,7 @@ def test_log_message_with_handler():
     """
     With no parent but a handler given, there should be logging.
     """
+    fritzlogger.enable()  # activate first
     fritzlogger.add_handler(stream_handler)
     fritzlogger.log("message", logging.WARNING)
     result = get_last_log_entry()

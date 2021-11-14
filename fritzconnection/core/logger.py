@@ -7,15 +7,13 @@ that can get imported by:
 >>> from fritzconnection.core.logger import fritzlogger
 
 The fritzlogger instance is preset to report on DEBUG level, the default
-handler is the NullHandler. To do some logging, a handler must be
-provided:
+handler is the NullHandler. To do some logging, the logger must get enabled and a handler should be provided:
 
+>>> fritzlogger.enable()
 >>> fritzlogger.add_handler(the_handler)
 >>> fritzlogger.log("the message")  # will get logged now
 
-In case that another logger is already in use, the other logger can get
-set as parent for fritzlogger. fritzlogger will then use the parent
-handlers.
+Other loggers can get set as parent for fritzlogger. fritzlogger will then use the parent handlers.
 
 >>> fritzlogger.set_parent(another_logger)
 >>> fritzlogger.log("the message")  # will get logged now
@@ -26,7 +24,7 @@ For convenience fritzlogger provides the methods `set_streamhandler` and
 If logging is activated at debug-level, fritzconnection will log all
 requests and responses. This can produce a lot of output, especial on
 initializing a FritzConnection-instance. To suppress output the methods
-`disable` and `enable` can get called. Default mode is enable.
+`disable` and `enable` can get called. Default mode is disable.
 
 """
 
@@ -64,6 +62,7 @@ class FritzLogger:
             "debug": self.logger.debug,
         }
         self.set_level(level)
+        self.disable()
 
     def set_level(self, level):
         """Set the log-level for the logger."""
