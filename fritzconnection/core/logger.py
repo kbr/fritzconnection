@@ -1,5 +1,12 @@
 """
-Logging interface for the fritzconnection library.
+Logging interface for the fritzconnection library. The interface is
+considered as internal and can get used to inspect the traffic and
+protocol-data exchanged with the router.
+
+If logging is enabled, fritzconnection will log the data of all requests
+and responses at debug level. This can produce a lot of output, especial
+on initializing a FritzConnection-instance. To suppress output the
+methods disable and enable can get called. Default mode is disabled.
 
 On module level an instance of `FritzLogger` gets created as `fritzlogger`
 that can get imported by:
@@ -20,12 +27,6 @@ Other loggers can get set as parent for fritzlogger. fritzlogger will then use t
 
 For convenience fritzlogger provides the methods `set_streamhandler` and
 `set_filehandler` to add predefined handlers.
-
-If logging is activated at debug-level, fritzconnection will log all
-requests and responses. This can produce a lot of output, especial on
-initializing a FritzConnection-instance. To suppress output the methods
-`disable` and `enable` can get called. Default mode is disable.
-
 """
 
 import logging
