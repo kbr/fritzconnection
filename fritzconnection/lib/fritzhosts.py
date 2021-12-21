@@ -77,14 +77,14 @@ class FritzHosts(AbstractLibraryBase):
     def get_active_hosts(self):
         """
         Returns a list of dicts with information about the active
-        devices. The dict-keys are: 'ip', 'name', 'mac', 'status'
+        devices. The dict-keys are: 'ip', 'name', 'mac', 'status', 'interfaceType', 'addressSource', 'leaseTimeRemaining'
         """
         return [host for host in self.get_hosts_info() if host["status"]]
 
     def get_hosts_info(self):
         """
         Returns a list of dicts with information about the known hosts.
-        The dict-keys are: 'ip', 'name', 'mac', 'status'
+        The dict-keys are: 'ip', 'name', 'mac', 'status', 'interfaceType', 'addressSource', 'leaseTimeRemaining'
         """
         result = []
         for index in itertools.count():
@@ -99,6 +99,9 @@ class FritzHosts(AbstractLibraryBase):
                     "name": host["NewHostName"],
                     "mac": host["NewMACAddress"],
                     "status": host["NewActive"],
+                    "interfaceType": host["NewInterfaceType"],
+                    "addressSource": host["NewAddressSource"],
+                    "leaseTimeRemaining": host["NewLeaseTimeRemaining"],
                 }
             )
         return result
