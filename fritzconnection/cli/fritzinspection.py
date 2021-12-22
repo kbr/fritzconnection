@@ -101,6 +101,9 @@ def add_arguments(parser):
     parser.add_argument('-r', '--reconnect',
                         action='store_true',
                         help='Reconnect and get a new ip')
+    parser.add_argument('-R', '--reboot',
+                        action='store_true',
+                        help='Reboot the router')
     parser.add_argument('-s', '--services',
                         action='store_true',
                         help='List all available services')
@@ -138,6 +141,9 @@ def run_inspector(inspector, args):
     elif args.reconnect:
         inspector.fc.reconnect()
         print('reconnect the router.')
+    elif args.reboot:
+        inspector.fc.reboot()
+        print('reboot the router.')
     print()
 
 
