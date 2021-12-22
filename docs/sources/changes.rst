@@ -4,6 +4,13 @@ Version History
 ===============
 
 
+development
+-----------
+
+- FritzConnection: new command line option `-R` to reboot the system
+- FritzHosts: provide additional host attributes (#127)
+
+
 1.7.2
 -----
 
