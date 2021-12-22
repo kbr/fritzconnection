@@ -46,6 +46,16 @@ class FritzHosts(AbstractLibraryBase):
         """
         return self._action("GetGenericHostEntry", NewIndex=index)
 
+    def get_generic_host_entries(self):
+        """
+        Generatorfunction to iterate over all hosts. Returns a dictionary for every host as provided by `get_generic_host_entry()`. (See also `get_hosts_info()` that returns a list of dictionaries with different key-names.)
+        """
+        for index in itertools.count():
+            try:
+                yield self.get_generic_host_entry(index)
+            except IndexError:
+                break
+
     def get_specific_host_entry(self, mac_address):
         """
         Returns a dictionary with informations about a device addressed
