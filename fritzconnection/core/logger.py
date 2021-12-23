@@ -13,16 +13,10 @@ that can get imported by:
 
 >>> from fritzconnection.core.logger import fritzlogger
 
-The fritzlogger instance is preset to report on DEBUG level, the default
-handler is the NullHandler. To do some logging, the logger must get enabled and a handler should be provided:
+The fritzlogger instance is preset to logging.NOTSET. To do some logging, the logger must get enabled and a handler should be provided:
 
 >>> fritzlogger.enable()
 >>> fritzlogger.add_handler(the_handler)
->>> fritzlogger.log("the message")  # will get logged now
-
-Other loggers can get set as parent for fritzlogger. fritzlogger will then use the parent handlers.
-
->>> fritzlogger.set_parent(another_logger)
 >>> fritzlogger.log("the message")  # will get logged now
 
 For convenience fritzlogger provides the methods `set_streamhandler` and
@@ -37,58 +31,35 @@ class FritzLogger:
     Wrapper for the logging library to reduce executable code on module
     global level. As multiple instances would use the same logger, to not
     get confused this class is a singleton.
+    Initially the logger has no log-level, is disabled and does not propagate messages to parent handlers.
+    Primary use of the logger is to report the data exchanged by the library and the router.
     """
     _instance = None
 
     def __new__(cls, *args, **kwargs):
-        """Takes care to be a singleton."""
+        """Be a singleton."""
         if cls._instance is None:
             cls._instance = super().__new__(cls, *args, **kwargs)
         return cls._instance
 
-    def __init__(self, level=logging.DEBUG):
-        """Creates the internal logger state."""
+    def __init__(self):
+        """Creates the internal logger instance in disabled mode."""
         self.logger = logging.getLogger("fritzconnection")
-        self.logger.addHandler(logging.NullHandler())
-        self.loggers = {
-            logging.CRITICAL: self.logger.critical,
-            logging.ERROR: self.logger.error,
-            logging.WARNING: self.logger.warning,
-            logging.INFO: self.logger.info,
-            logging.DEBUG: self.logger.debug,
-            "critical": self.logger.critical,
-            "error": self.logger.error,
-            "warning": self.logger.warning,
-            "info": self.logger.info,
-            "debug": self.logger.debug,
-        }
-        self.set_level(level)
         self.disable()
 
-    def set_level(self, level):
-        """Set the log-level for the logger."""
-        self.logger.setLevel(level)
-
-    def set_parent(self, parent):
-        """
-        Set a parent manually.
-
-        After calling all registered handlers FritzLogger will call the
-        handlers of the parent chain (which must also all be loggers).
-        Be careful not to create a closed loop of parents!
-        """
-        self.logger.parent = parent
-
-    def delete_parent(self):
-        """Deletes the parent logger."""
-        self.logger.parent = None
-
     def disable(self):
-        """Disables the logger."""
+        """Disables and reset the logger."""
         self.logger.disabled = True
+        self.logger.propagate = False
+        self.logger.setLevel(logging.NOTSET)
 
-    def enable(self):
-        """Enables the logger."""
+    def enable(self, level=logging.DEBUG, propagate=False):
+        """
+        Enables the logger with the given threshold level and propagate
+        setting.
+        """
+        self.logger.setLevel(level)
+        self.logger.propagate = propagate
         self.logger.disabled = False
 
     def set_streamhandler(self):
@@ -115,15 +86,15 @@ class FritzLogger:
         """
         self.logger.removeHandler(handler)
 
-    def log(self, message, level=logging.DEBUG, **kwargs):
-        """
-        Send the message to the logger. Unknown levels are ignored.
-        """
-        if isinstance(level, str):
-            level = level.lower()
-        logger = self.loggers.get(level)
-        if logger:
-            logger(message, **kwargs)
+    def log_debug(self, message):
+        """Convenient method to log a debug-level message."""
+        # shortcut instead of delegating this to the logging library
+        if not self.logger.disabled:
+            self.logger.log(logging.DEBUG, message)
+
+    def log(self, level, message, *args, **kwargs):
+        """Forward the message to the wrapped logger."""
+        self.logger.log(level, message, *args, **kwargs)
 
 
 fritzlogger = FritzLogger()
