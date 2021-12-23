@@ -13,14 +13,26 @@ that can get imported by:
 
 >>> from fritzconnection.core.logger import fritzlogger
 
-The fritzlogger instance is preset to logging.NOTSET. To do some logging, the logger must get enabled and a handler should be provided:
+The fritzlogger instance is preset to logging.NOTSET. To do some
+logging, the logger must get enabled and a handler should be provided:
 
->>> fritzlogger.enable()
->>> fritzlogger.add_handler(the_handler)
+>>> fritzlogger.add_handler(<the_handler>)
+>>> fritzlogger.enable(<the_loglevel>, <propagate_flag>)
 >>> fritzlogger.log("the message")  # will get logged now
 
 For convenience fritzlogger provides the methods `set_streamhandler` and
-`set_filehandler` to add predefined handlers.
+`set_filehandler` to add predefined handlers and `log_debug` to emit a
+message on debug-level. Example to track the data exchanged with the
+router:
+
+>>> fritzlogger.set_filehandler(<the_filename>)
+>>> fritzlogger.enable()
+>>> fritzlogger.log_debug("the message")
+
+If `enable` gets called with the log-level DEBUG and the argument
+`propagate` set to True, the data to and from the router will also get
+forwarded to the parent log-handlers. (Keep in mind that this can be a
+lot of data.)
 """
 
 import logging
@@ -31,8 +43,10 @@ class FritzLogger:
     Wrapper for the logging library to reduce executable code on module
     global level. As multiple instances would use the same logger, to not
     get confused this class is a singleton.
-    Initially the logger has no log-level, is disabled and does not propagate messages to parent handlers.
-    Primary use of the logger is to report the data exchanged by the library and the router.
+    Initially the logger has no log-level, is disabled and does not
+    propagate messages to parent handlers.
+    Primary use of the logger is to report the data exchanged by the
+    library and the router.
     """
     _instance = None
 
@@ -63,12 +77,19 @@ class FritzLogger:
         self.logger.disabled = False
 
     def set_streamhandler(self):
-        """Sets the StreamHandler logging to stderr."""
-        self.add_handler(logging.StreamHandler())
+        """Set a StreamHandler logging to stderr on debug level."""
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.DEBUG)
+        self.add_handler(handler)
 
     def set_filehandler(self, filename):
-        """Sets the FileHandler logging to the given filename."""
-        self.add_handler(logging.FileHandler(filename, encoding="utf-8"))
+        """
+        Set a FileHandler logging on debug level to the given filename
+        with utf-8 encoding.
+        """
+        handler = logging.FileHandler(filename, encoding="utf-8")
+        handler.setLevel(logging.DEBUG)
+        self.add_handler(handler)
 
     def add_handler(self, handler):
         """
