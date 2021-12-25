@@ -109,7 +109,7 @@ class FritzLogger:
 
     def log_debug(self, message):
         """Convenient method to log a debug-level message."""
-        # shortcut instead of delegating this to the logging library
+        # shortcut instead of delegating this check to the logging library
         if not self.logger.disabled:
             self.logger.log(logging.DEBUG, message)
 
