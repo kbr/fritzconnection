@@ -1,121 +1,53 @@
 """
-Logging interface for the fritzconnection library. The interface is
-considered as internal and can get used to inspect the traffic and
-protocol-data exchanged with the router.
+Logging module for the fritzconnection library. By default
+fritzconnection will emit all messages with a log-level of INFO or
+higher (WARNING, ERROR, CRITICAL).
 
-If logging is enabled, fritzconnection will log the data of all requests
-and responses at debug level. This can produce a lot of output, especial
-on initializing a FritzConnection-instance. To suppress output the
-methods disable and enable can get called. Default mode is disabled.
-
-On module level an instance of `FritzLogger` gets created as `fritzlogger`
-that can get imported by:
+The fritzconnection logger is defined as `fritzlogger` and is an
+instance of the `logging.Logger` class from the stdlib and can get
+accessed by:
 
 >>> from fritzconnection.core.logger import fritzlogger
 
-The fritzlogger instance is preset to logging.NOTSET. To do some
-logging, the logger must get enabled and a handler should be provided:
+This module provides the additional functions
+`activate_local_debug_mode` and `reset` (see below) to activate a debug
+mode, suppressing handler-propagation, and to reset the logger to the
+initial state.
 
->>> fritzlogger.add_handler(<the_handler>)
->>> fritzlogger.enable(<the_loglevel>, <propagate_flag>)
->>> fritzlogger.log("the message")  # will get logged now
-
-For convenience fritzlogger provides the methods `set_streamhandler` and
-`set_filehandler` to add predefined handlers and `log_debug` to emit a
-message on debug-level. Example to track the data exchanged with the
-router:
-
->>> fritzlogger.set_filehandler(<the_filename>)
->>> fritzlogger.enable()
->>> fritzlogger.log_debug("the message")
-
-If `enable` gets called with the log-level DEBUG and the argument
-`propagate` set to True, the data to and from the router will also get
-forwarded to the parent log-handlers. (Keep in mind that this can be a
-lot of data.)
+In debug mode fritzconnection will log the data transfered between the
+library and the router. That can be a lot of data, especially on
+instanciating FritzConnection.
 """
 
 import logging
 
 
-class FritzLogger:
+fritzlogger = logging.getLogger("fritzconnection")
+fritzlogger.setLevel(logging.INFO)
+
+
+def activate_local_debug_mode(handler=None):
     """
-    Wrapper for the logging library to reduce executable code on module
-    global level. As multiple instances would use the same logger, to not
-    get confused this class is a singleton.
-    Initially the logger has no log-level, is disabled and does not
-    propagate messages to parent handlers.
-    Primary use of the logger is to report the data exchanged by the
-    library and the router.
+    Activates all logging messages on debug level but don't propagate to
+    parent-handlers. However, if no handler is set at all, messages will
+    propagate to the lastResort which by default is a StreamHandler with
+    level.NOTSET, therefore emitting everything to stderr.
+    It can be useful to provide a file-handler because running
+    fritzlogger with DEBUG level will produce a lot of output.
     """
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        """Be a singleton."""
-        if cls._instance is None:
-            cls._instance = super().__new__(cls, *args, **kwargs)
-        return cls._instance
-
-    def __init__(self):
-        """Creates the internal logger instance in disabled mode."""
-        self.logger = logging.getLogger("fritzconnection")
-        self.disable()
-
-    def disable(self):
-        """Disables and reset the logger."""
-        self.logger.disabled = True
-        self.logger.propagate = False
-        self.logger.setLevel(logging.NOTSET)
-
-    def enable(self, level=logging.DEBUG, propagate=False):
-        """
-        Enables the logger with the given threshold level and propagate
-        setting.
-        """
-        self.logger.setLevel(level)
-        self.logger.propagate = propagate
-        self.logger.disabled = False
-
-    def set_streamhandler(self):
-        """Set a StreamHandler logging to stderr on debug level."""
-        handler = logging.StreamHandler()
-        handler.setLevel(logging.DEBUG)
-        self.add_handler(handler)
-
-    def set_filehandler(self, filename):
-        """
-        Set a FileHandler logging on debug level to the given filename
-        with utf-8 encoding.
-        """
-        handler = logging.FileHandler(filename, encoding="utf-8")
-        handler.setLevel(logging.DEBUG)
-        self.add_handler(handler)
-
-    def add_handler(self, handler):
-        """
-        Add a handler to the logger.
-
-        Handlers will just added once, even if this method get called
-        multiple times with the same handler.
-        """
-        self.logger.addHandler(handler)
-
-    def remove_handler(self, handler):
-        """
-        Remove the given handler from the list of handler.
-        Unknown handlers are ignored.
-        """
-        self.logger.removeHandler(handler)
-
-    def log_debug(self, message):
-        """Convenient method to log a debug-level message."""
-        # shortcut instead of delegating this check to the logging library
-        if not self.logger.disabled:
-            self.logger.log(logging.DEBUG, message)
-
-    def log(self, level, message, *args, **kwargs):
-        """Forward the message to the wrapped logger."""
-        self.logger.log(level, message, *args, **kwargs)
+    fritzlogger.propagate = False
+    if handler:
+        fritzlogger.addHandler(handler)
+    fritzlogger.setLevel(logging.DEBUG)
 
 
-fritzlogger = FritzLogger()
+def reset(keep_handlers=False):
+    """
+    Resets the logger to the initial state, i.e. after calling
+    `activate_local_debug_mode`. All handlers will be removed, except
+    `keep_handlers` is set to True.
+    """
+    if not keep_handlers:
+        fritzlogger.handlers = []
+    fritzlogger.propagate = True
+    fritzlogger.setLevel(logging.INFO)
