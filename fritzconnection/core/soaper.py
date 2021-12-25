@@ -235,8 +235,8 @@ class Soaper:
         """
 
         def handle_response(response):
-            fritzlogger.log_debug(f"response status: {response.status_code}")
-            fritzlogger.log_debug(response.text)
+            fritzlogger.debug(f"response status: {response.status_code}")
+            fritzlogger.debug(response.text)
             if response.status_code != 200:
                 raise_fritzconnection_error(response)
             return self.parse_response(response, service, action_name)
@@ -250,8 +250,8 @@ class Soaper:
         body = self.get_body(service, action_name, arguments)
         envelope = self.envelope.format(body=body).encode("utf-8")
         url = f"{self.address}:{self.port}{service.controlURL}"
-        fritzlogger.log_debug(f"\n{url}")
-        fritzlogger.log_debug(envelope)
+        fritzlogger.debug(f"\n{url}")
+        fritzlogger.debug(envelope)
         if self.session:
             with self.session.post(
                 url, data=envelope, headers=headers, timeout=self.timeout
