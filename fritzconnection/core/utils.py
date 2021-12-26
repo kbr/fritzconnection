@@ -6,7 +6,7 @@ import re
 import requests
 
 from xml.etree import ElementTree as etree
-from .exceptions import FritzConnectionException
+from .exceptions import FritzConnectionException, FritzResourceError
 from .logger import fritzlogger
 
 
@@ -33,15 +33,30 @@ def get_content_from(url, timeout=None, session=None):
         ct = response.headers.get("Content-type")
         if ct == "text/html":
             message = f"Unable to retrieve resource '{url}' from the device."
-            raise FritzConnectionException(message)
+            # this error will get catched, because it may happen depending
+            # on the used router model, without doing any harm.
+            # However it's logged on INFO level:
+            fritzlogger.info(message)
+            raise FritzResourceError(message)
         return response.text
 
-    fritzlogger.debug(f"\n{url}")
-    if session:
-        with session.get(url, timeout=timeout) as response:
-            return handle_response(response)
-    response = requests.get(url, timeout=timeout, verify=False)
-    return handle_response(response)
+    def do_request():
+        fritzlogger.debug(f"requesting: {url}")
+        if session:
+            with session.get(url, timeout=timeout) as response:
+                return handle_response(response)
+        response = requests.get(url, timeout=timeout, verify=False)
+        return handle_response(response)
+
+    try:
+        return do_request()
+    except requests.exceptions.ConnectionError as err:
+        message = f"Unable to get a connection: {err}"
+        # that's an error worth logging:
+        fritzlogger.error(message)
+        # raise from None because the message holds the
+        # proper information about the connection failure:
+        raise FritzConnectionException(message) from None
 
 
 def get_xml_root(source, timeout=None, session=None):

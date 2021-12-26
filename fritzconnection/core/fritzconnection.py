@@ -17,6 +17,7 @@ from requests.auth import HTTPDigestAuth
 from .devices import DeviceManager
 from .exceptions import (
     FritzConnectionException,
+    FritzResourceError,
     FritzServiceError,
 )
 from .soaper import Soaper
@@ -153,7 +154,7 @@ class FritzConnection:
             source = f"{address}:{port}/{description}"
             try:
                 self.device_manager.add_description(source)
-            except FritzConnectionException:
+            except FritzResourceError:
                 # resource not available:
                 # this can happen on devices not providing
                 # an igddesc-file.
