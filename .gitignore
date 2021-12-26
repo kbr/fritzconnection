@@ -16,3 +16,4 @@ docs/_build/*
 fritzconnection.egg-info/*
 include
 lib_
+x_*
