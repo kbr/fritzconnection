@@ -43,6 +43,7 @@ import logging
 
 fritzlogger = logging.getLogger("fritzconnection")
 fritzlogger.setLevel(logging.INFO)
+fritzformatter = logging.Formatter(logging.BASIC_FORMAT)
 
 
 def activate_local_debug_mode(handler=None, propagate=False):
@@ -50,12 +51,16 @@ def activate_local_debug_mode(handler=None, propagate=False):
     Activates all logging messages on debug level and don't propagate to
     parent-handlers. If no handler is given the NullHandler will get
     set, avoiding a call of the lastResort-handler.
+    If the given handler has no formatter, the fritzformatter gets set
+    (which provides the `logging.BASIC_FORMAT`).
     If propagate is True, all debug informations will also get send to
     the parent-handlers. Keep in mind, that this can be a lot of data if
     the parent-handlers are enabled for debug-level records.
     """
     if handler is None:
         handler = logging.NullHandler()
+    if not handler.formatter:
+        handler.setFormatter(fritzformatter)
     fritzlogger.addHandler(handler)
     fritzlogger.propagate = propagate
     fritzlogger.setLevel(logging.DEBUG)

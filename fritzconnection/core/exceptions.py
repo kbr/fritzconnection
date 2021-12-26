@@ -16,6 +16,8 @@ Module defining fritzconnection specific exceptions.
 #                 |--> ActionError --> FritzActionError
 #                 |--> ServiceError --> FritzServiceError
 #                 |
+#                 |--> FritzResourceError
+#                 |
 #                 |--> FritzArgumentError
 #                 |       |
 #                 |       |--> FritzArgumentValueError
@@ -57,6 +59,7 @@ __all__ = [
     'FritzInternalError',
     'FritzLookUpError',
     'FritzOutOfMemoryError',
+    'FritzResourceError',
     'FritzSecurityError',
     'FritzServiceError',
 ]
@@ -86,6 +89,14 @@ class FritzServiceError(ServiceError):
 
 class FritzActionError(ActionError):
     """Exception raised by calling nonexisting actions."""
+
+
+class FritzResourceError(FritzConnectionException):
+    """
+    Exception raised if a description file like an igddesc-file is not
+    provided by the router. This Exception is used internally and
+    logged, but not reraised for the user of the library.
+    """
 
 
 class FritzArgumentError(FritzConnectionException):
@@ -161,6 +172,7 @@ class FritzArrayIndexError(FritzConnectionException, IndexError):
 
 
 # Collection of error codes and corresponding exceptions:
+# (the error codes are defined by AVM)
 FRITZ_ERRORS = {
     '401': FritzActionError,
     '402': FritzArgumentError,

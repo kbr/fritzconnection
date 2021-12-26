@@ -17,3 +17,4 @@ fritzconnection.egg-info/*
 include
 lib_
 .idea
+x_*
