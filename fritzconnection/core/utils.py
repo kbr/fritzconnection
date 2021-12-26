@@ -29,14 +29,14 @@ def get_content_from(url, timeout=None, session=None):
     verification will fail.
     """
     def handle_response(response):
-        fritzlogger.log(response.text, "debug")
+        fritzlogger.debug(response.text)
         ct = response.headers.get("Content-type")
         if ct == "text/html":
             message = f"Unable to retrieve resource '{url}' from the device."
             raise FritzConnectionException(message)
         return response.text
 
-    fritzlogger.log(f"\n{url}", "debug")
+    fritzlogger.debug(f"\n{url}")
     if session:
         with session.get(url, timeout=timeout) as response:
             return handle_response(response)

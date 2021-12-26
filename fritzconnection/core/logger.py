@@ -1,129 +1,73 @@
 """
-Logging interface for the fritzconnection library. The interface is
-considered as internal and can get used to inspect the traffic and
-protocol-data exchanged with the router.
+Logging module for the fritzconnection library. By default
+fritzconnection will emit all messages with a log-level of INFO and
+higher (WARNING, ERROR, CRITICAL).
 
-If logging is enabled, fritzconnection will log the data of all requests
-and responses at debug level. This can produce a lot of output, especial
-on initializing a FritzConnection-instance. To suppress output the
-methods disable and enable can get called. Default mode is disabled.
-
-On module level an instance of `FritzLogger` gets created as `fritzlogger`
-that can get imported by:
+The fritzconnection logger, defined as `fritzlogger`, is an
+instance of the `logging.Logger` class from the `stdlib` and can get
+accessed by:
 
 >>> from fritzconnection.core.logger import fritzlogger
 
-The fritzlogger instance is preset to report on DEBUG level, the default
-handler is the NullHandler. To do some logging, the logger must get enabled and a handler should be provided:
+This module provides the additional functions
+`activate_local_debug_mode` and `reset` (see below) to activate a debug
+mode, suppressing handler-propagation, and to reset the logger to the
+initial state. To activate debug logging for fritzconnection call:
 
->>> fritzlogger.enable()
->>> fritzlogger.add_handler(the_handler)
->>> fritzlogger.log("the message")  # will get logged now
+>>> from fritzconnection.core.logger import activate_local_debug_mode
+>>> activate_local_debug_mode(handler=logging.StreamHandler())
 
-Other loggers can get set as parent for fritzlogger. fritzlogger will then use the parent handlers.
+In this debug mode fritzconnection will additionally log the data
+transfered between the library and the router and suppress
+logging-propagation to the parent-handlers. Here the `StreamHandler` will
+send all data to `stderr`. Because this can be a lot of data a `FileHandler`
+may be a better choice:
 
->>> fritzlogger.set_parent(another_logger)
->>> fritzlogger.log("the message")  # will get logged now
+>>> activate_local_debug_mode(handler=logging.FileHandler(<the_file>))
 
-For convenience fritzlogger provides the methods `set_streamhandler` and
-`set_filehandler` to add predefined handlers.
+To deactivate this mode call `reset()`:
+
+>>> from fritzconnection.core.logger import reset
+>>> reset()
+
+Beside this you can do everything with `fritzlogger` as with the
+`logging.Logger`, because `fritzlogger` is an instance of the latter.
 """
+# This module is part of the FritzConnection package.
+# https://github.com/kbr/fritzconnection
+# License: MIT (https://opensource.org/licenses/MIT)
+
 
 import logging
 
 
-class FritzLogger:
+fritzlogger = logging.getLogger("fritzconnection")
+fritzlogger.setLevel(logging.INFO)
+
+
+def activate_local_debug_mode(handler=None, propagate=False):
     """
-    Wrapper for the logging library to reduce executable code on module
-    global level. As multiple instances would use the same logger, to not
-    get confused this class is a singleton.
+    Activates all logging messages on debug level and don't propagate to
+    parent-handlers. If no handler is given the NullHandler will get
+    set, avoiding a call of the lastResort-handler.
+    If propagate is True, all debug informations will also get send to
+    the parent-handlers. Keep in mind, that this can be a lot of data if
+    the parent-handlers are enabled for debug-level records.
     """
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        """Takes care to be a singleton."""
-        if cls._instance is None:
-            cls._instance = super().__new__(cls, *args, **kwargs)
-        return cls._instance
-
-    def __init__(self, level=logging.DEBUG):
-        """Creates the internal logger state."""
-        self.logger = logging.getLogger("fritzconnection")
-        self.logger.addHandler(logging.NullHandler())
-        self.loggers = {
-            logging.CRITICAL: self.logger.critical,
-            logging.ERROR: self.logger.error,
-            logging.WARNING: self.logger.warning,
-            logging.INFO: self.logger.info,
-            logging.DEBUG: self.logger.debug,
-            "critical": self.logger.critical,
-            "error": self.logger.error,
-            "warning": self.logger.warning,
-            "info": self.logger.info,
-            "debug": self.logger.debug,
-        }
-        self.set_level(level)
-        self.disable()
-
-    def set_level(self, level):
-        """Set the log-level for the logger."""
-        self.logger.setLevel(level)
-
-    def set_parent(self, parent):
-        """
-        Set a parent manually.
-
-        After calling all registered handlers FritzLogger will call the
-        handlers of the parent chain (which must also all be loggers).
-        Be careful not to create a closed loop of parents!
-        """
-        self.logger.parent = parent
-
-    def delete_parent(self):
-        """Deletes the parent logger."""
-        self.logger.parent = None
-
-    def disable(self):
-        """Disables the logger."""
-        self.logger.disabled = True
-
-    def enable(self):
-        """Enables the logger."""
-        self.logger.disabled = False
-
-    def set_streamhandler(self):
-        """Sets the StreamHandler logging to stderr."""
-        self.add_handler(logging.StreamHandler())
-
-    def set_filehandler(self, filename):
-        """Sets the FileHandler logging to the given filename."""
-        self.add_handler(logging.FileHandler(filename, encoding="utf-8"))
-
-    def add_handler(self, handler):
-        """
-        Add a handler to the logger.
-
-        Handlers will just added once, even if this method get called
-        multiple times with the same handler.
-        """
-        self.logger.addHandler(handler)
-
-    def remove_handler(self, handler):
-        """
-        Remove the given handler from the list of handler.
-        Unknown handlers are ignored.
-        """
-        self.logger.removeHandler(handler)
-
-    def log(self, message, level=logging.DEBUG, **kwargs):
-        """
-        Send the message to the logger. Unknown levels are ignored.
-        """
-        if isinstance(level, str):
-            level = level.lower()
-        logger = self.loggers.get(level)
-        if logger:
-            logger(message, **kwargs)
+    if handler is None:
+        handler = logging.NullHandler()
+    fritzlogger.addHandler(handler)
+    fritzlogger.propagate = propagate
+    fritzlogger.setLevel(logging.DEBUG)
 
 
-fritzlogger = FritzLogger()
+def reset(keep_handlers=False, propagate=True):
+    """
+    Resets the logger to the initial state, i.e. after calling
+    `activate_local_debug_mode`. All handlers will be removed, except
+    `keep_handlers` is set to True.
+    """
+    if not keep_handlers:
+        fritzlogger.handlers = []
+    fritzlogger.propagate = propagate
+    fritzlogger.setLevel(logging.INFO)
