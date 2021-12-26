@@ -48,7 +48,9 @@ class FritzHosts(AbstractLibraryBase):
 
     def get_generic_host_entries(self):
         """
-        Generatorfunction to iterate over all hosts. Returns a dictionary for every host as provided by `get_generic_host_entry()`. (See also `get_hosts_info()` that returns a list of dictionaries with different key-names.)
+        Generator returning a dictionary for every host as provided by
+        `get_generic_host_entry()`. (See also `get_hosts_info()` that
+        returns a list of dictionaries with different key-names.)
         """
         for index in itertools.count():
             try:

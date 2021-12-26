@@ -13,6 +13,8 @@ development
   - The methods `get_active_hosts` and `get_hosts_info` provide additional host attributes (#127)
   - New method `get_generic_host_entries` returning a generator to iterate over all entries as reported by the method `get_generic_host_entry`.
 
+- Refactoring of logging module `fritzconnection.core.logger`.
+
 
 1.7.2
 -----
