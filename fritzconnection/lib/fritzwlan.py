@@ -1,5 +1,5 @@
 """
-Module to get informations about WLAN devices.
+Module to get information about WLAN devices.
 """
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection
@@ -9,6 +9,8 @@ Module to get informations about WLAN devices.
 import itertools
 import random
 import string
+
+from warnings import warn
 
 from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
@@ -78,14 +80,21 @@ class FritzWLAN(AbstractLibraryBase):
     @property
     def channel(self):
         """The WLAN channel in use"""
-        return self.channel_infos()['NewChannel']
+        return self.channel_info()['NewChannel']
 
     @property
     def alternative_channels(self):
         """Alternative channels (as string)"""
-        return self.channel_infos()['NewPossibleChannels']
+        return self.channel_info()['NewPossibleChannels']
 
     def channel_infos(self):
+        """
+        DEPRECATED: use 'channel_info' instead
+        """
+        warn('This method is deprecated. Use "channel_info" instead.', DeprecationWarning)
+        return self.channel_info()
+
+    def channel_info(self):
         """
         Return a dictionary with the keys *NewChannel* and
         *NewPossibleChannels* indicating the active channel and
@@ -102,7 +111,7 @@ class FritzWLAN(AbstractLibraryBase):
 
     def get_generic_host_entry(self, index):
         """
-        Return a dictionary with informations about the device
+        Return a dictionary with information about the device
         internally stored at the position 'index'.
         """
         result = self._action(
@@ -113,7 +122,7 @@ class FritzWLAN(AbstractLibraryBase):
 
     def get_specific_host_entry(self, mac_address):
         """
-        Return a dictionary with informations about the device
+        Return a dictionary with information about the device
         with the given 'mac_address'.
         """
         result = self._action(
@@ -128,13 +137,13 @@ class FritzWLAN(AbstractLibraryBase):
         hosts. The dict-keys are: 'service', 'index', 'status', 'mac',
         'ip', 'signal', 'speed'
         """
-        informations = []
+        information = []
         for index in itertools.count():
             try:
                 host = self.get_generic_host_entry(index)
             except IndexError:
                 break
-            informations.append({
+            information.append({
                 'service': self.service,
                 'index': index,
                 'status': host['NewAssociatedDeviceAuthState'],
@@ -143,11 +152,11 @@ class FritzWLAN(AbstractLibraryBase):
                 'signal': host['NewX_AVM-DE_SignalStrength'],
                 'speed': host['NewX_AVM-DE_Speed']
             })
-        return informations
+        return information
 
     def get_info(self):
         """
-        Returns a dictionary with general internal informations about
+        Returns a dictionary with general internal information about
         the current wlan network according to the AVM documentation.
         """
         return self._action("GetInfo")

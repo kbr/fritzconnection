@@ -2,7 +2,7 @@
 Call Monitoring
 ---------------
 
-The fritzmonitor-module is a core module of fritzconnection to provide real-time informations about incoming and outgoing phone-calls. This functionality is based on a separate socket-connection to the router and does not communicate by TR-064. 
+The fritzmonitor-module is a core module of fritzconnection to provide real-time information about incoming and outgoing phone-calls. This functionality is based on a separate socket-connection to the router and does not communicate by TR-064.
 
 FritzMonitor provides a queue of type ``queue.Queue`` for accessing CallMonitor events. To check the events send from the router, fritzconnection comes with a ``fritzmonitor`` command line tool. The next block shows a typical session: ::
 

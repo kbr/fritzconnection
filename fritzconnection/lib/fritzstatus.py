@@ -1,5 +1,5 @@
 """
-Module to read status-informations from an AVM FritzBox.
+Module to read status-information from an AVM FritzBox.
 """
 
 import time
@@ -22,7 +22,7 @@ def _integer_or_original(value):
 
 class FritzStatus(AbstractLibraryBase):
     """
-    Class for requesting status-informations: up, down, ip, activity
+    Class for requesting status-information: up, down, ip, activity
     (bytes per second send/received). All parameters are optional. If
     given, they have the following meaning: `fc` is an instance of
     FritzConnection, `address` the ip of the Fritz!Box, `port` the port
@@ -64,7 +64,7 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def external_ipv6_info(self):
         """
-        Returns the ipv6 external address informations as a dictionary with the keys:
+        Returns the ipv6 external address information as a dictionary with the keys:
         NewExternalIPv6Address                   out ->     string
         NewPrefixLength                          out ->     ui1
         NewValidLifetime                         out ->     ui4
@@ -80,7 +80,7 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def ipv6_prefix_info(self):
         """
-        Returns the ipv6 prefix informations as a dictionary with the keys:
+        Returns the ipv6 prefix information as a dictionary with the keys:
         NewIPv6Prefix                            out ->     string
         NewPrefixLength                          out ->     ui1
         NewValidLifetime                         out ->     ui4

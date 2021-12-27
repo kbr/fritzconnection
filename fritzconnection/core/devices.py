@@ -43,7 +43,7 @@ class DeviceManager:
         """
         Returns the system-version as string with minor- and
         patch-level. This corresponds to the OS version reported by the
-        router web-interface. Returns None if no system informations are
+        router web-interface. Returns None if no system information is
         available.
         """
         version = None
@@ -57,7 +57,7 @@ class DeviceManager:
     def system_info(self):
         """
         Returns a tuple with Hardwarecode, Major-, Minor-, Patch-Level, Buildnumber and Display-String, in this order.
-        Return None if this informations are not available.
+        Return None if this information is not available.
         """
         system_info = None
         for description in self.descriptions:

@@ -14,7 +14,7 @@ Version History
   - The methods `get_active_hosts` and `get_hosts_info` provide additional host attributes (#127)
 
 - Refactoring of the logging module `fritzconnection.core.logger` (introduced in 1.7.0). Now emitting messages from INFO-level and up by default.
-- Connection errors with the router raised from the underlying `urllib3` library are catched and raised again as FritzConnectionException preserving the connection error informations (#128)
+- Connection errors with the router raised from the underlying `urllib3` library are catched and raised again as FritzConnectionException preserving the connection error information (#128)
 
 
 1.7.2
@@ -112,7 +112,7 @@ Version History
 -----
 
 - Library class FritzStatus reports the sent and received bytes now as 64 bit integers and provides easy access to realtime monitor data.
-- Library class FritzHost provides more methods to access devices, including *wake on LAN* and net topology informations.
+- Library class FritzHost provides more methods to access devices, including *wake on LAN* and net topology information.
 - Library class FritzPhonebook has a new method *get_all_name_numbers()* to fix a bug of *get_all_names()* reporting just one name in case that a phonebook holds multiple entries of the same name.
 - Boolean arguments send to the router as *1* and *0* can also be given as the Python datatypes *True* and *False* (#30).
 - Flag -c added to fritzconnection cli interface to report the complete api.
@@ -229,7 +229,7 @@ Bugfixes, no new features or other changes.
 
 FritzConnection does now check for the environment variables ``FRITZ_USER`` and ``FRITZ_PASSWORD`` in case that neither user nor password are given.
 
-FritzStatus now accepts user and password as keyword-parameters. Keep in mind, that FritzBoxes may return different informations about the status depending whether these are gathered with or without a password.
+FritzStatus now accepts user and password as keyword-parameters. Keep in mind, that FritzBoxes may return different information about the status depending whether these are gathered with or without a password.
 
 
 0.6.5

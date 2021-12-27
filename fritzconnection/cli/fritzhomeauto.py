@@ -15,8 +15,8 @@ from . utils import get_cli_arguments, get_instance, print_header
 
 
 def report_verbose(fh):
-    informations = fh.device_informations()
-    for info in informations:
+    information = fh.device_information()
+    for info in information:
         width = len(max(info.keys(), key=lambda x: len(x)))
         line = f'{{attribute:{width}}} : {{value}}'
         for attribute in sorted(info.keys()):
@@ -31,7 +31,7 @@ def report_compact(fh):
     temperature = 't[°C]'
     switch_state = 'switch'
     print(f'{name:24}{ain:18}{power:>10}{temperature:>8}   {switch_state}')
-    for di in fh.device_informations():
+    for di in fh.device_information():
         name = di['NewDeviceName']
         ain = di['NewAIN']
         ain = f"'{ain}'"

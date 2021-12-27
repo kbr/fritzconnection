@@ -104,7 +104,7 @@ class Storage:
 class SpecVersion:
     """
     Specification version from the schema device or service
-    informations.
+    information.
     """
     def __init__(self):
         # attributes are case sensitive node names:
@@ -253,7 +253,7 @@ class ServiceStateTable(Storage):
 
 class Scpd:
     """
-    Provides informations about the Service Control Point Definitions
+    Provides information about the Service Control Point Definitions
     for every Service. Every Service has one instance of this class for
     accessing the description of it's own actions and the according
     parameters.

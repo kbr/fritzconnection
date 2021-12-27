@@ -94,7 +94,7 @@ class FritzConnection:
         Initialisation of FritzConnection: reads all data from the box
         and also the api-description (the servicenames and according
         actionnames as well as the parameter-types) that can vary among
-        models and stores these informations as instance-attributes.
+        models and stores the information as instance-attributes.
         This can be an expensive operation. Because of this an instance
         of FritzConnection should be created once and reused in an
         application. All parameters are optional. But if there is more

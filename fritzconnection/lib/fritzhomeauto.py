@@ -8,6 +8,8 @@ Module to access home-automation devices
 
 
 import itertools
+from warnings import warn
+
 from .fritzbase import AbstractLibraryBase
 
 
@@ -57,16 +59,23 @@ class FritzHomeAutomation(AbstractLibraryBase):
 
     def device_informations(self):
         """
+        DEPRECATED: use 'device_information' instead
+        """
+        warn('This method is deprecated. Use "device_information" instead.', DeprecationWarning)
+        return self.device_information()
+
+    def device_information(self):
+        """
         Returns a list of dictionaries for all known homeauto-devices.
         """
-        infos = list()
+        info = list()
         for n in itertools.count():
             try:
                 info = self.get_device_information_by_index(n)
             except IndexError:
                 break
-            infos.append(info)
-        return infos
+            info.append(info)
+        return info
 
     def set_switch(self, identifier, on=True):
         """

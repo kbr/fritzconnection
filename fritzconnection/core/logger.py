@@ -53,7 +53,7 @@ def activate_local_debug_mode(handler=None, propagate=False):
     set, avoiding a call of the lastResort-handler.
     If the given handler has no formatter, the fritzformatter gets set
     (which provides the `logging.BASIC_FORMAT`).
-    If propagate is True, all debug informations will also get send to
+    If propagate is True, all debug information will also get send to
     the parent-handlers. Keep in mind, that this can be a lot of data if
     the parent-handlers are enabled for debug-level records.
     """

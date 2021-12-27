@@ -40,7 +40,7 @@ class FritzHosts(AbstractLibraryBase):
 
     def get_generic_host_entry(self, index):
         """
-        Returns a dictionary with informations about a device internally
+        Returns a dictionary with information about a device internally
         registered by the position *index*. Index-positions are
         zero-based.
         """
@@ -60,14 +60,14 @@ class FritzHosts(AbstractLibraryBase):
 
     def get_specific_host_entry(self, mac_address):
         """
-        Returns a dictionary with informations about a device addressed
+        Returns a dictionary with information about a device addressed
         by the MAC-address.
         """
         return self._action("GetSpecificHostEntry", NewMACAddress=mac_address)
 
     def get_specific_host_entry_by_ip(self, ip):
         """
-        Returns a dictionary with informations about a device addressed
+        Returns a dictionary with information about a device addressed
         by the ip-address. Provides additional information about
         connection speed and system-updates for AVM devices.
         """
