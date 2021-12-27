@@ -1,5 +1,5 @@
 """
-Modul to access and control the known hosts.
+Module to access and control the known hosts.
 """
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection

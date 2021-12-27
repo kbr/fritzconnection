@@ -1,5 +1,5 @@
 """
-Modul to read status-informations from an AVM FritzBox.
+Module to read status-informations from an AVM FritzBox.
 """
 
 import time

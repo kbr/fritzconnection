@@ -1,5 +1,5 @@
 """
-Modul to access home-automation devices
+Module to access home-automation devices
 """
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection
