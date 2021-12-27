@@ -4,8 +4,8 @@ Version History
 ===============
 
 
-development
------------
+1.8.0
+-----
 
 - FritzConnection: new command line option `-R` to reboot the system
 - FritzHosts:
@@ -13,8 +13,8 @@ development
   - New method `get_generic_host_entries` returning a generator to iterate over all entries as reported by the method `get_generic_host_entry`.
   - The methods `get_active_hosts` and `get_hosts_info` provide additional host attributes (#127)
 
-- Connection Error handled in a more friendly way (#128)
-- Refactoring of the logging module `fritzconnection.core.logger`. Now emitting messages from INFO-level and up by default.
+- Refactoring of the logging module `fritzconnection.core.logger` (introduced in 1.7.0). Now emitting messages from INFO-level and up by default.
+- Connection errors with the router raised from the underlying `urllib3` library are catched and raised again as FritzConnectionException preserving the connection error informations (#128)
 
 
 1.7.2
