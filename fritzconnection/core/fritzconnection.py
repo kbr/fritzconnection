@@ -16,7 +16,6 @@ from requests.auth import HTTPDigestAuth
 
 from .devices import DeviceManager
 from .exceptions import (
-    FritzConnectionException,
     FritzResourceError,
     FritzServiceError,
 )

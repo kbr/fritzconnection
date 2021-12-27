@@ -11,9 +11,6 @@ stream = io.StringIO()
 stream_handler = logging.StreamHandler(stream=stream)
 formatter = logging.Formatter("%(levelname)s:%(message)s")
 stream_handler.setFormatter(formatter)
-message_formatter = logging.Formatter("%(message)s")
-test_logger = logging.getLogger("test_logger")
-test_logger.addHandler(stream_handler)
 
 
 def get_last_log_entry():
@@ -80,6 +77,7 @@ def test_local_debug_mode_no_handler():
     fritzlogger.debug(message)
     # no handler, but propagate:
     assert get_last_log_entry() == ""
+
 
 def test_local_debug_mode_no_handler_but_propagate_and_warning():
     # if emitted as warning, the message gets logged from the
