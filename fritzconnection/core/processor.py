@@ -255,13 +255,13 @@ class Scpd:
     """
     Provides information about the Service Control Point Definitions
     for every Service. Every Service has one instance of this class for
-    accessing the description of it's own actions and the according
+    accessing the description of its own actions and the according
     parameters.
     Root class for processing the content of an scpd-file.
     """
     def __init__(self, root):
         """
-        Starts interpreting the scpd-data. 'root' must be an xml.Element
+        Starts interpreting the scpd-data. 'root' must be a xml.Element
         objects as returned from 'utils.get_xml_root'.
         """
         self._actions = list()
@@ -283,7 +283,7 @@ class Scpd:
     def actions(self):
         """
         Returns a dictionary with the actions from the actions-list. The
-        action-names are the keys and the actions themself are the
+        action-names are the keys and the actions themselves are the
         values.
         """
         return {action.name: action for action in self._actions}
@@ -361,10 +361,10 @@ class ServiceList(Storage):
 @processor
 class Device:
     """
-    Storage for devices attributes and device subnodes.
-    Subnodes are the serviceList and the deviceList.
+    Storage for devices attributes and device sub-nodes.
+    Sub-nodes are the serviceList and the deviceList.
     The services provided by a device are collected in services.
-    Subdevices are collected in devices.
+    Sub-devices are collected in devices.
     All instance attributes are public for read only use.
     """
     def __init__(self):
@@ -411,7 +411,7 @@ class Description:
     """
     def __init__(self, root):
         """
-        Starts data-processing. 'root' must be an xml.Element object as
+        Starts data-processing. 'root' must be a xml.Element object as
         returned from 'utils.get_xml_root'.
         """
         # attributes are case sensitive node names:
@@ -443,7 +443,7 @@ class Description:
     def system_info(self):
         """
         Returns the systemVersion attributes as a tuple:
-        (HW, Major, Minor, Patch, Bildnumber, Display). This information
+        (HW, Major, Minor, Patch, Buildnumber, Display). This information
         is only available by the 'tr64desc.xml' file.
         """
         return self.systemVersion.info

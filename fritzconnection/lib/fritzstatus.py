@@ -110,7 +110,7 @@ class FritzStatus(AbstractLibraryBase):
 
     @property
     def str_uptime(self):
-        """Connection uptime in human readable format."""
+        """Connection uptime in human-readable format."""
         mins, secs = divmod(self.uptime, 60)
         hours, mins = divmod(mins, 60)
         return "%02d:%02d:%02d" % (hours, mins, secs)
@@ -157,7 +157,7 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def str_transmission_rate(self):
         """
-        Tuple of human readable transmission rate in bytes. First item
+        Tuple of human-readable transmission rate in bytes. First item
         is upstream, second item downstream.
         """
         upstream, downstream = self.transmission_rate
@@ -166,7 +166,7 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def max_linked_bit_rate(self):
         """
-        Tuple with the maximun upstream- and downstream-rate
+        Tuple with the maximum upstream- and downstream-rate
         of the physical link. The rate is given in bits/sec.
         """
         return self._get_max_bit_rate("WANCommonInterfaceConfig")
@@ -174,7 +174,7 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def max_bit_rate(self):
         """
-        Tuple with the maximun upstream- and downstream-rate
+        Tuple with the maximum upstream- and downstream-rate
         of the given connection. The rate is given in bits/sec.
         """
         return self._get_max_bit_rate("WANCommonIFC")
@@ -200,7 +200,7 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def str_max_linked_bit_rate(self):
         """
-        Human readable maximum of the physical upstream- and
+        Human-readable maximum of the physical upstream- and
         downstream-rate in bits/sec. Value is a tuple, first item is
         upstream, second item is downstream.
         """
@@ -213,7 +213,7 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def str_max_bit_rate(self):
         """
-        Human readable maximum of the upstream- and downstream-rate in
+        Human-readable maximum of the upstream- and downstream-rate in
         bits/sec, as given by the provider. Value is a tuple, first item
         is upstream, second item is downstream.
         """
@@ -262,7 +262,7 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def str_noise_margin(self):
         """
-        Human readable noise margin in dB. Value is a tuple, first item
+        Human-readable noise margin in dB. Value is a tuple, first item
         is upstream, second item downstream.
         """
         upstream, downstream = self.noise_margin
@@ -282,7 +282,7 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def str_attenuation(self):
         """
-        Human readable attenuation in dB. Value is a tuple, first item
+        Human-readable attenuation in dB. Value is a tuple, first item
         is upstream, second item downstream.
         """
         upstream, downstream = self.attenuation

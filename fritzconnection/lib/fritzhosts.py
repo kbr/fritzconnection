@@ -178,7 +178,7 @@ class FritzHosts(AbstractLibraryBase):
         """
         Triggers the host with the given `mac_address` to run a system
         update. The method returns immediately, but for the device it
-        take some time to do the OS update. All vendor warnings about running a
+        takes some time to do the OS update. All vendor warnings about running a
         system update apply, like not turning power off during a system
         update. So run this command with caution.
         """

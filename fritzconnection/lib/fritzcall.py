@@ -75,7 +75,7 @@ class FritzCall(AbstractLibraryBase):
                         num=None, days=None):
         """
         Return a list of Call instances of type calltypes. If calltype
-        is 0 all calls are listet. If *update* is True, all calls are
+        is 0 all calls are listed. If *update* is True, all calls are
         reread from the router. *num* maximum number of entries in call
         list. *days* number of days to look back for calls e.g. 1: calls
         from today and yesterday, 7: calls from the complete last week.
@@ -157,7 +157,7 @@ class Call:
     attributes are *Id*, *Type*, *Called*, *Caller*, *CallerNumber*,
     *CalledNumber*, *Name*, *Device*, *Port*, *Date*, *Duration* and
     *Count*. The spelling represents the original xml-node names.
-    Additionally the following attributes can be accessed by lowercase
+    Additionally, the following attributes can be accessed by lowercase
     names: *id* returning the Id as integer, *type* returning the Type
     as integer, *date* returning the Date as datetime-instance,
     *duration* returning the Duration as timedelta-instance.

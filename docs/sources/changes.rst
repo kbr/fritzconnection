@@ -14,7 +14,7 @@ Version History
   - The methods `get_active_hosts` and `get_hosts_info` provide additional host attributes (#127)
 
 - Refactoring of the logging module `fritzconnection.core.logger` (introduced in 1.7.0). Now emitting messages from INFO-level and up by default.
-- Connection errors with the router raised from the underlying `urllib3` library are catched and raised again as FritzConnectionException preserving the connection error information (#128)
+- Connection errors with the router raised from the underlying `urllib3` library are caught and raised again as FritzConnectionException preserving the connection error information (#128)
 
 
 1.7.2

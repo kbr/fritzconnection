@@ -14,7 +14,7 @@ from .utils import get_xml_root
 
 class DeviceManager:
     """
-    Knows all data about the device and the subdevices, including the
+    Knows all data about the device and the sub-devices, including the
     available services. Takes an optional `timeout` parameter to limit
     the time waiting for a router response. The optional parameter
     `session` is a reusable connection and can speed up the

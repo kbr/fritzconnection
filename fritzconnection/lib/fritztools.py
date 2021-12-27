@@ -30,7 +30,7 @@ def byte_formatter(value):
 
 def format_num(num, unit='bytes'):
     """
-    Returns a human readable string of a byte-value.
+    Returns a human-readable string of a byte-value.
     If 'num' is bits, set unit='bits'.
     """
     num, dim = byte_formatter(num)
@@ -41,7 +41,7 @@ def format_num(num, unit='bytes'):
 
 def format_rate(num, unit='bytes'):
     """
-    Returns a human readable string of a byte/bits per second.
+    Returns a human-readable string of a byte/bits per second.
     If 'num' is bits, set unit='bits'.
     """
     return format_num(num, unit=unit) + '/s'
@@ -49,7 +49,7 @@ def format_rate(num, unit='bytes'):
 
 def format_dB(num):
     """
-    Returns a human readable string of dB. The value is divided
+    Returns a human-readable string of dB. The value is divided
     by 10 to get first decimal digit
     """
     num /= 10

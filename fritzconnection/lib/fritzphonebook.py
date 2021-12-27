@@ -74,7 +74,8 @@ class FritzPhonebook(AbstractLibraryBase):
 
     def get_all_name_numbers(self, id):
         """
-        Returns all entries from the phonebook with the given id as a list of tuples. The first item of every tuple is the contact name and the second item is the list of numbers for this contact.
+        Returns all entries from the phonebook with the given id as a list of tuples. The first item of every tuple is
+        the contact name and the second item is the list of numbers for this contact.
         """
         url = self.phonebook_info(id)['url']
         self._read_phonebook(url)
@@ -86,7 +87,9 @@ class FritzPhonebook(AbstractLibraryBase):
     def get_all_names(self, id):
         """
         Get a dictionary with all names and their phone numbers for the
-        phonebook with `id`. If a name is given more than once in a single phonebook, the last entry will overwrite the previous entries. (That's because the names are the keys in the dictionary returned from this method. In this case use the method 'get_all_name_numbers()' to get all entries as a list of tuples.)
+        phonebook with `id`. If a name is given more than once in a single phonebook, the last entry will overwrite
+        the previous entries. (That's because the names are the keys in the dictionary returned from this method.
+        In this case use the method 'get_all_name_numbers()' to get all entries as a list of tuples.)
         """
         return {name: number for name, number in self.get_all_name_numbers(id)}
 
@@ -162,8 +165,8 @@ class Telephony:
 @processor
 class Contact:
     """
-    Represents a contact with `catecory`- and `uniqueid`-attributes as
-    well as `person`- and telephony-subnodes.
+    Represents a contact with `category`- and `uniqueid`-attributes as
+    well as `person`- and telephony-sub-nodes.
     """
 
     def __init__(self):

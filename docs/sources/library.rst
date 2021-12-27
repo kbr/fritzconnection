@@ -5,7 +5,7 @@ The library is a package with modules on top of FritzConnection to address speci
 
 **Performance considerations:**
 
-Creating a FritzConnection instance will inspect the Fritz!Box API to get information about all availabe services and corresponding actions. As this is i/o based it's generally slow. But once an instance is created, it can be reused for all tasks. Therefore the library classes can optionally initialised with an existing FritzConnection instance, to not inspect the router-API multiple times: ::
+Creating a FritzConnection instance will inspect the Fritz!Box API to get information about all available services and corresponding actions. As this is i/o based it's generally slow. But once an instance is created, it can be reused for all tasks. Therefore the library classes can optionally initialised with an existing FritzConnection instance, to not inspect the router-API multiple times: ::
 
     from fritzconnection import FritzConnection
     from fritzconnection.lib.fritzhomeauto import FritzHomeAutomation
@@ -146,7 +146,7 @@ It is also easy to toggle a switch (like a FRITZ!DECT 200/210 device): ::
 
     fha.set_switch(ain, on=True)
 
-This will turn the switch with the given identifier *on* or *off* depending whether the parameter 'on' is *True* or *False*. Usecases can be to set a switch depending on the temperature or daytime.
+This will turn the switch with the given identifier *on* or *off* depending whether the parameter 'on' is *True* or *False*. Use-cases can be to set a switch depending on the temperature or daytime.
 
 
 FritzHomeAutomation  API
@@ -316,7 +316,7 @@ Example to get the total number of known WLAN-devices for all WLANConfigurations
 Example: device tracking
 ........................
 
-A common usecase for wlan-information is device tracking. The following is a basic example how to do this. The example will poll the mac-addresses of all active devices. (For this a fixed tracking duration with a short poll-period is used. This may not be appropriate for real world programs.)
+A common use-case for wlan-information is device tracking. The following is a basic example how to do this. The example will poll the mac-addresses of all active devices. (For this a fixed tracking duration with a short poll-period is used. This may not be appropriate for real world programs.)
 ::
 
     import time

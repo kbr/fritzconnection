@@ -53,7 +53,7 @@ class FritzWLAN(AbstractLibraryBase):
     @property
     def total_host_number(self):
         """
-        Total NewAssociatedDeviceIndexumber of registered wlan devices
+        Total NewAssociatedDeviceIndexNumber of registered wlan devices
         for all WLANConfigurations.
         """
         total = 0
@@ -187,7 +187,7 @@ class FritzWLAN(AbstractLibraryBase):
         Sets a new password for the associated wlan.
         If no password is given a new one is created with the given
         length (the new password can get read with a subsequent call of
-        `get_password`). Also creates a new preshared key.
+        `get_password`). Also creates a new pre-shared key.
         """
         preshared_key = self._create_preshared_key()
         password = password or self._create_password(length)
@@ -203,7 +203,7 @@ class FritzWLAN(AbstractLibraryBase):
 
     def _create_preshared_key(self):
         """
-        Returns a new preshared key for setting a new password.
+        Returns a new pre-shared key for setting a new password.
         The sequence is of uppercase characters as this is default on FritzOS
         at time of writing.
         """
@@ -215,9 +215,9 @@ class FritzWLAN(AbstractLibraryBase):
     @staticmethod
     def _create_password(length):
         """
-        Returns a human readable password with the given length.
+        Returns a human-readable password with the given length.
         """
-        # add just two human readable special characters.
+        # add just two human-readable special characters.
         # password strength increases with the length.
         # character permutations are: 64**length
         characters = string.ascii_letters + string.digits + "@#"
@@ -241,7 +241,7 @@ class FritzGuestWLAN(FritzWLAN):
     """
     def __init__(self, *args, **kwargs):
         """
-        Initialize a the guest wlan instance. All parameters are
+        Initialize the guest wlan instance. All parameters are
         optional. If given, they have the following meaning: `fc` is an
         instance of FritzConnection, `address` the ip of the Fritz!Box,
         `port` the port to connect to, `user` the username, `password`
