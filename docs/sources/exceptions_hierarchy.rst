@@ -7,6 +7,8 @@
                     |--> ActionError --> FritzActionError
                     |--> ServiceError --> FritzServiceError
                     |
+                    |--> FritzResourceError
+                    |
                     |--> FritzArgumentError
                     |       |
                     |       |--> FritzArgumentValueError

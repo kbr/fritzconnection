@@ -4,6 +4,22 @@ Version History
 ===============
 
 
+development
+-----------
+
+- New methods: (#131)
+
+    - FritzHomeAutomation: new method `device_information()` replacing `device_informations()` (now an alias)
+    - FritzWLAN: new method `channel_info()` replacing `channel_infos()` (now an alias)
+
+- Deprecations:
+
+  - fritzconnection.lib.fritzhomeauto.FritzHomeAutomation.device_informations()
+  - fritzconnection.lib.fritzwlan.FritzWLAN.channel_infos()
+
+- Documentation improvements
+
+
 1.8.0
 -----
 
