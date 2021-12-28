@@ -23,7 +23,7 @@ def localname(node):
 def get_content_from(url, timeout=None, session=None):
     """
     Returns text from a get-request for the given url. In case of a
-    secure request (using TLS) the parameter verify is set to False, to
+    secure request (using TLS) the parameter verify is set to False, in order to
     disable certificate verifications. As the Fritz!Box creates a
     self-signed certificate for use in the LAN, encryption will work but
     verification will fail.
@@ -63,14 +63,14 @@ def get_xml_root(source, timeout=None, session=None):
     """
     Function to help migrate from lxml to the standard-library xml-package.
 
-    'source' must be a string and can be an xml-string, a uri or a file
+    'source' must be a string and can be a xml-string, a uri or a file
     name. `timeout` is an optional parameter limiting the time waiting
     for a router response.
-    In all cases this function returns an xml.etree.Element instance
+    In all cases this function returns a xml.etree.Element instance
     which is the root of the parsed tree.
     """
     if source.startswith("http://") or source.startswith("https://"):
-        # it's a uri, use requests to get the content
+        # it's an uri, use requests to get the content
         source = get_content_from(source, timeout=timeout, session=session)
     elif not source.startswith("<"):
         # assume it's a filename

@@ -29,13 +29,13 @@ def get_header():
 
 def report_wlanconfiguration(fw, extension):
     fw.service = extension
-    host_informations = fw.get_hosts_info()
-    if host_informations:
+    hosts_info = fw.get_hosts_info()
+    if hosts_info:
         print(f'Hosts registered at {SERVICE}{extension}:')
         print(f'WLAN name: {fw.ssid}')
         print(f'channel  : {fw.channel}')
         print(get_header())
-        for info in host_informations:
+        for info in hosts_info:
             index = info['index']
             status = info['status']
             mac = info['mac']

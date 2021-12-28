@@ -15,5 +15,5 @@ Additional authors having contributed to this project:
 * Julian Tatsch
 
 
-Since moving from bitbucket to github, an up to date list of contributers is listed here: `https://github.com/kbr/fritzconnection/graphs/contributors <https://github.com/kbr/fritzconnection/graphs/contributors>`_.
+Since moving from bitbucket to github, an up to date list of contributors is listed here: `https://github.com/kbr/fritzconnection/graphs/contributors <https://github.com/kbr/fritzconnection/graphs/contributors>`_.
 

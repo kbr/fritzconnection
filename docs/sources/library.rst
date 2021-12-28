@@ -5,7 +5,7 @@ The library is a package with modules on top of FritzConnection to address speci
 
 **Performance considerations:**
 
-Creating a FritzConnection instance will inspect the Fritz!Box API to get informations about all availabe services and corresponding actions. As this is i/o based it's generally slow. But once an instance is created, it can be reused for all tasks. Therefore the library classes can optionally initialised with an existing FritzConnection instance, to not inspect the router-API multiple times: ::
+Creating a FritzConnection instance will inspect the Fritz!Box API to get information about all available services and corresponding actions. As this is i/o based it's generally slow. But once an instance is created, it can be reused for all tasks. Therefore the library classes can optionally initialised with an existing FritzConnection instance, to not inspect the router-API multiple times: ::
 
     from fritzconnection import FritzConnection
     from fritzconnection.lib.fritzhomeauto import FritzHomeAutomation
@@ -105,19 +105,19 @@ Can access Homeautomation devices to read the current states and set the status 
     Device Name             AIN                 Power[W]   t[°C]   switch
     FRITZ!DECT 210 #1       '11657 0240192'        0.000    23.5   on
 
-The optional ``-v`` flag will give a verbose report about all device informations, including the settings of radiator controls.
+The optional ``-v`` flag will give a verbose report about all device information, including the settings of radiator controls.
 
 The ``-s`` flag can set the state of switches. This flag requires two parameters: the device identifier (AIN) and the state to set [on|off]. The following example will switch off the device with the identifier '11657 0240192': ::
 
     $ fritzhomeauto -i 192.168.178.1 -p <password> -s '11657 0240192' off
 
 
-Example on how to get informations about the known devices by using a module: ::
+Example on how to get information about the known devices by using a module: ::
 
     from fritzconnection.lib.fritzhomeauto import FritzHomeAutomation
 
     fha = FritzHomeAutomation(address='192.168.178.1', password=<password>)
-    info = fha.device_informations()
+    info = fha.device_information()
 
 'info' is a list of dictionaries describing the devices: ::
 
@@ -136,7 +136,7 @@ Example on how to get informations about the known devices by using a module: ::
       'NewTemperatureIsValid': 'VALID',
       'NewTemperatureOffset': 0}]
 
-Depending on the device, different informations will get reported. Informations about a specific device can get obtained with the identifier *NewAIN*. The next example shows how to get the temperature in °C, taken the *NewAIN* from device_informations() call: ::
+Depending on the device, different information will get reported. Information about a specific device can get obtained with the identifier *NewAIN*. The next example shows how to get the temperature in °C, taken the *NewAIN* from device_information() call: ::
 
     ain = '11657 0240192'
     fha.get_device_information_by_identifier(ain)['NewTemperatureCelsius'] * 0.1
@@ -146,7 +146,7 @@ It is also easy to toggle a switch (like a FRITZ!DECT 200/210 device): ::
 
     fha.set_switch(ain, on=True)
 
-This will turn the switch with the given identifier *on* or *off* depending whether the parameter 'on' is *True* or *False*. Usecases can be to set a switch depending on the temperature or daytime.
+This will turn the switch with the given identifier *on* or *off* depending whether the parameter 'on' is *True* or *False*. Use-cases can be to set a switch depending on the temperature or daytime.
 
 
 FritzHomeAutomation  API
@@ -159,7 +159,7 @@ FritzHomeAutomation  API
 FritzHosts
 ----------
 
-Utility modul for FritzConnection to access and control the known hosts. The command line tool allows to list the current ip, name, the MAC address and the active-state for all registered hosts: ::
+Utility module for FritzConnection to access and control the known hosts. The command line tool allows to list the current ip, name, the MAC address and the active-state for all registered hosts: ::
 
     $ fritzhosts -i 192.168.178.1 -p <password>
 
@@ -241,7 +241,7 @@ FritzPhonebook API
 FritzStatus
 -----------
 
-Reports informations about the link-status to the service provider. Usage from the command line: ::
+Reports information about the link-status to the service provider. Usage from the command line: ::
 
     $ fritzstatus -i 192.168.178.1 -p password
 
@@ -316,7 +316,7 @@ Example to get the total number of known WLAN-devices for all WLANConfigurations
 Example: device tracking
 ........................
 
-A common usecase for wlan-informations is device tracking. The following is a basic example how to do this. The example will poll the mac-addresses of all active devices. (For this a fixed tracking duration with a short poll-period is used. This may not be appropriate for real world programs.)
+A common use-case for wlan-information is device tracking. The following is a basic example how to do this. The example will poll the mac-addresses of all active devices. (For this a fixed tracking duration with a short poll-period is used. This may not be appropriate for real world programs.)
 ::
 
     import time

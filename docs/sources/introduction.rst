@@ -31,7 +31,7 @@ The ip-adress is a fallback-value common to every fritzbox-router, regardless of
 Usernames and passwords
 -----------------------
 
-For some operations a username and/or a password is required. This can be given on the command line as parameters or, by using a module, as arguments. To not present these informations in clear text, username and password can get stored in the environment variables ``FRITZ_USERNAME`` and ``FRITZ_PASSWORD``. FritzConnection will check for these environment variables first and, if set, will use the corresponding values.
+For some operations a username and/or a password is required. This can be given on the command line as parameters or, by using a module, as arguments. To not present these information in clear text, username and password can get stored in the environment variables ``FRITZ_USERNAME`` and ``FRITZ_PASSWORD``. FritzConnection will check for these environment variables first and, if set, will use the corresponding values.
 
 For Fritz!OS < 7.24 the username was optional and a default username gets used in this case. For newer versions an individual username is required. If a username is not provided, FritzConnection will read the username of the last logged in user from the Fritz!Box and will take this username as default.
 
@@ -239,9 +239,9 @@ The result of calling the ``call_action`` method is always a dictionary with the
      'NewStandard': 'n',
      'NewStatus': 'Up'}
 
-These informations are showing a lot of details about the WLAN configuration. In this example the network is up and operating on channel 6.
+This information is showing a lot of details about the WLAN configuration. In this example the network is up and operating on channel 6.
 
-To activate or deactivate a network, the action ``SetEnable`` can get called. Inspection gives informations about the required arguments: ::
+To activate or deactivate a network, the action ``SetEnable`` can get called. Inspection gives information about the required arguments: ::
 
     $ $ fritzconnection -i 192.168.178.1 -A WLANConfiguration1 SetEnable
 

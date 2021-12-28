@@ -17,7 +17,7 @@ from .utils import get_cli_arguments, get_instance, print_header
 
 def print_status(fs):
     print("FritzStatus:\n")
-    status_informations = [
+    status_information = [
         ("is linked", "is_linked"),
         ("is connected", "is_connected"),
         ("external ip (v4)", "external_ip"),
@@ -28,7 +28,7 @@ def print_status(fs):
         ("bytes received", "bytes_received"),
         ("max. bit rate", "str_max_bit_rate"),
     ]
-    for status, attribute in status_informations:
+    for status, attribute in status_information:
         try:
             information = getattr(fs, attribute)
         except (FritzServiceError, FritzActionError):

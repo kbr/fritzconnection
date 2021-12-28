@@ -1,5 +1,5 @@
 """
-Module to get informations about WLAN devices.
+Module to get information about WLAN devices.
 """
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection
@@ -9,6 +9,8 @@ Module to get informations about WLAN devices.
 import itertools
 import random
 import string
+
+from warnings import warn
 
 from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
@@ -51,7 +53,7 @@ class FritzWLAN(AbstractLibraryBase):
     @property
     def total_host_number(self):
         """
-        Total NewAssociatedDeviceIndexumber of registered wlan devices
+        Total NewAssociatedDeviceIndexNumber of registered wlan devices
         for all WLANConfigurations.
         """
         total = 0
@@ -78,14 +80,21 @@ class FritzWLAN(AbstractLibraryBase):
     @property
     def channel(self):
         """The WLAN channel in use"""
-        return self.channel_infos()['NewChannel']
+        return self.channel_info()['NewChannel']
 
     @property
     def alternative_channels(self):
         """Alternative channels (as string)"""
-        return self.channel_infos()['NewPossibleChannels']
+        return self.channel_info()['NewPossibleChannels']
 
     def channel_infos(self):
+        """
+        DEPRECATED: use 'channel_info' instead
+        """
+        warn('This method is deprecated. Use "channel_info" instead.', DeprecationWarning)
+        return self.channel_info()
+
+    def channel_info(self):
         """
         Return a dictionary with the keys *NewChannel* and
         *NewPossibleChannels* indicating the active channel and
@@ -102,7 +111,7 @@ class FritzWLAN(AbstractLibraryBase):
 
     def get_generic_host_entry(self, index):
         """
-        Return a dictionary with informations about the device
+        Return a dictionary with information about the device
         internally stored at the position 'index'.
         """
         result = self._action(
@@ -113,7 +122,7 @@ class FritzWLAN(AbstractLibraryBase):
 
     def get_specific_host_entry(self, mac_address):
         """
-        Return a dictionary with informations about the device
+        Return a dictionary with information about the device
         with the given 'mac_address'.
         """
         result = self._action(
@@ -128,13 +137,13 @@ class FritzWLAN(AbstractLibraryBase):
         hosts. The dict-keys are: 'service', 'index', 'status', 'mac',
         'ip', 'signal', 'speed'
         """
-        informations = []
+        information = []
         for index in itertools.count():
             try:
                 host = self.get_generic_host_entry(index)
             except IndexError:
                 break
-            informations.append({
+            information.append({
                 'service': self.service,
                 'index': index,
                 'status': host['NewAssociatedDeviceAuthState'],
@@ -143,11 +152,11 @@ class FritzWLAN(AbstractLibraryBase):
                 'signal': host['NewX_AVM-DE_SignalStrength'],
                 'speed': host['NewX_AVM-DE_Speed']
             })
-        return informations
+        return information
 
     def get_info(self):
         """
-        Returns a dictionary with general internal informations about
+        Returns a dictionary with general internal information about
         the current wlan network according to the AVM documentation.
         """
         return self._action("GetInfo")
@@ -178,7 +187,7 @@ class FritzWLAN(AbstractLibraryBase):
         Sets a new password for the associated wlan.
         If no password is given a new one is created with the given
         length (the new password can get read with a subsequent call of
-        `get_password`). Also creates a new preshared key.
+        `get_password`). Also creates a new pre-shared key.
         """
         preshared_key = self._create_preshared_key()
         password = password or self._create_password(length)
@@ -194,7 +203,7 @@ class FritzWLAN(AbstractLibraryBase):
 
     def _create_preshared_key(self):
         """
-        Returns a new preshared key for setting a new password.
+        Returns a new pre-shared key for setting a new password.
         The sequence is of uppercase characters as this is default on FritzOS
         at time of writing.
         """
@@ -206,9 +215,9 @@ class FritzWLAN(AbstractLibraryBase):
     @staticmethod
     def _create_password(length):
         """
-        Returns a human readable password with the given length.
+        Returns a human-readable password with the given length.
         """
-        # add just two human readable special characters.
+        # add just two human-readable special characters.
         # password strength increases with the length.
         # character permutations are: 64**length
         characters = string.ascii_letters + string.digits + "@#"
@@ -232,7 +241,7 @@ class FritzGuestWLAN(FritzWLAN):
     """
     def __init__(self, *args, **kwargs):
         """
-        Initialize a the guest wlan instance. All parameters are
+        Initialize the guest wlan instance. All parameters are
         optional. If given, they have the following meaning: `fc` is an
         instance of FritzConnection, `address` the ip of the Fritz!Box,
         `port` the port to connect to, `user` the username, `password`

@@ -138,7 +138,7 @@ class FritzMonitor:
         stop() first. `queue_size` is the number of events the queue can store.
         If `block_on_filled_queue` is False the event will get discarded in case
         of no free block (default). On True the EventReporter will block until a
-        slot is awailable. `reconnect_delay` defines the maximum time intervall in
+        slot is available. `reconnect_delay` defines the maximum time interval in
         seconds between reconnection tries, in case that a socket-connection
         gets lost. `reconnect_tries` defines the number of consecutive to
         reconnect a socket before giving up.
@@ -175,7 +175,7 @@ class FritzMonitor:
     def _get_connected_socket(self, sock=None):
         """
         Takes the given socket and builds a connection to address and port defined
-        at instanciation. If no socket is given a new one gets created.
+        at instantiation. If no socket is given a new one gets created.
         Returns the socket.
         """
         if sock is None:

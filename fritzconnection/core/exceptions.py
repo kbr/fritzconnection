@@ -71,24 +71,24 @@ class FritzConnectionException(Exception):
 
 class ActionError(FritzConnectionException):
     """
-    Exception raised by calling nonexisting actions.
-    Legathy Exception. Use FritzActionError instead.
+    Exception raised by calling non-existing actions.
+    Legacy Exception. Use FritzActionError instead.
     """
 
 
 class ServiceError(FritzConnectionException):
     """
-    Exception raised by calling nonexisting services.
-    Legathy Exception. Use FritzServiceError instead.
+    Exception raised by calling non-existing services.
+    Legacy Exception. Use FritzServiceError instead.
     """
 
 
 class FritzServiceError(ServiceError):
-    """Exception raised by calling nonexisting services."""
+    """Exception raised by calling non-existing services."""
 
 
 class FritzActionError(ActionError):
-    """Exception raised by calling nonexisting actions."""
+    """Exception raised by calling non-existing actions."""
 
 
 class FritzResourceError(FritzConnectionException):

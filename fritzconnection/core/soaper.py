@@ -78,7 +78,7 @@ def encode_boolean(value):
     """
     Returns 1 or 0 if the value is True or False.
     None gets interpreted as False.
-    Otherwise the original value is returned.
+    Otherwise, the original value is returned.
     """
     if value is True:
         return 1
@@ -89,12 +89,12 @@ def encode_boolean(value):
 
 def get_html_safe_value(value):
     """
-    Returns an xml `encoded value` if it's an encodable value.
+    Returns a xml `encoded value` if it's an encodable value.
     `value` can be of any type. If it is a boolean or None it
     gets converted to the integer 1 or 0.
     If it is a string the characters in the set `&<>'"` are
     converted to html-safe sequences.
-    Any other datatype get's returned as is.
+    Any other datatype gets returned as is.
     """
     value = encode_boolean(value)
     if isinstance(value, str):
@@ -171,7 +171,7 @@ class Soaper:
 
     For accessing the Fritz!Box the parameters `address` for the router
     ip, `port`, `user`, `password` and `session` are required. (These
-    parameters will get set by FritzConnection,)
+    parameters will get set by FritzConnection.)
     """
 
     headers = {"soapaction": "", "content-type": "text/xml", "charset": "utf-8"}

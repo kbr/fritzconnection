@@ -51,7 +51,7 @@ class FritzConnection:
     Main class to set up a connection to the Fritz!Box router. All
     parameters are optional. `address` should be the ip of a router, in
     case that are multiple Fritz!Box routers in a network, the ip must
-    be given. Otherwise it is undefined which router will respond. If
+    be given. Otherwise, it is undefined which router will respond. If
     `user` and `password` are not provided, the environment gets checked for
     FRITZ_USERNAME and FRITZ_PASSWORD settings and taken from there, if
     found.
@@ -70,7 +70,7 @@ class FritzConnection:
     7.24 also requires a username, the previous default username is just
     valid for OS versions < 7.24. In case the username is not given and
     the system version is 7.24 or newer, FritzConnection uses the last
-    logged in username as default.
+    logged-in username as default.
     (`New in version 1.5`)
 
     For applications where the urllib3 default connection-pool size
@@ -94,7 +94,7 @@ class FritzConnection:
         Initialisation of FritzConnection: reads all data from the box
         and also the api-description (the servicenames and according
         actionnames as well as the parameter-types) that can vary among
-        models and stores these informations as instance-attributes.
+        models and stores the information as instance-attributes.
         This can be an expensive operation. Because of this an instance
         of FritzConnection should be created once and reused in an
         application. All parameters are optional. But if there is more
@@ -264,7 +264,7 @@ class FritzConnection:
         keyword-parameters as further arguments are ignored.
         The argument values can be of type *str*, *int* or *bool*.
         (Note: *bool* is provided since 1.3. In former versions
-        booleans must provided as numeric values: 1, 0).
+        booleans must be provided as numeric values: 1, 0).
         If the service_name does not end with a number (like 1), a 1
         gets added by default. If the service_name ends with a colon and a
         number, the colon gets removed. So i.e. WLANConfiguration
