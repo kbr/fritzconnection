@@ -89,7 +89,8 @@ class FritzWLAN(AbstractLibraryBase):
 
     def channel_infos(self):
         """
-        DEPRECATED: use 'channel_info' instead
+        DEPRECATED: use 'channel_info' instead.
+        `Deprecated since 1.9.0`
         """
         warn('This method is deprecated. Use "channel_info" instead.', DeprecationWarning)
         return self.channel_info()

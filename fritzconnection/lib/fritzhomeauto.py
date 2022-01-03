@@ -59,7 +59,8 @@ class FritzHomeAutomation(AbstractLibraryBase):
 
     def device_informations(self):
         """
-        DEPRECATED: use 'device_information' instead
+        DEPRECATED: use 'device_information' instead.
+        `Deprecated since 1.9.0`
         """
         warn('This method is deprecated. Use "device_information" instead.', DeprecationWarning)
         return self.device_information()
