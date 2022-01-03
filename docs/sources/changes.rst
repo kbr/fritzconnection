@@ -9,8 +9,8 @@ development
 
 - New methods: (#131)
 
-    - FritzHomeAutomation: new method `device_information()` replacing `device_informations()` (now an alias)
-    - FritzWLAN: new method `channel_info()` replacing `channel_infos()` (now an alias)
+  - FritzHomeAutomation: new method `device_information()` replacing `device_informations()` (now an alias)
+  - FritzWLAN: new method `channel_info()` replacing `channel_infos()` (now an alias)
 
 - Deprecations:
 
