@@ -6,6 +6,7 @@ Module to get information about WLAN devices.
 # License: MIT (https://opensource.org/licenses/MIT)
 # Author: Bernd Strebel, Klaus Bremer
 
+import io
 import itertools
 import random
 import string
@@ -15,12 +16,44 @@ from warnings import warn
 from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
 
+try:
+    import segno.helpers
+except ImportError:
+    SEGNO_INSTALLED = False
+else:
+    SEGNO_INSTALLED = True
 
 # important: don't set an extension number here:
 SERVICE = 'WLANConfiguration'
 DEFAULT_PASSWORD_LENGTH = 12
 
 
+def get_wifi_qr_code(self, kind='svg'):
+    """
+    Returns a file-like object providing a bytestring representing a
+    qr-code for wlan access. `kind` describes the type of the qr-code.
+    Supported values are: 'svg', 'png', 'pdf'. Default is 'svg'.
+    This function can get called as a method on FritzWLAN and
+    FritzGuestWLAN instances if the third party package `segno` is
+    installed (pip install segno). Otherwise the call will trigger an
+    AttributeError.
+    New in version 1.9.0
+    """
+    stream = io.BytesIO()
+    qr_code = segno.helpers.make_wifi(self.ssid, self.get_password())
+    qr_code.save(out=stream, kind=kind)
+    stream.seek(0)
+    return stream
+
+
+def qr_code_enabler(cls):
+    """Classdecorator to inject qr-capabilities."""
+    if SEGNO_INSTALLED:
+        cls.get_wifi_qr_code = get_wifi_qr_code
+    return cls
+
+
+@qr_code_enabler
 class FritzWLAN(AbstractLibraryBase):
     """
     Class to list all known wlan devices. All parameters are optional.
