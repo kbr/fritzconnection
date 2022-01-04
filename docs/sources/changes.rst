@@ -7,21 +7,21 @@ Version History
 development
 -----------
 
-- New methods: (#131)
-
-  - FritzHomeAutomation: new method `device_information()` replacing `device_informations()` (now an alias)
-  - FritzWLAN: new method `channel_info()` replacing `channel_infos()` (now an alias)
+- FritzGuestWLAN and FritzWLAN: optional QR-code creation for wifi-access (#133). Adds a new third-party dependency: `segno`. See `installation <./install.html>`_ for  details.
+- FritzHomeAutomation: new method `device_information()` (#131)
+- FritzWLAN: new method `channel_info()` (#131)
 
 - Deprecations:
 
-  - fritzconnection.lib.fritzhomeauto.FritzHomeAutomation.device_informations()
-  - fritzconnection.lib.fritzwlan.FritzWLAN.channel_infos()
+  - `fritzconnection.lib.fritzhomeauto.FritzHomeAutomation.device_informations()`
+  - `fritzconnection.lib.fritzstatus.FritzStatus.uptime()`
+  - `fritzconnection.lib.fritzwlan.FritzWLAN.channel_infos()`
 
 - Documentation improvements
 
 
-1.8.0
------
+1.8.0 - 2021-12-27
+------------------
 
 - FritzConnection: new command line option `-R` to reboot the system
 - FritzHosts:
@@ -33,20 +33,20 @@ development
 - Connection errors with the router raised from the underlying `urllib3` library are caught and raised again as FritzConnectionException preserving the connection error information (#128)
 
 
-1.7.2
------
+1.7.2 - 2021-11-14
+------------------
 
 - bugfix: logger deactivated by default (#123)
 
 
-1.7.1
------
+1.7.1 - 2021-10-10
+------------------
 
 - Tests extended for Python 3.10
 
 
-1.7.0
------
+1.7.0 - 2021-09-25
+------------------
 
 - New FritzWLAN-methods:
 
@@ -58,8 +58,8 @@ development
 - New logging module `fritzconnection.core.logger`.
 
 
-1.6.0
------
+1.6.0 - 2021-07-24
+------------------
 
 - New arguments for FritzConnection: `pool_connections` and `pool_maxsize` to adapt the default urllib3 settings (used by requests). (#114).
 - New properties `FritzStatus.device_uptime` and `FritzStatus.connection_uptime``; the latter a replacement for `FritzStatus.uptime` – still existing as an alias. (#104)
@@ -69,27 +69,27 @@ development
 - adding code-of-conduct and contributing files to the repository.
 
 
-1.5.0
------
+1.5.0 - 2021-05-01
+------------------
 
 - Compatibility with Fritz!OS 7.24 and newer: takes the last logged in username as default in case that a username is not provided.
 
 
-1.4.2
------
+1.4.2 - 2021-03-06
+------------------
 
 - bugfix: byte_formatter may return wrong numbers on values < 1 and has raised math domain error on values == 0. (bug introduced with version 1.4.1) (#87)
 
 
-1.4.1
------
+1.4.1 - 2021-02-13
+------------------
 
 - bugfix: FritzStatus library now returns a 32 bit value for *bytes_received* for older Fritz!OS versions not providing the newer 64 bit information instead of raising an exception. (bug introduced with version 1.3.0) (#82)
 - change: Output of bitrate changed to log10 based calculation (#45, #52)
 
 
-1.4.0
------
+1.4.0 - 2020-11-29
+------------------
 
 - New core module fritzmonitor for reporting realtime phone call events (#76).
 - Library class FritzStatus with additional properties: *attenuation*, *str_attenuation*, *noise_margin* and *str_noise_margin* (#69)
@@ -98,34 +98,34 @@ development
 - Test extended for Python 3.9 (#73)
 
 
-1.3.4
------
+1.3.4 - 2020-08-06
+------------------
 
 - bugfix: session ignored timeout settings (#63)
 
 
-1.3.3
------
+1.3.3 - 2020-07-17
+------------------
 
 - bugfix: soap-xml encoding corrected (#59)
 - bugfix: soap-xml tag-attribute separation fixed (#60)
 
 
-1.3.2
------
+1.3.2 - 2020-07-11
+------------------
 
 - bugfix: converting arguments returned from soap calls (#58)
 
 
-1.3.1
------
+1.3.1 - 2020-06-28
+------------------
 
 - authorisation now supports 'myfritz.net' access (#48)
 - internal refactorings
 
 
-1.3.0
------
+1.3.0 - 2020-06-21
+------------------
 
 - Library class FritzStatus reports the sent and received bytes now as 64 bit integers and provides easy access to realtime monitor data.
 - Library class FritzHost provides more methods to access devices, including *wake on LAN* and net topology information.
@@ -136,14 +136,21 @@ development
 - pypi classifier changed to *Development Status :: 5 - Production/Stable*
 
 
-1.2.1
------
+0.8.5 - 2020-06-01
+------------------
+
+- updates the pinned lxml-dependency from version 4.3.4 to 4.5.1
+- last version to support Python 2.7, <=3.5 (no more updates)
+
+
+1.2.1 - 2020-03-21
+------------------
 
 - Library modules handling complex datatypes (urls) can now reuse fritzconnection sessions.
 
 
-1.2.0
------
+1.2.0 - 2020-01-07
+------------------
 
 - TLS for router communication added.
 - Command line tools take the new option -e for encrypted connection.
@@ -152,28 +159,28 @@ development
 - Bugfix for rendering the documentation of the FritzPhonebook-API (bug introduced in 1.1.1)
 
 
-1.1.1
------
+1.1.1 - 2019-12-29
+------------------
 
-- Bugfix in FritzConnection default parameters preventing the usage of library modules (bug introduced in 1.1)
+- Bugfix in FritzConnection default parameters preventing the usage of library modules (bug introduced in 1.1.0)
 - Minor bugfix in FritzPhonebook storing image-urls
 
 
-1.1
----
+1.1.0 - 2019-12-28
+------------------
 
 - FritzConnection takes a new optional parameter `timeout` limiting the time waiting for a router response.
 - FritzPhonebook module rewritten for Python 3 without lxml-dependency and added again to the library (missing in version 1.0).
 - Library module FritzStatus adapted to Python 3.
 
-1.0.1
------
+1.0.1 - 2019-12-21
+------------------
 
 - Bugfix in fritzinspection for command line based inspection of the Fritz!Box API.
 
 
-1.0
----
+1.0.0 - 2019-12-20
+------------------
 
 - Requires Python 3.6 or newer. The 0.8.x release is the last version supporting Python 2.7 and Python 3 up to 3.5
 - The ``lxml`` library is no longer a dependency.
@@ -182,28 +189,22 @@ development
 - Errors reported by the Fritz!Box are now raising specific exceptions.
 
 
-0.8.5
------
-
-- updates the pinned lxml-dependency from version 4.3.4 to 4.5.1
-
-
-0.8.4
------
+0.8.4 - 2019-12-16
+------------------
 
 - Bugfix in connection.reconnect(). This bug has been introduced with version 0.8.0. For versions 0.8.0 to 0.8.3 'reconnect' requires a password because of a changed service call.
 - Documentation updated.
 
 
-0.8.3
------
+0.8.3 - 2019-09-09
+------------------
 
 - Fix broken test (new in version 0.8.0)
 - Minor code enhancements
 
 
-0.8.2
------
+0.8.2 - 2019-08-27
+------------------
 
 - Unified version numbering of the modules.
 - ServiceError, ActionError and AuthorizationError are also importable from the package.
@@ -214,8 +215,8 @@ Changes in the development process: .hgignore removed and .gitignore added, chan
 As Atlassian has announced to drop support for mercurial on ``bitbucket`` und will remove the according repositories (in June 2020), development of fritzconnection has converted from ``hg`` to ``git`` and the repository has been transfered to ``github``. Unfortunately the issue- and discussion-history will be lost this way (even by keeping the new git-repository at bitbucket).
 
 
-0.8.1
------
+0.8.1 - 2019-08-24
+------------------
 
 FritzStatus: bugfix requiring a password in combination with fritzconnection >= 0.8.0
 
@@ -226,30 +227,30 @@ FritzStatus: added the ``max_linked_bit_rate`` attribute for the physical rate. 
 FritzConnection: added the ``AuthorizationError`` exception.
 
 
-0.8.0
------
+0.8.0 - 2019-08-20
+------------------
 
 Bugfix how servicenames are extracted from the xml-description files. However, the api has not changed.
 
 The requirements are now fixed for lxml (4.3.4) and requests (2.22.0) as these versions are still supporting python 2.7
 
 
-0.7.1 - 0.7.3
--------------
+0.7.1 - 0.7.3 ~ 2019-07-24
+--------------------------
 
 Bugfixes, no new features or other changes.
 
 
-0.7.0
------
+0.7.0 - 2019-07-21
+------------------
 
 FritzConnection does now check for the environment variables ``FRITZ_USER`` and ``FRITZ_PASSWORD`` in case that neither user nor password are given.
 
 FritzStatus now accepts user and password as keyword-parameters. Keep in mind, that FritzBoxes may return different information about the status depending whether these are gathered with or without a password.
 
 
-0.6.5
------
+0.6.5 - 2017-07-12
+------------------
 
 There is a new attribute *package_version*:
 
@@ -275,4 +276,7 @@ On calling unknown services or actions in both cases KeyErrors has been raised. 
     >>> from fritzconnection import ServiceError, ActionError
 
 
+< 0.6
+-----
 
+Continuous integration of features and bugfixes since first import at 2013-05-01 on bitbucket using mercurial until service shutdown by Atlassian.
