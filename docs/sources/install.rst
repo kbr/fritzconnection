@@ -17,4 +17,4 @@ This will install an additional dependency `segno <https://pypi.org/project/segn
 
 It is good practice and highly recommended, to do the installation in a virtual environment – either by means of `venv <https://docs.python.org/3.7/library/venv.html?highlight=venv#module-venv>`_ or `conda <https://docs.conda.io/en/latest/index.html>`_ (comes with `miniconda <https://docs.conda.io/en/latest/miniconda.html>`_ or `anaconda <https://www.anaconda.com/distribution/>`_).
 
-fritzconnection runs with recent Python 3 versions, that are not EOL (end of life). (Older Python versions may work but are neither tested nor supported.)
+fritzconnection runs with Python >= 3.6
