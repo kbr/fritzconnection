@@ -400,6 +400,8 @@ The following example enables the guest access point and if a password is given 
     enable_guest_access_point(new_password="new_strong_password")
 
 
+.. _get_wifi_qr_code_example:
+
 Example: create a QR-code for wifi access
 .........................................
 
