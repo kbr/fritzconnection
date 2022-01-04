@@ -391,13 +391,44 @@ The following example enables the guest access point and if a password is given 
     from fritzconnection.lib.fritzwlan import FritzGuestWLAN
 
     def enable_guest_access_point(new_password=None):
-        guest_wlan = FritzGuestWLAN(address="192.168.178.1", user="user", password="the_password")
+        guest_wlan = FritzGuestWLAN(address="192.168.178.1", user="user", password="password")
         if not guest_wlan.is_enabled:
             guest_wlan.enable()
         if new_password:
             guest_wlan.set_password(new_password)
 
     enable_guest_access_point(new_password="new_strong_password")
+
+
+.. _get_wifi_qr_code_example:
+
+Example: create a QR-code for wifi access
+.........................................
+
+This is a common task for guest networks, even commercial ones: give visitors easy access to a public network by providing the access data as a QR-code for scanning. To create a QR-code `fritzconnection` takes advantage of the `segno <https://segno.readthedocs.io/en/latest/>`_ package. Refer to `Installation <install.html>`_ to install this requirement.
+
+The following example will create a QR-code and stores this code as a svg- and a png-file: ::
+
+    from fritzconnection.lib.fritzwlan import FritzGuestWLAN
+
+    def write_qr_code_to_file(filename, kind="svg")
+        guest_wlan = FritzGuestWLAN(address="192.168.178.1", user="user", password="password")
+        qr_code = guest_wlan.get_wifi_qr_code(kind=kind)
+        with open(filename, "wb") as fobj:
+            fobj.write(qr_code.read())
+
+    write_qr_code_to_file("qr_code.svg", kind="svg")
+    # do the same as png-file:
+    write_qr_code_to_file("qr_code.png", kind="png")
+
+Keep in mind to set the file-suffix to the format of the created QR-code. This is the argument `kind` taking "svg", "png" and "pdf" as allowed values. Default value is "svg".
+
+The call of the `get_wifi_qr_code()` method returns a file-like object. Instead of writing the content to a file, the return value can get sent to any function accepting a file-like object, i.e. a function to display a QR-code on a screen.
+
+.. versionadded:: 1.9.0
+
+.. note::
+    If the `segno`-package is available, fritzconnection will provide the `get_wifi_qr_code()` method in the FritzWLAN class and all subclasses like FritzGuestWLAN. If the package is not available calling the method will raise an `AttributeError`.
 
 
 FritzWLAN API
