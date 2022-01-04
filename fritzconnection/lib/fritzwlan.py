@@ -51,13 +51,13 @@ def get_wifi_qr_code(instance, kind='svg'):
     match the kind of the qr-code format):
 
     >>> with open('qr_code.png', 'wb') as fobj:
-    >>> ....fobj.write()
+    >>> ....fobj.write(stream.read())
 
     If the `segno` is not installed the call will trigger an
     AttributeError when called on an instance and a NameError when
     called directly.
 
-    New in version 1.9.0
+    .. versionadded:: 1.9.0
     """
     stream = io.BytesIO()
     qr_code = segno.helpers.make_wifi(instance.ssid, instance.get_password())
