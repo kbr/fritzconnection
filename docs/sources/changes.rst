@@ -7,9 +7,11 @@ Version History
 development
 -----------
 
-- FritzGuestWLAN and FritzWLAN: optional QR-code creation for wifi-access (#133). Adds a new third-party dependency: `segno`. See `installation <./install.html>`_ for  details.
 - FritzHomeAutomation: new method `device_information()` (#131)
-- FritzWLAN: new method `channel_info()` (#131)
+- FritzWLAN:
+
+  - new method `channel_info()` (#131)
+  - new method `get_wifi_qr_code()` for QR-code creation for wifi-access (#133). Requires `segno` as dependency. See `installation <./install.html>`_ for  details. The method is also inherited by FritzGuestWLAN.
 
 - Deprecations:
 
