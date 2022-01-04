@@ -3,6 +3,7 @@ Module to read status-information from an AVM FritzBox.
 """
 
 import time
+from warnings import warn
 
 from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
@@ -97,9 +98,10 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def uptime(self):
         """
-        Connection uptime in seconds.
-        Alias for self.connection_uptime for backward compatibility.
+        .. deprecated:: 1.9.0
+        Use :func:`connection_uptime` instead.
         """
+        warn('This method is deprecated. Use "connection_uptime" instead.', DeprecationWarning)
         return self.connection_uptime
 
     @property
