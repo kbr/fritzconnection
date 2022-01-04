@@ -28,32 +28,52 @@ SERVICE = 'WLANConfiguration'
 DEFAULT_PASSWORD_LENGTH = 12
 
 
-def get_wifi_qr_code(self, kind='svg'):
+def get_wifi_qr_code(instance, kind='svg'):
     """
     Returns a file-like object providing a bytestring representing a
-    qr-code for wlan access. `kind` describes the type of the qr-code.
-    Supported values are: 'svg', 'png', 'pdf'. Default is 'svg'.
-    This function can get called as a method on FritzWLAN and
-    FritzGuestWLAN instances if the third party package `segno` is
-    installed (pip install segno). Otherwise the call will trigger an
-    AttributeError.
+    qr-code for wlan access. `instance` is a FritzWLAN or FritzGuestWLAN
+    instance. `kind` describes the type of the qr-code. Supported types
+    are: 'svg', 'png' and 'pdf'. Default is 'svg'.
+
+    This function is not intended to get called directly. Instead it is
+    available as a method on FritzWLAN instances (as well as on
+    subclasses like FritzGuestWLAN) if the third party package `segno`
+    is installed (pip install segno).
+
+    Consider `guest_wlan` is a FritzGuestWLAN instance, then the
+    following code will return a file like object with the qr-code image
+    data in png-format:
+
+    >>> stream = guest_wlan.get_wifi_qr_code(kind='png')
+
+    The stream can get used anywhere, where a file like object is
+    expected, i.e. writing the content to a file (Note: the suffix must
+    match the kind of the qr-code format):
+
+    >>> with open('qr_code.png', 'wb') as fobj:
+    >>> ....fobj.write()
+
+    If the `segno` is not installed the call will trigger an
+    AttributeError when called on an instance and a NameError when
+    called directly.
+
     New in version 1.9.0
     """
     stream = io.BytesIO()
-    qr_code = segno.helpers.make_wifi(self.ssid, self.get_password())
+    qr_code = segno.helpers.make_wifi(instance.ssid, instance.get_password())
     qr_code.save(out=stream, kind=kind)
     stream.seek(0)
     return stream
 
 
-def qr_code_enabler(cls):
-    """Classdecorator to inject qr-capabilities."""
+def _qr_code_enabler(cls):
+    """Classdecorator to inject qr-capabilities at import time."""
     if SEGNO_INSTALLED:
         cls.get_wifi_qr_code = get_wifi_qr_code
     return cls
 
 
-@qr_code_enabler
+@_qr_code_enabler
 class FritzWLAN(AbstractLibraryBase):
     """
     Class to list all known wlan devices. All parameters are optional.
