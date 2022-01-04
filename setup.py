@@ -46,6 +46,9 @@ setup(
     keywords="AVM FRITZ!Box fritzbox fritz",
     python_requires=">= 3.6",
     install_requires=["requests>=2.22.0",],
+    extras_require={
+        "qr": ["segno>=1.4.1",],
+    },
     entry_points={
         "console_scripts": [
             "fritzconnection = fritzconnection.cli.fritzinspection:main",
