@@ -1,3 +1,4 @@
+.. _call_monitoring:
 
 Call Monitoring
 ---------------
@@ -20,7 +21,7 @@ FritzMonitor provides a queue of type ``queue.Queue`` for accessing CallMonitor 
     ...
 
 The events are of type ``string`` in a format defined by AVM.
-The option ``-i`` specifies the ip address of the router. The option ``-h`` provides a help menu. 
+The option ``-i`` specifies the ip address of the router. The option ``-h`` provides a help menu.
 
 Here is a basic example how to use FritzMonitor in a module to pull events: ::
 
