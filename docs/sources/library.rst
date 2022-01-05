@@ -405,9 +405,7 @@ The following example enables the guest access point and if a password is given 
 Example: create a QR-code for wifi access
 .........................................
 
-This is a common task for guest networks, even commercial ones: give visitors easy access to a public network by providing the access data as a QR-code for scanning. To create a QR-code `fritzconnection` takes advantage of the `segno <https://segno.readthedocs.io/en/latest/>`_ package. Refer to `Installation <install.html>`_ to install this requirement.
-
-The following example will create a QR-code and stores this code as a svg- and a png-file: ::
+This is a common task for guest networks: give visitors easy access to a public network by providing the access data as a QR-code for scanning. The following example will create a QR-code and stores this code as a svg- and a png-file: ::
 
     from fritzconnection.lib.fritzwlan import FritzGuestWLAN
 
@@ -423,12 +421,12 @@ The following example will create a QR-code and stores this code as a svg- and a
 
 Keep in mind to set the file-suffix to the format of the created QR-code. This is the argument `kind` taking "svg", "png" and "pdf" as allowed values. Default value is "svg".
 
-The call of the `get_wifi_qr_code()` method returns a file-like object. Instead of writing the content to a file, the return value can get sent to any function accepting a file-like object, i.e. a function to display a QR-code on a screen.
+The call of the `get_wifi_qr_code()` method returns a file-like object. Instead of writing the content to a file, the return value can get forwarded to any function accepting a file-like object.
 
 .. versionadded:: 1.9.0
 
 .. note::
-    If the `segno`-package is available, fritzconnection will provide the `get_wifi_qr_code()` method in the FritzWLAN class and all subclasses like FritzGuestWLAN. If the package is not available calling the method will raise an `AttributeError`.
+    If the `segno`-package is not available, calling the method will raise an `AttributeError`. Refer to `Installation <install.html>`_ to install this requirement.
 
 
 FritzWLAN API
