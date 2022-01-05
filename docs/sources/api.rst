@@ -19,7 +19,7 @@ fritzconnection is structured into subpackages: ::
                       |-- tests
 
 
-The package ``cli`` implements the entry-points for command line usage, the tests are in the ``tests`` package and the library modules are in ``lib``. The implementation of fritzconnection itself is structured in the ``core`` package.
+The package `cli` implements the entry-points for command line usage, the tests are in the `tests` package and the library modules are in `lib`. The implementation of fritzconnection itself is structured in the `core` package.
 
 
 Public API
