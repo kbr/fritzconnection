@@ -7,12 +7,12 @@ Version History
 development
 -----------
 
-- FritzHomeAutomation: new method `device_information()` (#131)
 - FritzWLAN:
 
-  - new method `channel_info()` (#131)
-  - new method `get_wifi_qr_code()` for QR-code creation for wifi-access (#133). Requires `segno` as dependency. See `installation <./install.html>`_ for  details. The method is also inherited by FritzGuestWLAN.
+  - New method `get_wifi_qr_code()` for QR-code creation for wifi-access (#133). Requires `segno` as dependency. See `installation <./install.html>`_ for  details. The method is also inherited by FritzGuestWLAN.
+  - New method `channel_info()` (#131)
 
+- FritzHomeAutomation: New method `device_information()` (#131)
 - Deprecations:
 
   - `fritzconnection.lib.fritzhomeauto.FritzHomeAutomation.device_informations()`
