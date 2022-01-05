@@ -40,6 +40,8 @@ fritzconnection
     :members:
 
 
+.. _fritzmonitor_api:
+
 fritzmonitor
 ............
 
