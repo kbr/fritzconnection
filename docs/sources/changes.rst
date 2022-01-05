@@ -4,8 +4,8 @@ Version History
 ===============
 
 
-development
------------
+1.9.0 - 2022-01-05
+------------------
 
 - FritzWLAN:
 
@@ -281,4 +281,4 @@ On calling unknown services or actions in both cases KeyErrors has been raised. 
 < 0.6
 -----
 
-Continuous integration of features and bugfixes since first import at 2013-05-01 on bitbucket using mercurial until service shutdown by Atlassian.
+Continuous update of features and bugfixes since first import at 2013-05-01 on bitbucket using mercurial.
