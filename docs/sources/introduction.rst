@@ -25,7 +25,7 @@ To access the router in a local network, fritzconnection use some default values
     FRITZ_TLS_PORT = 49443
     FRITZ_USERNAME = 'dslf-config'  # for Fritz!OS < 7.24
 
-The ip-adress is a fallback-address common to every fritzbox-router, regardless of the individual configuration. In case of more than a single router in the local network (i.e. multiple Fritz!Boxes building a Mesh or connected by LAN building multiple WLAN access-points) the option `-i` (for the command line) or the keyword-parameter `address` (module usage) is required to address the router, otherwise it is not defined which device will respond first.
+The ip-adress is a fallback-address common to every fritzbox-router, regardless of the individual configuration. In case of more than a single router in the local network (i.e. multiple Fritz!Boxes building a Mesh or connected by LAN building multiple WLAN access-points) the option :command:`-i` (for the command line) or the keyword-parameter `address` (module usage) is required to address the router, otherwise it is not defined which device will respond first.
 
 
 Usernames and passwords
@@ -39,7 +39,7 @@ For Fritz!OS < 7.24 the username was optional and a default username gets used i
 Command line inspection
 -----------------------
 
-Installing fritzconnection by pip will also install the command line tool `fritzconnection` to inspect the Fritz!Box-API. With the option `-h` this will show a help menu: ::
+Installing fritzconnection by pip will also install the command line tool `fritzconnection` to inspect the Fritz!Box-API. With the option :command:`-h` this will show a help menu: ::
 
     $ fritzconnection -h
 
@@ -76,7 +76,7 @@ Installing fritzconnection by pip will also install the command line tool `fritz
                             use secure connection
 
 
-With the option `-s` all available ``services`` are listed. If there are multiple fritz-devices in the network, it is undefined which one will respond. In this case the router ip must be given with the `-i` option. The number of listed `services` can vary depending on the router model: ::
+With the option :command:`-s` all available ``services`` are listed. If there are multiple fritz-devices in the network, it is undefined which one will respond. In this case the router ip must be given with the :command:`-i` option. The number of listed `services` can vary depending on the router model: ::
 
     $ fritzconnection -s -i 192.168.178.1
 
@@ -112,7 +112,7 @@ All service-names are ending with a numeric value. In case a service is listed m
 Services and actions
 ....................
 
-Every ``service`` has a set of corresponding ``actions``. The actions are listed by the flag `-S` with the servicename as parameter.  ::
+Every ``service`` has a set of corresponding ``actions``. The actions are listed by the flag :command:`-S` with the servicename as parameter.  ::
 
     $ fritzconnection -i 192.168.178.1 -S WANIPConnection1
 
@@ -141,11 +141,11 @@ Every ``service`` has a set of corresponding ``actions``. The actions are listed
                         SetIdleDisconnectTime
 
 
-A list of all available actions with their corresponding ``arguments`` is reported by the flag `-a` with the servicename as parameter: ::
+A list of all available actions with their corresponding ``arguments`` is reported by the flag :command:`-a` with the servicename as parameter: ::
 
     $ fritzconnection -i 192.168.178.1 -a WANIPConnection1
 
-This can return a lengthy output. So the arguments for a specific action of a given service can get listed with the option `-A` and the service- and actionname as arguments. For example the output for the service `WANIPConnection1` and the action `GetInfo` will be: ::
+This can return a lengthy output. So the arguments for a specific action of a given service can get listed with the option :command:`-A` and the service- and actionname as arguments. For example the output for the service `WANIPConnection1` and the action `GetInfo` will be: ::
 
     $ fritzconnection -i 192.168.178.1 -A WANIPConnection1 GetInfo
 
@@ -179,7 +179,7 @@ This can return a lengthy output. So the arguments for a specific action of a gi
 
 For every action all arguments are listed with their name, direction and type. (Some arguments for other services may have the direction "in" for sending data to the router.)
 
-The API of a FRITZ!Box depends on the model and the installed FRITZ!OS version. To report the complete API of the router, the option `-c` can be used: ::
+The API of a FRITZ!Box depends on the model and the installed FRITZ!OS version. To report the complete API of the router, the option :command:`-c` can be used: ::
 
     $ fritzconnection -i 192.168.178.1 -c > api.txt
 
@@ -350,7 +350,7 @@ fritzconnection supports encrypted communication with Fritz!Box devices by provi
 
     fc = FritzConnection(address=192.168.178.1, password=<password>, use_tls=True)
 
-The default setting for `use_tls` is `False`. For the command line tools encryption is provided by the flags -e or --encrypt. Encryption can be a useful option in a non-private LAN like a company-LAN.
+The default setting for `use_tls` is `False`. For the command line tools encryption is provided by the flags :command:`-e` or :command:`--encrypt`. Encryption can be a useful option in a non-private LAN like a company-LAN.
 
 
 .. note ::
