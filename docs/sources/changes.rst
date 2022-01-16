@@ -4,6 +4,12 @@ Version History
 ===============
 
 
+development
+-----------
+
+- bugfix: AttributeError in FritzHomeAutomation.device_information removed - bug introduced in 1.9.0 (#138)
+
+
 1.9.0 - 2022-01-05
 ------------------
 
