@@ -72,10 +72,10 @@ class FritzHomeAutomation(AbstractLibraryBase):
         info = list()
         for n in itertools.count():
             try:
-                info = self.get_device_information_by_index(n)
+                device_information = self.get_device_information_by_index(n)
             except IndexError:
                 break
-            info.append(info)
+            info.append(device_information)
         return info
 
     def set_switch(self, identifier, on=True):
