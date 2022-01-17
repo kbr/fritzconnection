@@ -4,10 +4,11 @@ Version History
 ===============
 
 
-development
------------
+1.9.1 - 2022-01-17
+------------------
 
-- bugfix: AttributeError in FritzHomeAutomation.device_information removed - bug introduced in 1.9.0 (#138)
+- bugfix: AttributeError in `FritzHomeAutomation.device_information()` removed - bug introduced in 1.9.0 (#138)
+- enhancement: `FritzWLAN.get_wifi_qr_code()` can forward the optional `security` and `hidden` parameters to `segno`. (#139)
 
 
 1.9.0 - 2022-01-05
