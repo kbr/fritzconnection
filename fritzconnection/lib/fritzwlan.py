@@ -28,7 +28,7 @@ SERVICE = 'WLANConfiguration'
 DEFAULT_PASSWORD_LENGTH = 12
 
 
-def get_wifi_qr_code(instance, kind='svg'):
+def get_wifi_qr_code(instance, kind='svg', security=None, hidden=False):
     """
     Returns a file-like object providing a bytestring representing a
     qr-code for wlan access. `instance` is a FritzWLAN or FritzGuestWLAN
@@ -58,9 +58,22 @@ def get_wifi_qr_code(instance, kind='svg'):
     called directly.
 
     .. versionadded:: 1.9.0
+
+    The parameters `security` and `hidden` allow to forward these
+    informations to the `segno` library. `security` is `None` or a
+    string like `WPA2`. `hidden` is a boolean value indicating the
+    visibility of the network .
+
+    .. versionadded:: 1.9.1
+
     """
     stream = io.BytesIO()
-    qr_code = segno.helpers.make_wifi(instance.ssid, instance.get_password())
+    qr_code = segno.helpers.make_wifi(
+        ssid=instance.ssid,
+        password=instance.get_password(),
+        security=security,
+        hidden=hidden
+    )
     qr_code.save(out=stream, kind=kind)
     stream.seek(0)
     return stream
