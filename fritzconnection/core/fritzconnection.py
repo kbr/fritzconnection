@@ -299,9 +299,7 @@ class FritzConnection:
         """
         Return True if the device support mesh.
         """
-        if (
-            "Hosts1" not in self.services
-            or "X_AVM-DE_GetMeshListPath" not in self.services["Hosts1"].actions
-        ):
-            return False
-        return True
+        return (
+            "Hosts1" in self.services
+            and "X_AVM-DE_GetMeshListPath" in self.services["Hosts1"].actions
+        )
