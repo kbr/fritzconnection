@@ -294,3 +294,14 @@ class FritzConnection:
         Reboot the system.
         """
         self.call_action("DeviceConfig1", "Reboot")
+
+    def device_support_mesh(self):
+        """
+        Return True if the device support mesh.
+        """
+        if (
+            "Hosts1" not in self.services
+            or "X_AVM-DE_GetMeshListPath" not in self.services["Hosts1"].actions
+        ):
+            return False
+        return True
