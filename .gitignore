@@ -18,3 +18,4 @@ include
 lib_
 .idea
 x_*
+.venv
