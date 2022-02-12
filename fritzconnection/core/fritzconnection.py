@@ -174,6 +174,17 @@ class FritzConnection:
         )
 
     @property
+    def device_support_mesh(self):
+        """
+        Return True if the device support mesh.
+        """
+        return (
+            "Hosts1" in self.services
+            and "X_AVM-DE_GetMeshListPath" in self.services["Hosts1"].actions
+        )
+
+
+    @property
     def services(self):
         """
         Dictionary of service instances. Keys are the service names.
@@ -294,12 +305,3 @@ class FritzConnection:
         Reboot the system.
         """
         self.call_action("DeviceConfig1", "Reboot")
-
-    def device_support_mesh(self):
-        """
-        Return True if the device support mesh.
-        """
-        return (
-            "Hosts1" in self.services
-            and "X_AVM-DE_GetMeshListPath" in self.services["Hosts1"].actions
-        )
