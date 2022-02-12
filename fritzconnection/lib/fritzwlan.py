@@ -61,7 +61,7 @@ def get_wifi_qr_code(instance, kind='svg',
         with open('qr_code.png', 'wb') as fobj:
             fobj.write(stream.read())
 
-    If the `segno` is not installed the call will trigger an
+    If `segno` is not installed the call will trigger an
     AttributeError when called on an instance and a NameError when
     called directly.
 
