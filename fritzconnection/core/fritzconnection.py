@@ -305,3 +305,17 @@ class FritzConnection:
         Reboot the system.
         """
         self.call_action("DeviceConfig1", "Reboot")
+
+    def device_connection_type(self):
+        """
+        Return type of WAN connection of the device.
+        None if device has no connection.
+        """
+        if "Layer3Forwarding1" in self.services:
+            if connection_type := self.call_action(
+                "Layer3Forwarding1", "GetDefaultConnectionService"
+            ).get("NewDefaultConnectionService"):
+                # NewDefaultConnectionService format: "1.WANPPPConnection.1"
+                # Return "WANPPPConnection", format needed for call_action calls
+                return connection_type[2:][:-2]
+        return None
