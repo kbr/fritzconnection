@@ -5,7 +5,7 @@ The library is a package with modules on top of FritzConnection to address speci
 
 **Performance considerations:**
 
-Creating a FritzConnection instance will inspect the Fritz!Box API to get information about all available services and corresponding actions. As this is i/o based it's generally slow. But once an instance is created, it can be reused for all tasks. Therefore the library classes can optionally initialised with an existing FritzConnection instance, to not inspect the router-API multiple times: ::
+Creating a FritzConnection instance will inspect the Fritz!Box API to get information about all available services and corresponding actions. As this is i/o based it's generally slow. But once an instance is created, it can be reused for all tasks without side-effects. Therefore the library classes can optionally initialised with an existing FritzConnection instance, to not inspect the router-API multiple times: ::
 
     from fritzconnection import FritzConnection
     from fritzconnection.lib.fritzhomeauto import FritzHomeAutomation
@@ -49,16 +49,16 @@ Can dial phone numbers and allows access to history of phone calls: incoming, ou
       ...
 
 
-The flag ``-t`` indicates the type of calls to get listed: ``in | out | missed``. It ``-t`` is not given, all calls are listed (up to 999). The flag ``-d`` is the number of days to look back for calls e.g. 1: calls from today and yesterday, 7: calls from the complete last week.
+The flag :command:`-t` indicates the type of calls to get listed: [in | out | missed]. It :command:`-t` is not given, all calls are listed (up to 999). The flag :command:`-d` is the number of days to look back for calls e.g. 1: calls from today and yesterday, 7: calls from the complete last week.
 
-FritzCall provides to dial numbers by the method ``dial``. This method can also invoked by the command line with the flag ``-c`` or ``--call``. *Note:* To make this work it is required to activate the dial-help service of the router first. ::
+FritzCall can dial numbers by the method `dial()`. This method can also invoked by the command line with the flag :command:`-c` or :command:`--call`. *Note:* To make this work it is required to activate the dial-help service of the router first. ::
 
     $ fritzcall -i 192.168.178.1 -p <password> -c <phonenumber>
     dialing number: <phonenumber>
     dialing done, please wait for signal.
 
 
-For using a module here is an example to list all missed calls: ::
+For using a module, here is an example to list all missed calls: ::
 
     from fritzconnection.lib.fritzcall import FritzCall
 
@@ -72,7 +72,7 @@ Calling back the last missed call is easy: ::
     missed_number = calls[0].Caller  # Caller attribute holds the number
     fc.dial(missed_number)  # now dial it
 
-The module provides some constants that can be used with the get_calls() method as arguments for the calltype parameter: ::
+The module provides some constants that can be used with the `get_calls()` method as arguments for the calltype parameter: ::
 
     ALL_CALL_TYPES = 0
     RECEIVED_CALL_TYPE = 1
@@ -95,7 +95,7 @@ FritzCall  API
 FritzHomeAutomation
 -------------------
 
-Can access Homeautomation devices to read the current states and set the status of switches. Usage from the command line: ::
+This library helps to access Homeautomation devices for reading current states and set the status of switches. Usage from the command line: ::
 
     $ fritzhomeauto -i 192.168.178.1 -p <password>
     FRITZ!Box 7590 at ip 192.168.178.1
@@ -105,9 +105,9 @@ Can access Homeautomation devices to read the current states and set the status 
     Device Name             AIN                 Power[W]   t[°C]   switch
     FRITZ!DECT 210 #1       '11657 0240192'        0.000    23.5   on
 
-The optional ``-v`` flag will give a verbose report about all device information, including the settings of radiator controls.
+The optional :command:`-v` flag will give a verbose report about all device information, including the settings of radiator controls.
 
-The ``-s`` flag can set the state of switches. This flag requires two parameters: the device identifier (AIN) and the state to set [on|off]. The following example will switch off the device with the identifier '11657 0240192': ::
+The :command:`-s` flag can set the state of switches. This flag requires two parameters: the device identifier (AIN) and the state to set [on|off]. The following example will switch off the device with the identifier '11657 0240192': ::
 
     $ fritzhomeauto -i 192.168.178.1 -p <password> -s '11657 0240192' off
 
@@ -136,7 +136,7 @@ Example on how to get information about the known devices by using a module: ::
       'NewTemperatureIsValid': 'VALID',
       'NewTemperatureOffset': 0}]
 
-Depending on the device, different information will get reported. Information about a specific device can get obtained with the identifier *NewAIN*. The next example shows how to get the temperature in °C, taken the *NewAIN* from device_information() call: ::
+Depending on the device, different information will get reported. Information about a specific device can get obtained with the identifier *NewAIN*. The next example shows how to get the temperature in °C, taken the *NewAIN* from `device_information()` call: ::
 
     ain = '11657 0240192'
     fha.get_device_information_by_identifier(ain)['NewTemperatureCelsius'] * 0.1
@@ -202,7 +202,7 @@ FritzHosts API
 FritzPhonebook
 --------------
 
-Allows read-only access to the phonebooks stored in the router (a Fritz!Box router can have more than a single phonebook). The command line interface allows inspection of the phonebooks and search for name and numbers. The flag ``-a`` will list the content of all phonebooks: ::
+Allows read-only access to the phonebooks stored in the router (a Fritz!Box router can have more than a single phonebook). The command line interface allows inspection of the phonebooks and search for name and numbers. The flag :command:`-a` will list the content of all phonebooks: ::
 
     $ fritzphonebook -i 192.168.178.1 -p <password> -a
 
@@ -217,7 +217,7 @@ Allows read-only access to the phonebooks stored in the router (a Fritz!Box rout
     more numbers here
     ...
 
-With the flags ``--name`` and ``--number`` like ``--name "good customer"`` and ``--number 0987654321`` all phonebooks will get searched for the according entry.
+With the flags :command:`--name` and :command:`--number` like :command:`--name "good customer"` and :command:`--number 0987654321` all phonebooks will get searched for the according entry.
 
 Here is an example to list the entries of all phonebooks by means of a module: ::
 
@@ -245,18 +245,21 @@ Reports information about the link-status to the service provider. Usage from th
 
     $ fritzstatus -i 192.168.178.1 -p password
 
-    FritzConnection v1.0
-    FritzStatus for FRITZ!Box 7590 at ip 192.168.178.1
-    FRITZ!OS: 7.12:
+    fritzconnection v1.8.0
+    FRITZ!Box 7590 at http://192.168.178.1
+    FRITZ!OS: 7.29
 
-        is linked           : True
-        is connected        : True
-        external ip (v4)    : 79.255.xxx.xxx
-        external ip (v6)    : 2003:ee:xx:x:x
-        uptime              : 190:30:56
-        bytes send          : 2097630835
-        bytes received      : 2866333236
-        max. bit rate       : ('9.9 MBit/s', '50.5 MBit/s')
+    FritzStatus:
+
+        is linked             : True
+        is connected          : True
+        external ip (v4)      : 46.xx.xx.xx
+        external ip (v6)      : 2003:ee:xx::
+        internal ipv6-prefix  : 2003:ee:xx::
+        uptime                : 321:41:06
+        bytes send            : 6845677353
+        bytes received        : 123858580962
+        max. bit rate         : ('44.3 MBit/s', '113.2 MBit/s')
 
 For periodic calls, an instance of FritzStatus (resp. FritzConnection) should only created once: ::
 
@@ -405,9 +408,7 @@ The following example enables the guest access point and if a password is given 
 Example: create a QR-code for wifi access
 .........................................
 
-This is a common task for guest networks, even commercial ones: give visitors easy access to a public network by providing the access data as a QR-code for scanning. To create a QR-code `fritzconnection` takes advantage of the `segno <https://segno.readthedocs.io/en/latest/>`_ package. Refer to `Installation <install.html>`_ to install this requirement.
-
-The following example will create a QR-code and stores this code as a svg- and a png-file: ::
+This is a common task for guest networks: give visitors easy access to a public network by providing the access data as a QR-code for scanning. The following example will create a QR-code and stores this code as a svg- and a png-file: ::
 
     from fritzconnection.lib.fritzwlan import FritzGuestWLAN
 
@@ -423,12 +424,12 @@ The following example will create a QR-code and stores this code as a svg- and a
 
 Keep in mind to set the file-suffix to the format of the created QR-code. This is the argument `kind` taking "svg", "png" and "pdf" as allowed values. Default value is "svg".
 
-The call of the `get_wifi_qr_code()` method returns a file-like object. Instead of writing the content to a file, the return value can get sent to any function accepting a file-like object, i.e. a function to display a QR-code on a screen.
+The call of the `get_wifi_qr_code()` method returns a file-like object. Instead of writing the content to a file, the return value can get forwarded to any function accepting a file-like object.
 
 .. versionadded:: 1.9.0
 
 .. note::
-    If the `segno`-package is available, fritzconnection will provide the `get_wifi_qr_code()` method in the FritzWLAN class and all subclasses like FritzGuestWLAN. If the package is not available calling the method will raise an `AttributeError`.
+    If the `segno`-package is not available, calling the method will raise an `AttributeError`. Refer to `Installation <install.html>`_ to install this requirement.
 
 
 FritzWLAN API

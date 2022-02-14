@@ -59,7 +59,8 @@ class FritzHomeAutomation(AbstractLibraryBase):
 
     def device_informations(self):
         """
-        DEPRECATED: use 'device_information' instead
+        .. deprecated:: 1.9.0
+        Use :func:`device_information` instead.
         """
         warn('This method is deprecated. Use "device_information" instead.', DeprecationWarning)
         return self.device_information()
@@ -71,10 +72,10 @@ class FritzHomeAutomation(AbstractLibraryBase):
         info = list()
         for n in itertools.count():
             try:
-                info = self.get_device_information_by_index(n)
+                device_information = self.get_device_information_by_index(n)
             except IndexError:
                 break
-            info.append(info)
+            info.append(device_information)
         return info
 
     def set_switch(self, identifier, on=True):
