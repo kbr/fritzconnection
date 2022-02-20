@@ -290,3 +290,13 @@ class FritzStatus(AbstractLibraryBase):
         upstream, downstream = self.attenuation
         return (format_dB(upstream), format_dB(downstream))
 
+
+    @property
+    def device_support_mesh(self):
+        """
+        Return True if the device support mesh.
+        """
+        return (
+            "Hosts1" in self.fc.services
+            and "X_AVM-DE_GetMeshListPath" in self.fc.services["Hosts1"].actions
+        )

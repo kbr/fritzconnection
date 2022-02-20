@@ -173,16 +173,6 @@ class FritzConnection:
             f"FRITZ!OS: {self.system_version}"
         )
 
-    @property
-    def device_support_mesh(self):
-        """
-        Return True if the device support mesh.
-        """
-        return (
-            "Hosts1" in self.services
-            and "X_AVM-DE_GetMeshListPath" in self.services["Hosts1"].actions
-        )
-
 
     @property
     def services(self):
