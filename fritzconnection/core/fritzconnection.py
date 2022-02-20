@@ -173,7 +173,6 @@ class FritzConnection:
             f"FRITZ!OS: {self.system_version}"
         )
 
-
     @property
     def services(self):
         """
