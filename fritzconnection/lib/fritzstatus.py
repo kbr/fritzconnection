@@ -304,41 +304,11 @@ class FritzStatus(AbstractLibraryBase):
         return status["NewEnable"]
 
     @property
-    def device_has_mesh_support(self):
+    def wan_enabled(self):
         """
-        True if the device supports mesh, otherwise False.
+        Return True is the device is using a WAN connnection.
         """
-        # check for the corresponding action
-        # whether mesh is supported
-        try:
-            return (
-                "X_AVM-DE_GetMeshListPath"
-                in self.fc.services["Hosts1"].actions
-            )
-        except KeyError:
-            # can happen if "Hosts1" is not known
+        if not self.connection_type:
             return False
 
-    def get_default_connection_service(self):
-        """
-        Returns a namedtuple of type DefaultConnectionService:
-        `prefix` -> str
-        `device_connection` -> str (like "WANPPPConnection")
-        `postfix` -> str
-        """
-        result = self.fc.call_action(
-                "Layer3Forwarding1", "GetDefaultConnectionService"
-        )
-        prefix, connection_service, postfix = \
-            result["NewDefaultConnectionService"].split('.', 2)
-        return DefaultConnectionService(
-            prefix, connection_service, postfix
-        )
-
-    @property
-    def update_available(self):
-        """
-        The new version number (as a string) if an update is available or an
-        empty string if no update is avilable.
-        """
-        return self.fc.call_action("UserInterface1", "GetInfo")["NewX_AVM-DE_Version"]
+        return self.fc.call_action(self.connection_type, "GetInfo").get("NewEnable")

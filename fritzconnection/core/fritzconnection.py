@@ -185,15 +185,6 @@ class FritzConnection:
         )
 
     @property
-    def device_is_router(self):
-        """
-        Return True is the device is a router.
-        """
-        if connection_type := self.device_connection_type():
-            return self.call_action(connection_type, "GetInfo").get("NewEnable")
-        return False
-
-    @property
     def services(self):
         """
         Dictionary of service instances. Keys are the service names.
