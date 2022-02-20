@@ -2,13 +2,17 @@
 Module to read status-information from an AVM FritzBox.
 """
 
-import time
+from collections import namedtuple
 from warnings import warn
 
-from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
 from .fritztools import format_num, format_rate, format_dB
 
+
+DefaultConnectionService = namedtuple(
+    "DefaultConnectionService",
+    "prefix connection_service postfix"
+)
 
 def _integer_or_original(value):
     """
@@ -300,15 +304,33 @@ class FritzStatus(AbstractLibraryBase):
         return status["NewEnable"]
 
     @property
-    def device_support_mesh(self):
+    def device_has_mesh_support(self):
         """
-        Return True if the device supports mesh (by checking to be able
-        to provide a MeshListPath) otherwise return False.
+        True if the device supports mesh, otherwise False.
         """
+        # check for the corresponding action
+        # whether mesh is supported
         try:
             return (
                 "X_AVM-DE_GetMeshListPath"
                 in self.fc.services["Hosts1"].actions
             )
         except KeyError:
+            # can happen if "Hosts1" is not known
             return False
+
+    def get_default_connection_service(self):
+        """
+        Returns a namedtuple of type DefaultConnectionService:
+        `prefix` -> str
+        `device_connection` -> str (like "WANPPPConnection")
+        `postfix` -> str
+        """
+        result = self.fc.call_action(
+                "Layer3Forwarding1", "GetDefaultConnectionService"
+        )
+        prefix, connection_service, postfix = \
+            result["NewDefaultConnectionService"].split('.', 2)
+        return DefaultConnectionService(
+            prefix, connection_service, postfix
+        )
