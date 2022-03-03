@@ -293,10 +293,8 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def upnp_enabled(self):
         """
-        Return True is the device has UPnP enabled.
+        Returns a boolean whether upnp is enabled or raises a
+        FritzServiceError in case the service is not available.
         """
-        service = "X_AVM-DE_UPnP1"
-        if not service in self.fc.services:
-            return False
-
-        return self.fc.call_action(service, "GetInfo").get("NewEnable")
+        status = self.fc.call_action("X_AVM-DE_UPnP1", "GetInfo")
+        return status["NewEnable"]
