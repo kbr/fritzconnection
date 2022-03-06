@@ -4,6 +4,15 @@ Version History
 ===============
 
 
+development
+-----------
+
+- FritzStatus:
+
+   - new method `upnp_enabled()` (#153)
+
+
+
 1.9.1 - 2022-01-17
 ------------------
 
