@@ -290,6 +290,14 @@ class FritzStatus(AbstractLibraryBase):
         upstream, downstream = self.attenuation
         return (format_dB(upstream), format_dB(downstream))
 
+    @property
+    def upnp_enabled(self):
+        """
+        Returns a boolean whether upnp is enabled or raises a
+        FritzServiceError in case the service is not available.
+        """
+        status = self.fc.call_action("X_AVM-DE_UPnP1", "GetInfo")
+        return status["NewEnable"]
 
     @property
     def device_support_mesh(self):
