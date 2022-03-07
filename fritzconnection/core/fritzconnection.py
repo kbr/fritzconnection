@@ -16,6 +16,7 @@ from requests.auth import HTTPDigestAuth
 
 from .devices import DeviceManager
 from .exceptions import (
+    FritzConnectionException,
     FritzResourceError,
     FritzServiceError,
 )
@@ -37,6 +38,10 @@ FRITZ_IGD_DESC_FILE = "igddesc.xml"
 FRITZ_TR64_DESC_FILE = "tr64desc.xml"
 FRITZ_DESCRIPTIONS = [FRITZ_IGD_DESC_FILE, FRITZ_TR64_DESC_FILE]
 FRITZ_USERNAME_REQUIRED_VERSION = 7.24
+FRITZ_APPLICATION_ACCESS_DISABLED = """\n
+    FRITZ!Box: access for applications disabled.
+    Check: Home Network -> Network -> Network Settings
+    for "Allow access for applications".\n"""
 
 # same defaults as used by requests:
 DEFAULT_POOL_CONNECTIONS = 10
@@ -158,7 +163,13 @@ class FritzConnection:
                 # this can happen on devices not providing
                 # an igddesc-file.
                 # ignore this
-                pass
+                # But if the "tr64desc.xml" file is missing the router
+                # may not have TR-064 activated. In this case raise a
+                # useful error-message.
+                if description == FRITZ_TR64_DESC_FILE:
+                    raise FritzConnectionException(
+                        FRITZ_APPLICATION_ACCESS_DISABLED
+                    )
 
         self.device_manager.scan()
         self.device_manager.load_service_descriptions(address, port)

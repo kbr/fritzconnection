@@ -9,8 +9,9 @@ development
 
 - FritzStatus:
 
-   - new method `upnp_enabled()` (#153)
+   - New method `upnp_enabled()` (#153)
 
+- Better error message in case application access is disabled (#142)
 
 
 1.9.1 - 2022-01-17
