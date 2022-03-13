@@ -9,6 +9,7 @@ development
 
 - FritzStatus:
 
+   - New property `device_supports_mesh` (#145)
    - New method `upnp_enabled()` (#153)
 
 - Better error message in case application access is disabled (#142)
