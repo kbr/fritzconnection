@@ -318,24 +318,24 @@ class FritzStatus(AbstractLibraryBase):
         except KeyError:
             # can happen if "Hosts1" is not known
             return False
-    
+
     @property
-    def connection_type(self, raw=True):
+    def get_default_connection_service(self):
         """
-        Returns a namedtuple of type DefaultConnectionService:
-        `prefix` -> str
-        `device_connection` -> str (like "WANPPPConnection")
-        `postfix` -> str
+        Returns a namedtuple of three values interpreted as
+        `prefix` -> int
+        `device_connection_service` -> str (like "WANPPPConnection")
+        `postfix` -> int
         """
-        if "Layer3Forwarding1" not in self.fc.services:
-            return None
-
-        connection_type = self.fc.call_action(
-            "Layer3Forwarding1", "GetDefaultConnectionService"
-        ).get("NewDefaultConnectionService")
-
-        if not raw:
-            # NewDefaultConnectionService format: "1.WANPPPConnection.1"
-            # Return "WANPPPConnection", format needed for call_action calls
-            connection_type = connection_type.split(".")[1]
-        return connection_type
+        result = self.fc.call_action(
+                "Layer3Forwarding1", "GetDefaultConnectionService"
+        )
+        device_number, device_connection, device_interface = \
+            result["NewDefaultConnectionService"].split('.')
+        DefaultConnectionService = namedtuple(
+            "DefaultConnectionService",
+            "prefix device_connection postfix"
+        )
+        return DefaultConnectionService(
+            int(device_number), device_connection, int(device_interface)
+        )
