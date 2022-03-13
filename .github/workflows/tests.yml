@@ -14,17 +14,6 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
-        include:
-          - python-version: 3.6
-            tox_env: py36
-          - python-version: 3.7
-            tox_env: py37
-          - python-version: 3.8
-            tox_env: py38
-          - python-version: 3.9
-            tox_env: py39
-          - python-version: 3.10
-            tox_env: py310
 
     steps:
       - uses: actions/checkout@master
@@ -37,8 +26,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements_test.txt
 
-      - name: Test
-        run: tox -e ${{ matrix.tox_env }}
+      - name: Tests
+        run: pytest
 
   cov_docs:
     name: Coverage and Doc tests
