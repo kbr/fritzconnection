@@ -302,9 +302,13 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def device_support_mesh(self):
         """
-        Return True if the device support mesh.
+        Return True if the device supports mesh (by checking to be able
+        to provide a MeshListPath) otherwise return False.
         """
-        return (
-            "Hosts1" in self.fc.services
-            and "X_AVM-DE_GetMeshListPath" in self.fc.services["Hosts1"].actions
-        )
+        try:
+            return (
+                "X_AVM-DE_GetMeshListPath" 
+                in self.fc.services["Hosts1"].actions
+            )
+        except KeyError:
+            return False
