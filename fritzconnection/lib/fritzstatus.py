@@ -3,6 +3,7 @@ Module to read status-information from an AVM FritzBox.
 """
 
 import time
+from collections import namedtuple
 from warnings import warn
 
 from ..core.exceptions import FritzServiceError
@@ -312,3 +313,19 @@ class FritzStatus(AbstractLibraryBase):
             )
         except KeyError:
             return False
+
+    @property
+    def device_update(self):
+        """
+        Returns a namedtuple of two values interpreted as
+        new_firmware_available -> bool
+        new_firmware_version -> string
+        """
+        version = self.fc.call_action("UserInterface1", "GetInfo").get(
+            "NewX_AVM-DE_Version"
+        )
+        DeviceUpdate = namedtuple(
+            "DeviceUpdate",
+            "new_firmware_available new_firmware_version"
+        )
+        return DeviceUpdate(bool(version), version)
