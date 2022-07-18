@@ -27,11 +27,39 @@ else:
 SERVICE = 'WLANConfiguration'
 DEFAULT_PASSWORD_LENGTH = 12
 WPA_SECURITY = 'WPA'
+NO_PASS = 'nopass'
 # mapping of modes reported as 'nopass':
 BEACON_SECURITIES = {
     'None': 'nopass',
     'OWETrans': 'nopass',
 }
+
+
+def get_beacon_security(instance, security):
+    """
+    Returns the beacon-security based on the security argument. Returns
+    a string with 'nopass' or 'WPA'. If the security is None or an empty
+    string, the function tries to find the proper security setting
+    ('nopass'|'WPA'). If security is not None or an empty string, the
+    value is returned as is.
+
+    This function is not intended to get called directly. Instead it is
+    available as a method on FritzWLAN instances (as well as on
+    subclasses like FritzGuestWLAN) if the third party package `segno`
+    is installed.
+
+    .. versionadded:: 1.10.0
+    """
+    if not security:
+        info = instance.get_info()
+        beacontypes = set(info["NewX_AVM-DE_PossibleBeaconTypes"].split(","))
+        beacontypes -= set(('None', 'OWETrans'))
+        beacontype = info["NewBeaconType"]
+        if beacontype in beacontypes:
+            security = WPA_SECURITY
+        else:
+            security = NO_PASS
+    return security
 
 
 def get_wifi_qr_code(instance, kind='svg',

@@ -15,8 +15,10 @@ except ImportError:
     OPENCV_NOT_AVAILABLE = True
 else:
     OPENCV_NOT_AVAILABLE = False
-    
-    
+
+from fritzconnection.lib.fritzwlan import get_beacon_security
+
+
 @pytest.mark.skipif(OPENCV_NOT_AVAILABLE, reason="requires opencv")
 def test_tools():
     """
@@ -37,14 +39,14 @@ def test_tools():
     qr_code.save(out=stream, kind=kind, scale=4)
     stream.close()
     assert os.path.exists(fname) is True
-    
+
     # test qr-code reading
     expected_result = f'WIFI:T:{security};S:{ssid};P:{password};;'
     img = cv2.imread(fname)
     detector = cv2.QRCodeDetector()
     result, _, _ = detector.detectAndDecode(img)
     assert result == expected_result
-    
+
     # remove the tempfile
     os.unlink(fname)
     assert os.path.exists(fname) is False
@@ -54,21 +56,21 @@ def write_stream_to_tempfile(stream, kind='png'):
     """
     Helper function to store a segno stream in a persistent tempfile.
     Takes the stream (BytesIO) and returns the filepath (as string).
-    """ 
+    """
     fobj = tempfile.NamedTemporaryFile(mode='wb', delete=False, suffix=f'.{kind}')
     fname = fobj.name
     fobj.write(stream.read())
     fobj.close()
     return fname
-    
-    
+
+
 def get_content_from_qr_file(fname):
     """Helper function for qr-code reading."""
     img = cv2.imread(fname)
     detector = cv2.QRCodeDetector()
     result, _, _ = detector.detectAndDecode(img)
     return result
-    
+
 
 @pytest.mark.skipif(OPENCV_NOT_AVAILABLE, reason="requires opencv")
 def test_helper_functions():
@@ -93,4 +95,38 @@ def test_helper_functions():
     assert result == expected_result
     os.unlink(fname)
     assert os.path.exists(fname) is False
-        
+
+
+class WLANConfigMock:
+    """
+    Mocking class to provide the result of a
+    WLANConfiguration.get_info() call.
+    """
+
+    def __init__(self, mock_data):
+        self.mock_data = mock_data
+
+    def get_info(self):
+        return self.mock_data
+
+
+@pytest.mark.parametrize(
+    "current_beacontype, security, expected_result", [
+        ('11i', None, 'WPA'),
+        ('11i', '', 'WPA'),
+        ('11i', 'WPA3', 'WPA3'),
+        ('WPAand11i', None, 'WPA'),
+        ('11iandWPA3', None, 'WPA'),
+        ('None', None, 'nopass'),
+        ('OWETrans', None, 'nopass'),
+    ]
+)
+def test_get_beacon_security(current_beacontype, security, expected_result):
+
+    mock_data = {
+        'NewBeaconType': current_beacontype,
+        'NewX_AVM-DE_PossibleBeaconTypes': 'None,11i,WPAand11i,11iandWPA3'
+    }
+    instance = WLANConfigMock(mock_data)
+    result = get_beacon_security(instance, security)
+    assert result == expected_result
