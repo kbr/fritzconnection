@@ -28,11 +28,6 @@ SERVICE = 'WLANConfiguration'
 DEFAULT_PASSWORD_LENGTH = 12
 WPA_SECURITY = 'WPA'
 NO_PASS = 'nopass'
-# mapping of modes reported as 'nopass':
-BEACON_SECURITIES = {
-    'None': 'nopass',
-    'OWETrans': 'nopass',
-}
 
 
 def get_beacon_security(instance, security):
@@ -128,7 +123,6 @@ def _qr_code_enabler(cls):
     """Classdecorator to inject qr-capabilities at import time."""
     if SEGNO_INSTALLED:
         cls.get_wifi_qr_code = get_wifi_qr_code
-        cls.get_beacon_security = get_beacon_security
     return cls
 
 
