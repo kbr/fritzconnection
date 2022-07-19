@@ -32,16 +32,13 @@ NO_PASS = 'nopass'
 
 def get_beacon_security(instance, security):
     """
-    Returns the beacon-security based on the security argument. Returns
-    a string with 'nopass' or 'WPA'. If the security is None or an empty
-    string, the function tries to find the proper security setting
-    ('nopass'|'WPA'). If security is not None or an empty string, the
-    value is returned as is.
+    Returns the beacon-security as a string based on the security
+    argument. Possible return values are 'nopass' and 'WPA'. If the
+    security is None or an empty string, the function tries to find the
+    proper security setting ('nopass'|'WPA'). If security is neither
+    None nor an empty string, the value is returned as is.
 
-    This function is not intended to get called directly. Instead it is
-    available as a method on FritzWLAN instances (as well as on
-    subclasses like FritzGuestWLAN) if the third party package `segno`
-    is installed.
+    This function is not intended to get called directly.
 
     .. versionadded:: development
     """
