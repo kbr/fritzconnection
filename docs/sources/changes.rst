@@ -19,6 +19,7 @@ development
 - Testing:
 
   - requires opencv to check qr-codes
+  - covering Python 3.11
 
 - Better error message in case application access is disabled (#142)
 
