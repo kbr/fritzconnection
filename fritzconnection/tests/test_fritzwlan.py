@@ -179,10 +179,3 @@ def test_get_wifi_qr_code(current_beacontype, security, expected_security):
     result = get_content_from_qr_file(fname)
     os.unlink(fname)  # do this asap
     assert result == expected_result
-
-
-
-
-# def get_wifi_qr_code(instance, kind='svg',
-#                      security=None, hidden=False,
-#                      scale=4):
