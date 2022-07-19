@@ -48,7 +48,7 @@ def get_beacon_security(instance, security):
     subclasses like FritzGuestWLAN) if the third party package `segno`
     is installed.
 
-    .. versionadded:: 1.10.0
+    .. versionadded:: development
     """
     if not security:
         info = instance.get_info()
@@ -112,8 +112,7 @@ def get_wifi_qr_code(instance, kind='svg',
 
     """
     stream = io.BytesIO()
-    if security is None:
-        security = BEACON_SECURITIES.get(instance.beacontype, WPA_SECURITY)
+    security = get_beacon_security(instance, security)
     qr_code = segno.helpers.make_wifi(
         ssid=instance.ssid,
         password=instance.get_password(),
@@ -129,6 +128,7 @@ def _qr_code_enabler(cls):
     """Classdecorator to inject qr-capabilities at import time."""
     if SEGNO_INSTALLED:
         cls.get_wifi_qr_code = get_wifi_qr_code
+        cls.get_beacon_security = get_beacon_security
     return cls
 
 

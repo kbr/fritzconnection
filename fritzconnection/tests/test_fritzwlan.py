@@ -16,7 +16,10 @@ except ImportError:
 else:
     OPENCV_NOT_AVAILABLE = False
 
-from fritzconnection.lib.fritzwlan import get_beacon_security
+from fritzconnection.lib.fritzwlan import (
+    get_beacon_security,
+    get_wifi_qr_code,
+)
 
 
 @pytest.mark.skipif(OPENCV_NOT_AVAILABLE, reason="requires opencv")
@@ -100,7 +103,9 @@ def test_helper_functions():
 class WLANConfigMock:
     """
     Mocking class to provide the result of a
-    WLANConfiguration.get_info() call.
+    WLANConfiguration.get_info() call, provide a get_password() method
+    and a ssid attribute. All returned value must be part of the
+    mock_data dictionary. The values in the dictionary are all strings.
     """
 
     def __init__(self, mock_data):
@@ -108,6 +113,14 @@ class WLANConfigMock:
 
     def get_info(self):
         return self.mock_data
+
+    def get_password(self):
+        # original from the action "GetSecurityKeys"
+        return self.mock_data["NewKeyPassphrase"]
+
+    @property
+    def ssid(self):
+        return self.mock_data["NewSSID"]
 
 
 @pytest.mark.parametrize(
@@ -122,7 +135,10 @@ class WLANConfigMock:
     ]
 )
 def test_get_beacon_security(current_beacontype, security, expected_result):
-
+    """
+    Test for correct selection of "WPA" or "nopass" depending on the
+    WLAN-settings.
+    """
     mock_data = {
         'NewBeaconType': current_beacontype,
         'NewX_AVM-DE_PossibleBeaconTypes': 'None,11i,WPAand11i,11iandWPA3'
@@ -130,3 +146,43 @@ def test_get_beacon_security(current_beacontype, security, expected_result):
     instance = WLANConfigMock(mock_data)
     result = get_beacon_security(instance, security)
     assert result == expected_result
+
+
+@pytest.mark.skipif(OPENCV_NOT_AVAILABLE, reason="requires opencv")
+@pytest.mark.parametrize(
+    "current_beacontype, security, expected_security", [
+        ('11i', None, 'WPA'),
+        ('11i', '', 'WPA'),
+        ('11i', 'WPA3', 'WPA3'),
+        ('WPAand11i', None, 'WPA'),
+        ('11iandWPA3', None, 'WPA'),
+        ('None', None, 'nopass'),
+        ('OWETrans', None, 'nopass'),
+    ]
+)
+def test_get_wifi_qr_code(current_beacontype, security, expected_security):
+    """
+    Check for correct qr-code creation depending on the WLAN-settings.
+    """
+    ssid = "the_wlan_name"
+    password = "the_password"
+    expected_result = f"WIFI:T:{expected_security};S:{ssid};P:{password};;"
+    mock_data = {
+        'NewBeaconType': current_beacontype,
+        'NewX_AVM-DE_PossibleBeaconTypes': 'None,11i,WPAand11i,11iandWPA3',
+        'NewSSID': ssid,
+        'NewKeyPassphrase': password,
+    }
+    instance = WLANConfigMock(mock_data)
+    stream = get_wifi_qr_code(instance, kind="png", security=security)
+    fname = write_stream_to_tempfile(stream)
+    result = get_content_from_qr_file(fname)
+    os.unlink(fname)  # do this asap
+    assert result == expected_result
+
+
+
+
+# def get_wifi_qr_code(instance, kind='svg',
+#                      security=None, hidden=False,
+#                      scale=4):
