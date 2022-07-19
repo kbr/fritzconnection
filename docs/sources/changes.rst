@@ -12,7 +12,16 @@ development
    - New property `device_supports_mesh` (#145)
    - New method `upnp_enabled()` (#153)
 
+- FritzWLAN:
+
+  - QR-code now supports encryption information for the described network by auto-detecting the security settings (which is optional but set to default) (#139)
+
+- Testing:
+
+  - requires opencv to check qr-codes
+
 - Better error message in case application access is disabled (#142)
+
 
 
 1.9.1 - 2022-01-17
