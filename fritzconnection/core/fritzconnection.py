@@ -69,23 +69,31 @@ class FritzConnection:
     limiting the time waiting for a router response. This is a global
     setting for the internal communication with the router. In case of a
     timeout a `requests.ConnectTimeout` exception gets raised.
-    (`New in version 1.1`)
+
+    .. versionadded:: 1.1
 
     `use_tls` accepts a boolean for using encrypted communication with
     the Fritz!Box. Default is `False`.
-    (`New in version 1.2`)
+
+    .. versionadded:: 1.2
 
     For some actions the Fritz!Box needs a password and since Fritz!OS
     7.24 also requires a username, the previous default username is just
     valid for OS versions < 7.24. In case the username is not given and
     the system version is 7.24 or newer, FritzConnection uses the last
     logged-in username as default.
-    (`New in version 1.5`)
+
+    .. versionadded:: 1.5
 
     For applications where the urllib3 default connection-pool size
     should get adapted, the arguments `pool_connections` and
     `pool_maxsize` can get set explicitly.
-    (`New in version 1.6`)
+
+    .. versionadded:: 1.6
+
+    The flag `use_cache` activates caching if set to `True` (default `False`). Caching can speed up instanciation  significantly. The cached data are specific for the router ip, the router model and the installed FritzOS version. Multiple devices in the network have separate caches and can get used in parallel.
+
+    .. versionadded:: development
     """
 
     def __init__(
@@ -124,18 +132,15 @@ class FritzConnection:
         communication with the router. In case of a timeout a
         `requests.ConnectTimeout` exception gets raised. `use_tls`
         accepts a boolean for using encrypted communication with the
-        Fritz!Box. Default is `False`.
-
-        `use_cache` is a boolean whether a cache should get used for the
-        router api data. By default the api data are loaded from the
-        router at instanciation time what can take several seconds to
-        complete. `cache_directory` is the path to the directory storing
-        the cached data. By default this is a folder named
-        '.fritzconnection' in the users home-directory.
-
-        `pool_connections` and `pool_maxsize`
-        accept integers for changing the default urllib3 settings in order
-        to modify the number of reusable connections.
+        Fritz!Box. Default is `False`. `use_cache` is a boolean whether
+        a cache should get used for the router api data. By default the
+        api data are loaded from the router at instanciation time what
+        can take several seconds to complete. `cache_directory` is the
+        path to the directory storing the cached data. By default this
+        is a folder named '.fritzconnection' in the users
+        home-directory. `pool_connections` and `pool_maxsize` accept
+        integers for changing the default urllib3 settings in order to
+        modify the number of reusable connections.
         """
         if address is None:
             address = FRITZ_IP_ADDRESS
