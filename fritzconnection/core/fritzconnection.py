@@ -91,7 +91,14 @@ class FritzConnection:
 
     .. versionadded:: 1.6
 
-    The flag `use_cache` activates caching if set to `True` (default `False`). Caching can speed up instanciation  significantly. The cached data are specific for the router ip, the router model and the installed FritzOS version. Multiple devices in the network have separate caches and can get used in parallel.
+    The flag `use_cache` activates caching if set to `True` (default
+    `False`). Caching can speed up instanciation  significantly. The
+    cached data are specific for the router ip, the router model and the
+    installed FritzOS version. Multiple devices in the network have
+    separate caches and can get used in parallel. The cache files are
+    stored in the user home-directory in a `.fritzconnection` subfolder.
+    To change this location use the parameter `cache_directory` providing
+    a string or a `pathlib.Path` object.
 
     .. versionadded:: development
     """
@@ -214,6 +221,7 @@ class FritzConnection:
         combination of the device model name and the installed software
         version.
         """
+        return fc.call_action("DeviceInfo1", "GetInfo")["NewDescription"]
 
     @staticmethod
     def normalize_name(name):
@@ -283,9 +291,9 @@ class FritzConnection:
         try:
             assert self.device_description == cached_device_description
         except (AssertionError, FritzConnectionException):
-            # either the description is not matching or call_action
-            # has failed. In both cases the cache is invalide.
-            # Clean up the cached attributes befor returning:
+            # either the description does not match or call_action
+            # has failed. In both cases the cache is invalid.
+            # Clean up the cached attributes before returning:
             self.device_manager.descriptions = []
             self.device_manager.services = {}
             return False
