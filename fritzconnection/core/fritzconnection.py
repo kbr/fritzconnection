@@ -10,6 +10,7 @@ Module to communicate with the AVM Fritz!Box.
 import os
 import string
 import xml.etree.ElementTree as ElementTree
+from pathlib import Path
 
 import requests
 from requests.auth import HTTPDigestAuth
@@ -42,6 +43,8 @@ FRITZ_APPLICATION_ACCESS_DISABLED = """\n
     FRITZ!Box: access for applications disabled.
     Check: Home Network -> Network -> Network Settings
     for "Allow access for applications".\n"""
+FRITZ_CACHE_DIR = ".fritzconnection"
+FRITZ_CACHE_EXT = "_cache.pcl"
 
 # same defaults as used by requests:
 DEFAULT_POOL_CONNECTIONS = 10
@@ -165,7 +168,7 @@ class FritzConnection:
         )
         self.device_manager = DeviceManager(timeout=timeout, session=session)
 
-        self._read_api_data_from_router()
+        self._read_api_data(use_cache, cache_directory)
         # set default user for FritzOS >= 7.24:
         self._reset_user(user, password)
 
@@ -221,12 +224,56 @@ class FritzConnection:
         url = url.split("//", 1)[-1]
         return PROTOCOLS[use_tls] + url
 
+    def _read_api_data(self, use_cache, cache_directory):
+        """
+        Read the api description from the router or from an optional cache.
+        """
+        if use_cache:
+            cache_path = self._get_cache_path(cache_directory)
+            try:
+                with open(cache_path, "rb") as fobj:
+                    cached_data = pickle.load(fobj)
+            except FileNotFoundError:
+                self._read_api_data_from_router()
+                self._write_api_data_to_cache(cache_path)
+            else:
+                if not self._cached_data_valid(cached_data):
+                    self._read_api_data_from_router()
+                    self._write_api_data_to_cache(cache_path)
+        else:
+            self._read_api_data_from_router()
+
+    def _get_cache_path(self, cache_directory):
+        """
+        Returns the path to the cache file (including the filename and
+        extension) as a Path instance.
+        """
+        address = self.address.replace(".", "_")
+        filename = f"{address}{FRITZ_CACHE_EXT}"
+        if cache_directory:
+            return Path(cache_directory) / filename
+        return Path().home() / FRITZ_CACHE_DIR / filename
+
+    def _cached_data_valid(self, cached_data):
+        """
+        Takes the unpickled cache data, applies the data to the
+        fritzconnection instance and checks whether the data are still
+        valid. Returns a boolean: True on valid data, False on invalid
+        data.
+        """
+
+    def _write_api_data_to_cache(self, cache_path):
+        """
+        Save device data in cache-file (given by cache_path).
+        """
+        pass
+
     def _read_api_data_from_router(self):
         """
         Read the api data from the router.
         """
         for description in FRITZ_DESCRIPTIONS:
-            source = f"{address}:{port}/{description}"
+            source = f"{self.address}:{self.port}/{description}"
             try:
                 self.device_manager.add_description(source)
             except FritzResourceError:
@@ -242,7 +289,7 @@ class FritzConnection:
                         FRITZ_APPLICATION_ACCESS_DISABLED
                     )
         self.device_manager.scan()
-        self.device_manager.load_service_descriptions(address, port)
+        self.device_manager.load_service_descriptions(self.address, self.port)
 
     def _reset_user(self, user, password):
         """
