@@ -351,3 +351,11 @@ class FritzStatus(AbstractLibraryBase):
         empty string if no update is avilable.
         """
         return self.fc.call_action("UserInterface1", "GetInfo")["NewX_AVM-DE_Version"]
+
+    @property
+    def has_wan_mode(self):
+        """
+        Return True is the device has a WAN interface
+        False otherwise
+        """
+        return "Layer3Forwarding1" in self.fc.services
