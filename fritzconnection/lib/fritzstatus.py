@@ -336,6 +336,15 @@ class FritzStatus(AbstractLibraryBase):
         )
 
     @property
+    def connection_service(self):
+        """
+        The extracted connection_service from
+        get_default_connection_service().
+        """
+        result = self.get_default_connection_service()
+        return result.connection_service
+
+    @property
     def update_available(self):
         """
         The new version number (as a string) if an update is available or an
