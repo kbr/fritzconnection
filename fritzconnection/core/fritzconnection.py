@@ -92,6 +92,8 @@ class FritzConnection:
         password=None,
         timeout=None,
         use_tls=False,
+        use_cache=False,
+        cache_directory=None,
         pool_connections=DEFAULT_POOL_CONNECTIONS,
         pool_maxsize=DEFAULT_POOL_MAXSIZE,
     ):
@@ -118,7 +120,16 @@ class FritzConnection:
         communication with the router. In case of a timeout a
         `requests.ConnectTimeout` exception gets raised. `use_tls`
         accepts a boolean for using encrypted communication with the
-        Fritz!Box. Default is `False`. `pool_connections` and `pool_maxsize`
+        Fritz!Box. Default is `False`.
+
+        `use_cache` is a boolean whether a cache should get used for the
+        router api data. By default the api data are loaded from the
+        router at instanciation time what can take several seconds to
+        complete. `cache_directory` is the path to the directory storing
+        the cached data. By default this is a folder named
+        '.fritzconnection' in the users home-directory.
+
+        `pool_connections` and `pool_maxsize`
         accept integers for changing the default urllib3 settings in order
         to modify the number of reusable connections.
         """
@@ -153,26 +164,8 @@ class FritzConnection:
             address, port, user, password, timeout=timeout, session=session
         )
         self.device_manager = DeviceManager(timeout=timeout, session=session)
+
         self._read_api_data_from_router()
-#         for description in FRITZ_DESCRIPTIONS:
-#             source = f"{address}:{port}/{description}"
-#             try:
-#                 self.device_manager.add_description(source)
-#             except FritzResourceError:
-#                 # resource not available:
-#                 # this can happen on devices not providing
-#                 # an igddesc-file.
-#                 # ignore this
-#                 # But if the "tr64desc.xml" file is missing the router
-#                 # may not have TR-064 activated. In this case raise a
-#                 # useful error-message.
-#                 if description == FRITZ_TR64_DESC_FILE:
-#                     raise FritzConnectionException(
-#                         FRITZ_APPLICATION_ACCESS_DISABLED
-#                     )
-#
-#         self.device_manager.scan()
-#         self.device_manager.load_service_descriptions(address, port)
         # set default user for FritzOS >= 7.24:
         self._reset_user(user, password)
 
