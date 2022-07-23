@@ -2,11 +2,8 @@
 Module to read status-information from an AVM FritzBox.
 """
 
-import time
-from collections import namedtuple
 from warnings import warn
 
-from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
 from .fritztools import format_num, format_rate, format_dB
 
