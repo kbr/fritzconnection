@@ -334,3 +334,11 @@ class FritzStatus(AbstractLibraryBase):
         return DefaultConnectionService(
             prefix, connection_service, postfix
         )
+
+    @property
+    def update_available(self):
+        """
+        The new version number (as a string) if an update is available or an
+        empty string if no update is avilable.
+        """
+        return self.fc.call_action("UserInterface1", "GetInfo")["NewX_AVM-DE_Version"]
