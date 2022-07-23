@@ -153,26 +153,26 @@ class FritzConnection:
             address, port, user, password, timeout=timeout, session=session
         )
         self.device_manager = DeviceManager(timeout=timeout, session=session)
-
-        for description in FRITZ_DESCRIPTIONS:
-            source = f"{address}:{port}/{description}"
-            try:
-                self.device_manager.add_description(source)
-            except FritzResourceError:
-                # resource not available:
-                # this can happen on devices not providing
-                # an igddesc-file.
-                # ignore this
-                # But if the "tr64desc.xml" file is missing the router
-                # may not have TR-064 activated. In this case raise a
-                # useful error-message.
-                if description == FRITZ_TR64_DESC_FILE:
-                    raise FritzConnectionException(
-                        FRITZ_APPLICATION_ACCESS_DISABLED
-                    )
-
-        self.device_manager.scan()
-        self.device_manager.load_service_descriptions(address, port)
+        self._read_api_data_from_router()
+#         for description in FRITZ_DESCRIPTIONS:
+#             source = f"{address}:{port}/{description}"
+#             try:
+#                 self.device_manager.add_description(source)
+#             except FritzResourceError:
+#                 # resource not available:
+#                 # this can happen on devices not providing
+#                 # an igddesc-file.
+#                 # ignore this
+#                 # But if the "tr64desc.xml" file is missing the router
+#                 # may not have TR-064 activated. In this case raise a
+#                 # useful error-message.
+#                 if description == FRITZ_TR64_DESC_FILE:
+#                     raise FritzConnectionException(
+#                         FRITZ_APPLICATION_ACCESS_DISABLED
+#                     )
+#
+#         self.device_manager.scan()
+#         self.device_manager.load_service_descriptions(address, port)
         # set default user for FritzOS >= 7.24:
         self._reset_user(user, password)
 
@@ -227,6 +227,29 @@ class FritzConnection:
         """
         url = url.split("//", 1)[-1]
         return PROTOCOLS[use_tls] + url
+
+    def _read_api_data_from_router(self):
+        """
+        Read the api data from the router.
+        """
+        for description in FRITZ_DESCRIPTIONS:
+            source = f"{address}:{port}/{description}"
+            try:
+                self.device_manager.add_description(source)
+            except FritzResourceError:
+                # resource not available:
+                # this can happen on devices not providing
+                # an igddesc-file.
+                # ignore this
+                # But if the "tr64desc.xml" file is missing the router
+                # may not have TR-064 activated. In this case raise a
+                # useful error-message.
+                if description == FRITZ_TR64_DESC_FILE:
+                    raise FritzConnectionException(
+                        FRITZ_APPLICATION_ACCESS_DISABLED
+                    )
+        self.device_manager.scan()
+        self.device_manager.load_service_descriptions(address, port)
 
     def _reset_user(self, user, password):
         """
