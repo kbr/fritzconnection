@@ -8,6 +8,7 @@ Module to communicate with the AVM Fritz!Box.
 
 
 import os
+import pickle
 import string
 import xml.etree.ElementTree as ElementTree
 from pathlib import Path
@@ -201,6 +202,14 @@ class FritzConnection:
         """
         return self.device_manager.system_version
 
+    @property
+    def device_description(self):
+        """
+        Returns a string with the device description. This is a
+        combination of the device model name and the installed software
+        version.
+        """
+
     @staticmethod
     def normalize_name(name):
         """
@@ -248,11 +257,13 @@ class FritzConnection:
         Returns the path to the cache file (including the filename and
         extension) as a Path instance.
         """
-        address = self.address.replace(".", "_")
+        # ignore optional scheme:
+        address = self.address.split('//')[-1]
+        address = address.replace(".", "_")
         filename = f"{address}{FRITZ_CACHE_EXT}"
         if cache_directory:
             return Path(cache_directory) / filename
-        return Path().home() / FRITZ_CACHE_DIR / filename
+        return Path().home() / FRITZ_CACHE_DIR /filename
 
     def _cached_data_valid(self, cached_data):
         """
@@ -261,12 +272,35 @@ class FritzConnection:
         valid. Returns a boolean: True on valid data, False on invalid
         data.
         """
+        cached_device_description, descriptions, services = cached_data
+        self.device_manager.descriptions = descriptions
+        self.device_manager.services = services
+        try:
+            assert self.device_description == cached_device_description
+        except (AssertionError, FritzConnectionException):
+            # either the description is not matching or call_action
+            # has failed. In both cases the cache is invalide.
+            # Clean up the cached attributes befor returning:
+            self.device_manager.descriptions = []
+            self.device_manager.services = {}
+            return False
+        return True
 
     def _write_api_data_to_cache(self, cache_path):
         """
-        Save device data in cache-file (given by cache_path).
+        Save device data in the cache-file, which is given as a Path
+        object. If the directory for the cache does not exist, the
+        directory gets created.
         """
-        pass
+        cache_data = (
+            self.device_description,
+            self.device_manager.descriptions,
+            self.device_manager.services
+        )
+        # create cache-path if not existing:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(cache_path, "wb") as fobj:
+            pickle.dump(cache_data, fobj)
 
     def _read_api_data_from_router(self):
         """
@@ -323,7 +357,6 @@ class FritzConnection:
                 self.soaper.user = last_user
                 self.soaper.session = self.session
                 self.device_manager.session = self.session
-
 
     # -------------------------------------------
     # public api:

@@ -47,6 +47,8 @@ def test_set_protocol(url, use_tls, expected):
         ('192.168.178.1', 49000, None, Path().home() / FRITZ_CACHE_DIR / '192_168_178_1_cache.pcl'),
         ('192.168.178.6', 49000, None, Path().home() / FRITZ_CACHE_DIR / '192_168_178_6_cache.pcl'),
         ('192.168.1.15', 49000, None, Path().home() / FRITZ_CACHE_DIR / '192_168_1_15_cache.pcl'),
+        ('http://192.168.1.15', 49000, None, Path().home() / FRITZ_CACHE_DIR / '192_168_1_15_cache.pcl'),
+        ('https://192.168.1.15', 49000, None, Path().home() / FRITZ_CACHE_DIR / '192_168_1_15_cache.pcl'),
     ]
 )
 def test__get_cache_path(address, port, cache_directory, expected_result):
