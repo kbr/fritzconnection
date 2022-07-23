@@ -348,4 +348,5 @@ class FritzStatus(AbstractLibraryBase):
         """
         True if wan is enabled otherwise False.
         """
-        return self.fc.call_action(self.get_default_connection_service().connection_service, "GetInfo")["NewEnable"]
+        connection_service = self.get_default_connection_service().connection_service
+        return self.fc.call_action(connection_service, "GetInfo")["NewEnable"]
