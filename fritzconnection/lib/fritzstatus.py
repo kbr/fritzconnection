@@ -308,7 +308,7 @@ class FritzStatus(AbstractLibraryBase):
         """
         try:
             return (
-                "X_AVM-DE_GetMeshListPath" 
+                "X_AVM-DE_GetMeshListPath"
                 in self.fc.services["Hosts1"].actions
             )
         except KeyError:
