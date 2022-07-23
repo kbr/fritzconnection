@@ -2,10 +2,8 @@
 Module to read status-information from an AVM FritzBox.
 """
 
-import time
 from warnings import warn
 
-from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
 from .fritztools import format_num, format_rate, format_dB
 
@@ -312,3 +310,11 @@ class FritzStatus(AbstractLibraryBase):
             )
         except KeyError:
             return False
+
+    @property
+    def update_available(self):
+        """
+        The new version number (as a string) if an update is available or an
+        empty string if no update is avilable.
+        """
+        return self.fc.call_action("UserInterface1", "GetInfo")["NewX_AVM-DE_Version"]
