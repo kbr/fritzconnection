@@ -185,21 +185,6 @@ class FritzConnection:
         )
 
     @property
-    def device_connection_type(self):
-        """
-        Return type of WAN connection of the device.
-        None if device has no connection.
-        """
-        if "Layer3Forwarding1" in self.services:
-            if connection_type := self.call_action(
-                "Layer3Forwarding1", "GetDefaultConnectionService"
-            ).get("NewDefaultConnectionService"):
-                # NewDefaultConnectionService format: "1.WANPPPConnection.1"
-                # Return "WANPPPConnection", format needed for call_action calls
-                return connection_type[2:][:-2]
-        return None
-
-    @property
     def services(self):
         """
         Dictionary of service instances. Keys are the service names.
