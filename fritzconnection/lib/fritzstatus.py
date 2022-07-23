@@ -315,17 +315,9 @@ class FritzStatus(AbstractLibraryBase):
             return False
 
     @property
-    def device_update(self):
+    def update_available(self):
         """
-        Returns a namedtuple of two values interpreted as
-        new_firmware_available -> bool
-        new_firmware_version -> string
+        The new version number (as a string) if an update is available or an
+        empty string if no update is avilable.
         """
-        version = self.fc.call_action("UserInterface1", "GetInfo").get(
-            "NewX_AVM-DE_Version"
-        )
-        DeviceUpdate = namedtuple(
-            "DeviceUpdate",
-            "new_firmware_available new_firmware_version"
-        )
-        return DeviceUpdate(bool(version), version)
+        return self.fc.call_action("UserInterface1", "GetInfo")["NewX_AVM-DE_Version"]
