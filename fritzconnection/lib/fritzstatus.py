@@ -362,7 +362,7 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def has_wan_support(self):
         """
-        Return True is the device has a WAN interface
-        False otherwise
+        True is the device supports a WAN interface.
+        False otherwise.
         """
         return "Layer3Forwarding1" in self.fc.services
