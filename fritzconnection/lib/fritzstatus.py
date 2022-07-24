@@ -353,6 +353,13 @@ class FritzStatus(AbstractLibraryBase):
         return self.fc.call_action("UserInterface1", "GetInfo")["NewX_AVM-DE_Version"]
 
     @property
+    def has_wan_enabled(self):
+        """
+        True if wan is enabled otherwise False.
+        """
+        return self.fc.call_action(self.connection_service, "GetInfo")["NewEnable"]
+
+    @property
     def has_wan_support(self):
         """
         Return True is the device has a WAN interface
