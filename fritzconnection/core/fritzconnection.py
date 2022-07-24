@@ -305,3 +305,4 @@ class FritzConnection:
         Reboot the system.
         """
         self.call_action("DeviceConfig1", "Reboot")
+
