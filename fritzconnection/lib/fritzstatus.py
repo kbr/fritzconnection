@@ -2,7 +2,6 @@
 Module to read status-information from an AVM FritzBox.
 """
 
-import time
 from collections import namedtuple
 from warnings import warn
 
@@ -13,6 +12,11 @@ from .fritztools import format_num, format_rate, format_dB
 DefaultConnectionService = namedtuple(
     "DefaultConnectionService",
     "prefix connection_service postfix"
+)
+
+DeviceInfo = namedtuple(
+            "DeviceInfo",
+            "serial_number model_name current_firmware"
 )
 
 def _integer_or_original(value):
@@ -317,7 +321,56 @@ class FritzStatus(AbstractLibraryBase):
                 in self.fc.services["Hosts1"].actions
             )
         except KeyError:
+            # can happen if "Hosts1" is not known
             return False
+
+    def get_default_connection_service(self):
+        """
+        Returns a namedtuple of type DefaultConnectionService:
+        `prefix` -> str
+        `device_connection` -> str (like "WANPPPConnection")
+        `postfix` -> str
+        """
+        result = self.fc.call_action(
+                "Layer3Forwarding1", "GetDefaultConnectionService"
+        )
+        prefix, connection_service, postfix = \
+            result["NewDefaultConnectionService"].split('.', 2)
+        return DefaultConnectionService(
+            prefix, connection_service, postfix
+        )
+
+    @property
+    def connection_service(self):
+        """
+        The extracted connection_service from
+        get_default_connection_service().
+        """
+        result = self.get_default_connection_service()
+        return result.connection_service
+
+    @property
+    def update_available(self):
+        """
+        The new version number (as a string) if an update is available or an
+        empty string if no update is avilable.
+        """
+        return self.fc.call_action("UserInterface1", "GetInfo")["NewX_AVM-DE_Version"]
+
+    @property
+    def has_wan_enabled(self):
+        """
+        True if wan is enabled otherwise False.
+        """
+        return self.fc.call_action(self.connection_service, "GetInfo")["NewEnable"]
+
+    @property
+    def has_wan_support(self):
+        """
+        True is the device supports a WAN interface.
+        False otherwise.
+        """
+        return "Layer3Forwarding1" in self.fc.services
 
     @property
     def device_info(self):
@@ -328,9 +381,4 @@ class FritzStatus(AbstractLibraryBase):
         'current_firmware' -> string
         """
         info = self.fc.call_action("DeviceInfo:1", "GetInfo")
-        DeviceInfo = namedtuple(
-            "DeviceInfo",
-            "serial_number model_name current_firmware"
-        )
-
         return DeviceInfo(info["NewSerialNumber"], info["NewModelName"], info["NewSoftwareVersion"])
