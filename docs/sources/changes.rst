@@ -11,6 +11,7 @@ development
 
   - New property `update_available` (#156)
   - New property `connection_service`
+  - New property `has_wan_support` (#162)
   - New property `has_wan_enabled` (#147)
   - New property `device_has_mesh_support` (#146)
   - New method `get_default_connection_service` (#146)
