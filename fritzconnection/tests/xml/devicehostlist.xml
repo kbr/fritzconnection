@@ -41,14 +41,14 @@
 <X_AVM-DE_Disallow>0</X_AVM-DE_Disallow>
 </Item>
 <Item>
-<Index>3</Index>
-<IPAddress>192.168.178.49</IPAddress>
-<MACAddress>B8:27:EB:D1:DC:06</MACAddress>
-<Active>1</Active>
-<HostName>raspberrypi</HostName>
-<InterfaceType>Ethernet</InterfaceType>
-<X_AVM-DE_Port>1</X_AVM-DE_Port>
-<X_AVM-DE_Speed>1000</X_AVM-DE_Speed>
+<Index>4</Index>
+<IPAddress>192.168.178.32</IPAddress>
+<MACAddress>B4:CD:27:37:78:E4</MACAddress>
+<Active>0</Active>
+<HostName>someones-HUAWEI</HostName>
+<InterfaceType>802.11</InterfaceType>
+<X_AVM-DE_Port>0</X_AVM-DE_Port>
+<X_AVM-DE_Speed>0</X_AVM-DE_Speed>
 <X_AVM-DE_UpdateAvailable>0</X_AVM-DE_UpdateAvailable>
 <X_AVM-DE_UpdateSuccessful>unknown</X_AVM-DE_UpdateSuccessful>
 <X_AVM-DE_InfoURL />
@@ -60,14 +60,14 @@
 <X_AVM-DE_Disallow>0</X_AVM-DE_Disallow>
 </Item>
 <Item>
-<Index>4</Index>
-<IPAddress>192.168.178.32</IPAddress>
-<MACAddress>B4:CD:27:37:78:E4</MACAddress>
-<Active>0</Active>
-<HostName>someones-HUAWEI</HostName>
-<InterfaceType>802.11</InterfaceType>
-<X_AVM-DE_Port>0</X_AVM-DE_Port>
-<X_AVM-DE_Speed>0</X_AVM-DE_Speed>
+<Index>3</Index>
+<IPAddress>192.168.178.49</IPAddress>
+<MACAddress>B8:27:EB:D1:DC:06</MACAddress>
+<Active>1</Active>
+<HostName>raspberrypi</HostName>
+<InterfaceType>Ethernet</InterfaceType>
+<X_AVM-DE_Port>1</X_AVM-DE_Port>
+<X_AVM-DE_Speed>1000</X_AVM-DE_Speed>
 <X_AVM-DE_UpdateAvailable>0</X_AVM-DE_UpdateAvailable>
 <X_AVM-DE_UpdateSuccessful>unknown</X_AVM-DE_UpdateSuccessful>
 <X_AVM-DE_InfoURL />

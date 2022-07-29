@@ -271,5 +271,11 @@ class _HostStorage(Storage):
     def hosts_attributes(self):
         """
         Provide a list of dictionaries with the attributes of all hosts.
+        The list is sorted with the lowest Index number first.
         """
-        return [host.attributes for host in self._hosts]
+        # list is already sorted from FritzOS,
+        # but don't trust this for any time in the future.
+        return sorted(
+            [host.attributes for host in self._hosts],
+            key = lambda attrs: attrs["Index"]
+        )
