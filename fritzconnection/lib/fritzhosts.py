@@ -8,11 +8,18 @@ Module to access and control the known hosts.
 
 
 import itertools
+
 from ..core.exceptions import (
     FritzActionError,
     FritzArgumentError,
     FritzLookUpError,
 )
+from ..core.processor import (
+    processor,
+    InstanceAttributeFactory,
+    Storage,
+)
+from ..core.utils import get_xml_root
 from .fritzbase import AbstractLibraryBase
 
 
@@ -89,14 +96,16 @@ class FritzHosts(AbstractLibraryBase):
     def get_active_hosts(self):
         """
         Returns a list of dicts with information about the active
-        devices. The dict-keys are: 'ip', 'name', 'mac', 'status', 'interface_type', 'address_source', 'lease_time_remaining'
+        devices. The dict-keys are: 'ip', 'name', 'mac', 'status',
+        'interface_type', 'address_source', 'lease_time_remaining'
         """
         return [host for host in self.get_hosts_info() if host["status"]]
 
     def get_hosts_info(self):
         """
         Returns a list of dicts with information about the known hosts.
-        The dict-keys are: 'ip', 'name', 'mac', 'status', 'interface_type', 'address_source', 'lease_time_remaining'
+        The dict-keys are: 'ip', 'name', 'mac', 'status',
+        'interface_type', 'address_source', 'lease_time_remaining'.
         """
         result = []
         for index in itertools.count():
@@ -170,7 +179,8 @@ class FritzHosts(AbstractLibraryBase):
 
     def get_host_name(self, mac_address):
         """
-        Returns a String with the host_name of the device with the given mac_address
+        Returns a String with the host_name of the device with the given
+        mac_address
         """
         return self.get_specific_host_entry(mac_address)["NewHostName"]
 
@@ -183,3 +193,83 @@ class FritzHosts(AbstractLibraryBase):
         update. So run this command with caution.
         """
         self._action("X_AVM-DE_HostDoUpdate", NewMACAddress=mac_address)
+
+    def get_hosts_attributes(self):
+        """
+        Returns a list of dictionaries with information about all hosts.
+
+        This differs from `get_hosts_info` as the information origins
+        from a different FritzOS call: the information about the current
+        host stats is provided by a Lua script returning an xml-stream.
+        `get_hosts_attributes` triggers the Lua script and converts the
+        returned data in a list of dictionaries describing the known
+        hosts.
+
+        .. versionadded :: development
+        """
+        result = self._action("X_AVM-DE_GetHostListPath")
+        url = result["NewX_AVM-DE_HostListPath"]
+        storage = _HostStorage(get_xml_root(url, self.fc.session))
+        return storage.hosts_attributes
+
+
+@processor
+class _Host:
+    """
+    Host class providing every requested attribute
+    """
+    _int_values = {'Index', 'X_AVM-DE_Port', 'X_AVM-DE_Speed'}
+    _bool_values = {
+        'Active',
+        'X_AVM-DE_UpdateAvailable',
+        'X_AVM-DE_Guest', 'X_AVM-DE_VPN',
+        'X_AVM-DE_Disallow',
+    }
+
+    def __getattr__(self, attr_name):
+        # do the magic of not raising an AttributeError:
+        setattr(self, attr_name, None)
+        return getattr(self, attr_name)
+
+    def __repr__(self):
+        return "\n".join(
+            [f"{key}: {value}" for key, value in self.__dict__.items()]
+        )
+
+    @property
+    def attributes(self):
+        """
+        Provide all attributes of the instance as a dictionary with the
+        attribute names as keys and the values converted to python
+        datatypes.
+        """
+        attrs = {}
+        for name, value in self.__dict__.items():
+            if name in self._int_values:
+                attrs[name] = int(value)
+            elif name in self._bool_values:
+                attrs[name] = bool(int(value))
+            else:
+                attrs[name] = value
+        return attrs
+
+
+@processor
+class _HostStorage(Storage):
+    """
+    Storage class collection all Item-nodes describing the hosts.
+    The Item-nodes are converted to _Host instances.
+    """
+    Item = InstanceAttributeFactory(_Host)  # 'Item' must match node-name
+
+    def __init__(self, root):
+        self._hosts = list()
+        super().__init__(self._hosts)
+        self.__call__(root)  # explicit is better than implicit: self(root)
+
+    @property
+    def hosts_attributes(self):
+        """
+        Provide a list of dictionaries with the attributes of all hosts.
+        """
+        return [host.attributes for host in self._hosts]
