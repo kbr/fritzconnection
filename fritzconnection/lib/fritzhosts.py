@@ -260,7 +260,7 @@ class _HostStorage(Storage):
     def __init__(self, root):
         self._hosts = list()
         super().__init__(self._hosts)
-        self.__call__(root)  # explicit is better than implicit: self(root)
+        self(root)  # start process_node()
 
     @property
     def hosts_attributes(self):
