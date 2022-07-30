@@ -7,6 +7,10 @@ Version History
 development
 -----------
 
+- FritzHosts:
+
+  - New method `get_hosts_attributes` providing a list of dictionaries with the attribues of all known hosts (#134)
+
 - FritzStatus:
 
   - New property `update_available` (#156)
