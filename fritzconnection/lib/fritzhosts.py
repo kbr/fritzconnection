@@ -231,11 +231,6 @@ class _Host:
         setattr(self, attr_name, None)
         return getattr(self, attr_name)
 
-    def __repr__(self):
-        return "\n".join(
-            [f"{key}: {value}" for key, value in self.__dict__.items()]
-        )
-
     @property
     def attributes(self):
         """
