@@ -287,6 +287,78 @@ FritzStatus API
     :members:
 
 
+FritzTAM
+---------
+
+Module for accessing the integrated telephone answering machine (TAM).
+
+It is recommended to set up a dedicated user for this, who only needs the right for voice messages.
+The setup of the TAM is not supported and needs to be done in the web interface.
+
+Example to get information about general options and the available TAMs. This information is read-only: ::
+
+    from fritzconnection.lib.fritztam import FritzTAM
+
+    tam = FritzTAM(address="192.168.178.1", use_tls=True, user=voice_user, password=secret_password)
+    tam.tam_options
+    # {'TAMRunning': '1', 'Stick': '0', 'Status': '1', 'Capacity': '8'}
+
+Get information about the available TAMs: ::
+
+    tam.tam_list()[0]
+    # [{'Index': '0', 'Display': '1', 'Enable': '0', 'Name': 'Anrufbeantworter'},
+    # {'Index': '1', 'Display': '1', 'Enable': '0', 'Name': 'Anrufbeantworter 2'},
+    # {'Index': '2', 'Display': '0', 'Enable': '0', 'Name': None},
+    # {'Index': '3', 'Display': '0', 'Enable': '0', 'Name': None},
+    # {'Index': '4', 'Display': '0', 'Enable': '0', 'Name': None}]
+
+Get the list of messages from the TAM with index 1: ::
+
+    tam.message_list(1)
+    # [{'Index': '0',
+    #  'Tam': '1',
+    #  'Called': '99998999',
+    #  'Date': '01.01.22 12:00',
+    #  'Duration': '0:01',
+    #  'Inbook': '1',
+    #  'Name': 'Name',
+    #  'New': '0',
+    #  'Number': '08999998000',
+    #  'Path': '/download.lua?path=/data/tam/rec/rec.1.000'}]
+
+Example: play the newest message and mark it as read
+....................................................
+
+We use the simpleaudio module to play the sound, to have a complete example. In this example, we use
+the second TAM of the Fritz!Box, which has index 1::
+
+    from fritzconnection.lib.fritztam import FritzTAM
+
+    # to play the wav-file
+    import simpleaudio as sa
+    from time import sleep
+    from io import BytesIO
+
+    tam = FritzTAM(address="192.168.178.1", use_tls=True, user=voice_user, password=secret_password)
+    wav_message = tam.message(tamIndex=1, messageIndex=0)
+
+    # convert raw bytes into a playable wav, play it for one second.
+    wavfile = BytesIO(wav_message)
+    wav_object = sa.WaveObject.from_wave_file(wavfile)
+    p = wav_object.play()
+    sleep(1)
+    p.stop()
+
+    # mark message as read
+    tam.mark_message(tamIndex=1, messageIndex=0, markAsRead=1)
+
+FritzTAM API
+.............
+
+.. automodule:: fritzconnection.lib.fritztam
+    :members:
+
+
 FritzWLAN
 ---------
 
