@@ -14,11 +14,7 @@ from ..core.exceptions import (
     FritzArgumentError,
     FritzLookUpError,
 )
-from ..core.processor import (
-    processor,
-    InstanceAttributeFactory,
-    Storage,
-)
+from ..core.processor import HostStorage
 from ..core.utils import get_xml_root
 from .fritzbase import AbstractLibraryBase
 
@@ -209,68 +205,5 @@ class FritzHosts(AbstractLibraryBase):
         """
         result = self._action("X_AVM-DE_GetHostListPath")
         url = result["NewX_AVM-DE_HostListPath"]
-        storage = _HostStorage(get_xml_root(url, self.fc.session))
+        storage = HostStorage(get_xml_root(url, self.fc.session))
         return storage.hosts_attributes
-
-
-@processor
-class _Host:
-    """
-    Host class providing every requested attribute
-    """
-    _int_values = {'Index', 'X_AVM-DE_Port', 'X_AVM-DE_Speed'}
-    _bool_values = {
-        'Active',
-        'X_AVM-DE_UpdateAvailable',
-        'X_AVM-DE_Guest', 'X_AVM-DE_VPN',
-        'X_AVM-DE_Disallow',
-    }
-
-    def __getattr__(self, attr_name):
-        # do the magic of not raising an AttributeError:
-        setattr(self, attr_name, None)
-        return getattr(self, attr_name)
-
-    @property
-    def attributes(self):
-        """
-        Provide all attributes of the instance as a dictionary with the
-        attribute names as keys and the values converted to python
-        datatypes.
-        """
-        attrs = {}
-        for name, value in self.__dict__.items():
-            if name in self._int_values:
-                attrs[name] = int(value)
-            elif name in self._bool_values:
-                attrs[name] = bool(int(value))
-            else:
-                attrs[name] = value
-        return attrs
-
-
-@processor
-class _HostStorage(Storage):
-    """
-    Storage class collection all Item-nodes describing the hosts.
-    The Item-nodes are converted to _Host instances.
-    """
-    Item = InstanceAttributeFactory(_Host)  # 'Item' must match node-name
-
-    def __init__(self, root):
-        self._hosts = list()
-        super().__init__(self._hosts)
-        self(root)  # start process_node()
-
-    @property
-    def hosts_attributes(self):
-        """
-        Provide a list of dictionaries with the attributes of all hosts.
-        The list is sorted with the lowest Index number first.
-        """
-        # list is already sorted from FritzOS,
-        # but don't trust this for any time in the future.
-        return sorted(
-            [host.attributes for host in self._hosts],
-            key = lambda attrs: attrs["Index"]
-        )

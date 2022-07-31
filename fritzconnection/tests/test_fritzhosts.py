@@ -2,7 +2,7 @@ import os
 import pytest
 
 from ..core.utils import get_xml_root
-from ..lib.fritzhosts import _HostStorage
+from ..core.processor import HostStorage
 
 
 @pytest.fixture()
@@ -89,6 +89,6 @@ def test_readhostlist(idx, attribute, expected_value, devicehostlist_source):
     """
     Check for node-extraction and type conversion.
     """
-    storage = _HostStorage(devicehostlist_source)
+    storage = HostStorage(devicehostlist_source)
     attrs = storage.hosts_attributes[idx-1]  # list is sorted but host-index is 1 based
     assert attrs[attribute] == expected_value
