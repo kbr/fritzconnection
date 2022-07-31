@@ -14,6 +14,8 @@ from ..core.fritzconnection import (
     FritzConnection,
     FRITZ_IP_ADDRESS,
     FRITZ_TCP_PORT,
+    FRITZ_ENV_USERNAME,
+    FRITZ_ENV_PASSWORD,
 )
 from .. import __version__
 
@@ -51,10 +53,10 @@ def get_cli_arguments(scan_additional_arguments=None):
                         help='Port of the FritzBox to connect to. '
                              'Default: %s' % FRITZ_TCP_PORT)
     parser.add_argument('-u', '--username',
-                        nargs='?', default=os.getenv('FRITZ_USERNAME', None),
+                        nargs='?', default=os.getenv(FRITZ_ENV_USERNAME, None),
                         help='Fritzbox authentication username')
     parser.add_argument('-p', '--password',
-                        nargs='?', default=os.getenv('FRITZ_PASSWORD', None),
+                        nargs='?', default=os.getenv(FRITZ_ENV_PASSWORD, None),
                         help='Fritzbox authentication password')
     parser.add_argument('-e', '--encrypt',
                         nargs='?', default=False, const=True,

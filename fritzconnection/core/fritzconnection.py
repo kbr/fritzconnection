@@ -46,6 +46,8 @@ FRITZ_APPLICATION_ACCESS_DISABLED = """\n
     for "Allow access for applications".\n"""
 FRITZ_CACHE_DIR = ".fritzconnection"
 FRITZ_CACHE_EXT = "_cache.pcl"
+FRITZ_ENV_USERNAME = "FRITZ_USERNAME"
+FRITZ_ENV_PASSWORD = "FRITZ_PASSWORD"
 
 # same defaults as used by requests:
 DEFAULT_POOL_CONNECTIONS = 10
@@ -152,9 +154,9 @@ class FritzConnection:
         if address is None:
             address = FRITZ_IP_ADDRESS
         if user is None:
-            user = os.getenv("FRITZ_USERNAME", FRITZ_USERNAME)
+            user = os.getenv(FRITZ_ENV_USERNAME, FRITZ_USERNAME)
         if password is None:
-            password = os.getenv("FRITZ_PASSWORD", "")
+            password = os.getenv(FRITZ_ENV_PASSWORD, "")
         if port is None and use_tls:
             port = FRITZ_TLS_PORT
         elif port is None:
