@@ -221,7 +221,7 @@ class FritzConnection:
         combination of the device model name and the installed software
         version.
         """
-        return fc.call_action("DeviceInfo1", "GetInfo")["NewDescription"]
+        return self.call_action("DeviceInfo1", "GetInfo")["NewDescription"]
 
     @staticmethod
     def normalize_name(name):

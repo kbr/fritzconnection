@@ -34,6 +34,8 @@ def get_instance(cls, args):
         user=args.username,
         password=args.password,
         use_tls=args.encrypt,
+        use_cache=args.use_cache,
+        cache_directory=args.cache_directory,
     )
 
 
@@ -57,6 +59,17 @@ def get_cli_arguments(scan_additional_arguments=None):
     parser.add_argument('-e', '--encrypt',
                         nargs='?', default=False, const=True,
                         help='use secure connection')
+    parser.add_argument('-C', '--use-cache',
+                        nargs='?', default=False, const=True,
+                        dest='use_cache',
+                        help='use api cache (speed-up subsequent '
+                             'instanciations)')
+    parser.add_argument('--cache-directory',
+                        nargs='?', default=None, const=None,
+                        dest='cache_directory',
+                        help="path to cache directory if it's not the "
+                             "default one")
+
     if scan_additional_arguments:
         scan_additional_arguments(parser)
     args = parser.parse_args()
