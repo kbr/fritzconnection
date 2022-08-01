@@ -48,6 +48,8 @@ FRITZ_CACHE_DIR = ".fritzconnection"
 FRITZ_CACHE_EXT = "_cache.pcl"
 FRITZ_ENV_USERNAME = "FRITZ_USERNAME"
 FRITZ_ENV_PASSWORD = "FRITZ_PASSWORD"
+FRITZ_ENV_USECACHE = "FRITZ_USECACHE"
+FRITZ_ENV_CACHEDIRECTORY = "FRITZ_CACHEDIRECTORY"
 
 # same defaults as used by requests:
 DEFAULT_POOL_CONNECTIONS = 10
@@ -113,7 +115,7 @@ class FritzConnection:
         password=None,
         timeout=None,
         use_tls=False,
-        use_cache=False,
+        use_cache=None,
         cache_directory=None,
         pool_connections=DEFAULT_POOL_CONNECTIONS,
         pool_maxsize=DEFAULT_POOL_MAXSIZE,
@@ -157,6 +159,15 @@ class FritzConnection:
             user = os.getenv(FRITZ_ENV_USERNAME, FRITZ_USERNAME)
         if password is None:
             password = os.getenv(FRITZ_ENV_PASSWORD, "")
+        if use_cache is None:
+            use_cache = os.getenv(FRITZ_ENV_USECACHE, None)
+            try:
+                use_cache = use_cache.lower() == 'true'
+            except AttributeError:
+                # in case use_cache is something else than None:
+                use_cache = None
+        if cache_directory is None:
+            cache_directory = os.getenv(FRITZ_ENV_CACHEDIRECTORY, None)
         if port is None and use_tls:
             port = FRITZ_TLS_PORT
         elif port is None:
@@ -186,7 +197,6 @@ class FritzConnection:
         self._read_api_data(use_cache, cache_directory)
         # set default user for FritzOS >= 7.24:
         self._reset_user(user, password)
-
 
     def __repr__(self):
         """Return a readable representation"""
@@ -228,8 +238,8 @@ class FritzConnection:
     @staticmethod
     def normalize_name(name):
         """
-        Returns the normalized service name. E.g. WLANConfiguration and
-        WLANConfiguration:1 will get converted to WLANConfiguration1.
+        Returns the normalized service name. E.g. `WLANConfiguration` and
+        `WLANConfiguration:1` will get converted to `WLANConfiguration1`.
         """
         if ":" in name:
             name, number = name.split(":", 1)

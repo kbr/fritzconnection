@@ -16,6 +16,8 @@ from ..core.fritzconnection import (
     FRITZ_TCP_PORT,
     FRITZ_ENV_USERNAME,
     FRITZ_ENV_PASSWORD,
+    FRITZ_ENV_USECACHE,
+    FRITZ_ENV_CACHEDIRECTORY,
 )
 from .. import __version__
 
@@ -60,14 +62,16 @@ def get_cli_arguments(scan_additional_arguments=None):
                         help='Fritzbox authentication password')
     parser.add_argument('-e', '--encrypt',
                         nargs='?', default=False, const=True,
-                        help='use secure connection')
+                        help='Flag: use secure connection')
     parser.add_argument('-C', '--use-cache',
-                        nargs='?', default=False, const=True,
+                        nargs='?', default=os.getenv(FRITZ_ENV_USECACHE, None),
                         dest='use_cache',
-                        help='use api cache (speed-up subsequent '
+                        help='Flag: use api cache (speed-up subsequent '
                              'instanciations)')
     parser.add_argument('--cache-directory',
-                        nargs='?', default=None, const=None,
+                        nargs='?',
+                        default=os.getenv(FRITZ_ENV_CACHEDIRECTORY, None),
+                        const=None,
                         dest='cache_directory',
                         help="path to cache directory if it's not the "
                              "default one")
