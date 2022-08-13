@@ -103,8 +103,8 @@ class Storage:
 
 class Serializer:
     """
-    Simple serializer base class.
-    This is an abstract super class and should not get instanciated.
+    Simple abstract Serializer base class.
+    This class and should not get instanciated.
     """
 
     def __eq__(self, other):
@@ -323,7 +323,7 @@ class Scpd:
 
 
 @processor
-class Service:
+class Service(Serializer):
     """
     Class describing a service.
     """
@@ -371,6 +371,12 @@ class Service:
         url = f'{address}:{port}{self.SCPDURL}'
         root = get_xml_root(url, timeout=timeout, session=session)
         self._scpd = Scpd(root)
+
+    def serialize(self):
+        data = {}
+        exclude = ['_scpd', '_actions', '_state_variables']
+        data['service_attributes'] = super().serialize(exclude=exclude)
+        return data
 
 
 @processor

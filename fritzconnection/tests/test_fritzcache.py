@@ -7,6 +7,7 @@ from fritzconnection.core.processor import (
     Description,
     Device,
     Serializer,
+    Service,
     SpecVersion,
     SystemVersion,
 )
@@ -34,9 +35,17 @@ DATA_DEVICE_MODELURL = "http://www.avm.de"
 DATA_DEVICE_PRESENTATIONURL = "http://fritz.box"
 DATA_DEVICE_UDN = "uuid:75802409-bccb-40e7-8e6c-989BCB2B93B0"
 
+DATA_SERVICE_SERVICETYPE = "urn:dslforum-org:service:DeviceInfo:1"
+DATA_SERVICE_SERVICEID = "urn:DeviceInfo-com:serviceId:DeviceInfo1"
+DATA_SERVICE_CONTROLURL = "/upnp/control/deviceinfo"
+DATA_SERVICE_EVENTSUBURL = "/upnp/control/deviceinfo"
+DATA_SERVICE_SCPDURL = "/deviceinfoSCPD.xml"
+
 JSON_RESULT_TEST_SERIALIZE_SPECVERSION = f"""{{"major": "{DATA_SPEC_MAJOR_VERSION}", "minor": "{DATA_SPEC_MINOR_VERSION}"}}"""
 
-JSON_RESULT_TEST_SYSTEMVERSION = f"""{{"Buildnumber": null, "Display": "{DATA_SYS_DISPLAY}", "HW": null, "Major": "{DATA_SYS_MAJOR}", "Minor": "{DATA_SYS_MINOR}", "Patch": "{DATA_SYS_PATCH}"}}"""
+JSON_RESULT_TEST_SERIALIZE_SYSTEMVERSION = f"""{{"Buildnumber": null, "Display": "{DATA_SYS_DISPLAY}", "HW": null, "Major": "{DATA_SYS_MAJOR}", "Minor": "{DATA_SYS_MINOR}", "Patch": "{DATA_SYS_PATCH}"}}"""
+
+JSON_RESULT_TEST_SERIALIZE_SERVICE = f"""{{"service_attributes": {{"SCPDURL": "{DATA_SERVICE_SCPDURL}", "controlURL": "{DATA_SERVICE_CONTROLURL}", "eventSubURL": "{DATA_SERVICE_EVENTSUBURL}", "serviceId": "{DATA_SERVICE_SERVICEID}", "serviceType": "{DATA_SERVICE_SERVICETYPE}"}}}}"""
 
 JSON_RESULT_TEST_SERIALIZE_DEVICE_01 = f"""{{"device": {{"device_attributes": {{"UDN": "{DATA_DEVICE_UDN}", "UPC": null, "deviceType": "{DATA_DEVICE_DEVICETYPE}", "friendlyName": "{DATA_DEVICE_FRIENDLYNAME}", "manufacturer": "{DATA_DEVICE_MANUFACTURER}", "manufacturerURL": "{DATA_DEVICE_MANUFACTURERURL}", "modelDescription": "{DATA_DEVICE_MODELDESCRIPTION}", "modelName": "{DATA_DEVICE_MODELNAME}", "modelNumber": "{DATA_DEVICE_MODELNUMBER}", "modelURL": "{DATA_DEVICE_MODELURL}", "presentationURL": "{DATA_DEVICE_PRESENTATIONURL}"}}, "device_services": [], "device_devices": []}}, "specVersion": {{"major": "{DATA_SPEC_MAJOR_VERSION}", "minor": "{DATA_SPEC_MINOR_VERSION}"}}, "systemVersion": {{"Buildnumber": null, "Display": "{DATA_SYS_DISPLAY}", "HW": null, "Major": "{DATA_SYS_MAJOR}", "Minor": "{DATA_SYS_MINOR}", "Patch": "{DATA_SYS_PATCH}"}}}}"""
 
@@ -57,6 +66,16 @@ def make_system_version():
     system_version.Buildnumber = None
     system_version.Display = DATA_SYS_DISPLAY
     return system_version
+
+
+def make_service():
+    service = Service()
+    service.serviceType = DATA_SERVICE_SERVICETYPE
+    service.serviceId = DATA_SERVICE_SERVICEID
+    service.controlURL = DATA_SERVICE_CONTROLURL
+    service.eventSubURL = DATA_SERVICE_EVENTSUBURL
+    service.SCPDURL = DATA_SERVICE_SCPDURL
+    return service
 
 
 def make_device():
@@ -139,7 +158,7 @@ def test_serialize_system_version():
     system_version = make_system_version()
     result = system_version.serialize()
     json_result = json.dumps(result)
-    assert json_result == JSON_RESULT_TEST_SYSTEMVERSION
+    assert json_result == JSON_RESULT_TEST_SERIALIZE_SYSTEMVERSION
 
 
 def test_deserialize_system_version():
@@ -147,11 +166,21 @@ def test_deserialize_system_version():
     Deserialize a SystemVersion instance from json.
     """
     system_version = make_system_version()
-    data = json.loads(JSON_RESULT_TEST_SYSTEMVERSION)
+    data = json.loads(JSON_RESULT_TEST_SERIALIZE_SYSTEMVERSION)
     sv = SystemVersion()
     assert sv != system_version
     sv.deserialize(data)
     assert sv == system_version
+
+
+def test_serialize_service():
+    """
+    Serialize a Service Instance.
+    """
+    service = make_service()
+    result = service.serialize()
+    json_result = json.dumps(result)
+    assert json_result == JSON_RESULT_TEST_SERIALIZE_SERVICE
 
 
 def test_serialize_device_01():
