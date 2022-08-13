@@ -100,8 +100,33 @@ class Storage:
 # Description is the only public class.
 # ---------------------------------------------------------
 
+
+class Serializer:
+    """
+    Simple serializer base class.
+    This is an abstract super class and should not get instanciated.
+    """
+
+    def __eq__(self, other):
+        # equal if both instances have the same attribute values:
+        for key, value in self.__dict__.items():
+            if getattr(other, key) != value:
+                return False
+        return True
+
+    def serialize(self, exclude=None):
+        if exclude is None:
+            exclude = []
+        sorted_keys = sorted(set(self.__dict__.keys()) - set(exclude))
+        return {key: getattr(self, key) for key in sorted_keys}
+
+    def deserialize(self, data):
+        for key, value in data.items():
+            setattr(self, key, value)
+
+
 @processor
-class SpecVersion:
+class SpecVersion(Serializer):
     """
     Specification version from the schema device or service
     information.
@@ -115,16 +140,9 @@ class SpecVersion:
     def version(self):
         return f'{self.major}.{self.minor}'
 
-    def serialize(self):
-        return self.__dict__
-
-    def deserialize(self, data):
-        for key, value in data.items():
-            setattr(self, key, value)
-
 
 @processor
-class SystemVersion:
+class SystemVersion(Serializer):
     """
     Information about the Fritz!OS version of the Fritz!Box.
     Information is just provided by the 'tr64desc.xml' file.
@@ -162,13 +180,6 @@ class SystemVersion:
             self.Buildnumber,
             self.Display,
         )
-
-    def serialize(self):
-        return self.__dict__
-
-    def deserialize(self, data):
-        for key, value in data.items():
-            setattr(self, key, value)
 
 
 @processor
@@ -373,7 +384,7 @@ class ServiceList(Storage):
 
 
 @processor
-class Device:
+class Device(Serializer):
     """
     Storage for devices attributes and device sub-nodes.
     Sub-nodes are the serviceList and the deviceList.
@@ -412,13 +423,11 @@ class Device:
         and a list of serialized services that can be transformed to
         json-format.
         """
-        suppress = set(["_services", "devices", "serviceList", "deviceList"])
-        # use sorted for testing: results in defined order
-        # of items in data['device_attributes']
-        export = sorted(set(self.__dict__.keys()) - suppress)
         data = {}
-        data['device_attributes'] = {key: getattr(self, key) for key in export}
+        exclude = set(["_services", "devices", "serviceList", "deviceList"])
+        data['device_attributes'] = super().serialize(exclude=exclude)
         data['device_services'] = [service.serialize() for service in self._services]
+        data['device_devices'] = [device.serialize() for device in self.devices]
         return data
 
     def deserialize(self, data):
@@ -426,8 +435,9 @@ class Device:
         Loads the data into the instance attributes. This is the
         reverse-function for serialize. No return value.
         """
-        for key, value in data['device_attributes']:
-            setattr(self, key, value)
+        super.deserialize(data['device_attributes'])
+#         for key, value in data['device_attributes']:
+#             setattr(self, key, value)
 
 
 @processor
