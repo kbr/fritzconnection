@@ -56,7 +56,8 @@ class DeviceManager:
     @property
     def system_info(self):
         """
-        Returns a tuple with Hardwarecode, Major-, Minor-, Patch-Level, Buildnumber and Display-String, in this order.
+        Returns a tuple with Hardwarecode, Major-, Minor-, Patch-Level,
+        Buildnumber and Display-String, in this order.
         Return None if this information is not available.
         """
         system_info = None
@@ -93,3 +94,9 @@ class DeviceManager:
                 address, port, timeout=self.timeout, session=self.session
             )
 
+    def serialize(self):
+        """
+        Returns a json-serializable list with Python-datastructures
+        representing the known api of the device.
+        """
+        return [description.serialize() for description in self.descriptions]

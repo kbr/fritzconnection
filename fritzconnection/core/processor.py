@@ -115,6 +115,9 @@ class SpecVersion:
     def version(self):
         return f'{self.major}.{self.minor}'
 
+    def serialize(self):
+        return self.__dict__
+
 
 @processor
 class SystemVersion:
@@ -155,6 +158,9 @@ class SystemVersion:
             self.Buildnumber,
             self.Display,
         )
+
+    def serialize(self):
+        return self.__dict__
 
 
 @processor
@@ -392,6 +398,16 @@ class Device:
             services.update(device.services)
         return services
 
+    def serialize(self):
+        suppress = set(["_services", "devices", "serviceList", "deviceList"])
+        # use sorted for testing: results in defined order
+        # of items in data['device_attributes']
+        export = sorted(set(self.__dict__.keys()) - suppress)
+        data = {}
+        data['device_attributes'] = {key: getattr(self, key) for key in export}
+        data['device_services'] = [service.serialize() for service in self._services]
+        return data
+
 
 @processor
 class DeviceList(Storage):
@@ -471,3 +487,13 @@ class Description:
         according service-names as keys.
         """
         return self.device.services
+
+    def serialize(self):
+        """
+        Return serialized instance attributes as dictionary.
+        """
+        return {
+            'device': self.device.serialize(),
+            'specVersion': self.specVersion.serialize(),
+            'systemVersion': self.systemVersion.serialize(),
+        }
