@@ -118,6 +118,10 @@ class SpecVersion:
     def serialize(self):
         return self.__dict__
 
+    def deserialize(self, data):
+        for key, value in data.items():
+            setattr(self, key, value)
+
 
 @processor
 class SystemVersion:
@@ -161,6 +165,10 @@ class SystemVersion:
 
     def serialize(self):
         return self.__dict__
+
+    def deserialize(self, data):
+        for key, value in data.items():
+            setattr(self, key, value)
 
 
 @processor
@@ -399,6 +407,11 @@ class Device:
         return services
 
     def serialize(self):
+        """
+        Returns a dictionary with a subset of the instance attributes
+        and a list of serialized services that can be transformed to
+        json-format.
+        """
         suppress = set(["_services", "devices", "serviceList", "deviceList"])
         # use sorted for testing: results in defined order
         # of items in data['device_attributes']
@@ -407,6 +420,14 @@ class Device:
         data['device_attributes'] = {key: getattr(self, key) for key in export}
         data['device_services'] = [service.serialize() for service in self._services]
         return data
+
+    def deserialize(self, data):
+        """
+        Loads the data into the instance attributes. This is the
+        reverse-function for serialize. No return value.
+        """
+        for key, value in data['device_attributes']:
+            setattr(self, key, value)
 
 
 @processor
@@ -497,3 +518,16 @@ class Description:
             'specVersion': self.specVersion.serialize(),
             'systemVersion': self.systemVersion.serialize(),
         }
+
+    @classmethod
+    def from_serialized_data(cls, data):
+        """
+        Returns a new Description instance based on the provided data.
+        The provided data should be the ones returned from serialized()
+        and builds an instance with the original instance attributes.
+        """
+        self = cls(root=[])
+        self.device.deserialize(data['device'])
+        self.specVersion.deserialize(data['specVersion'])
+        self.systemVersion.deserialize(data['systemVersion'])
+        return self
