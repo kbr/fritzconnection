@@ -103,7 +103,6 @@ class Check(Serializer):
         self.two = two
 
 
-
 def test_serializer():
     """
     Test the Serializer superclass.
@@ -114,6 +113,19 @@ def test_serializer():
     assert check != one_three
     one_three.deserialize(data)
     assert check == one_three
+
+
+def test_serializer_02():
+    """
+    Test for same set of attributes.
+    """
+    small = Check()
+    big = Check()
+    assert small == big
+    assert big == small
+    big.three = 3
+    assert small != big
+    assert big != small
 
 
 def test_serialize_exclude():
@@ -181,6 +193,18 @@ def test_serialize_service():
     result = service.serialize()
     json_result = json.dumps(result)
     assert json_result == JSON_RESULT_TEST_SERIALIZE_SERVICE
+
+
+def test_deserialize_service():
+    """
+    Deserialize a Service Instance.
+    """
+    service = make_service()
+    data = json.loads(JSON_RESULT_TEST_SERIALIZE_SERVICE)
+    s = Service()
+    assert s != service
+    s.deserialize(data)
+    assert s == service
 
 
 def test_serialize_device_01():

@@ -108,7 +108,10 @@ class Serializer:
     """
 
     def __eq__(self, other):
-        # equal if both instances have the same attribute values:
+        if set(self.__dict__.keys()) ^ set(other.__dict__.keys()):
+            # self and other have not the same set of instance attributes:
+            return False
+        # both instances must have the same attribute values:
         for key, value in self.__dict__.items():
             if getattr(other, key) != value:
                 return False
@@ -373,10 +376,21 @@ class Service(Serializer):
         self._scpd = Scpd(root)
 
     def serialize(self):
+        """
+        Serialize the service instance attributes. Returns a dictionary
+        with data that can be converted to json.
+        """
         data = {}
         exclude = ['_scpd', '_actions', '_state_variables']
         data['service_attributes'] = super().serialize(exclude=exclude)
         return data
+
+    def deserialize(self, data):
+        """
+        Inverse method for `serialize`. Takes the data (a dictionary)
+        and populates the instance attributes extracted by `serialize`.
+        """
+        super().deserialize(data['service_attributes'])
 
 
 @processor
