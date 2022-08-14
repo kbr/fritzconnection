@@ -4,6 +4,7 @@ import pytest
 
 from fritzconnection.core.devices import DeviceManager
 from fritzconnection.core.processor import (
+    Action,
     Argument,
     Description,
     Device,
@@ -30,6 +31,8 @@ DATA_ARGUMENT_NAME = "NewManufacturerName"
 DATA_ARGUMENT_DIRECTION = "out"
 DATA_ARGUMENT_RELATEDSTATEVARIABLE = "ManufacturerName"
 
+DATA_ACTION_NAME = "GetInfo"
+
 DATA_VALUERANGE_MINIMUM = None
 DATA_VALUERANGE_MAXIMUM = None
 DATA_VALUERANGE_STEP = "1"  # for not having all the default values
@@ -55,6 +58,8 @@ JSON_RESULT_TEST_SERIALIZE_SPECVERSION = f"""{{"major": "{DATA_SPEC_MAJOR_VERSIO
 JSON_RESULT_TEST_SERIALIZE_SYSTEMVERSION = f"""{{"Buildnumber": null, "Display": "{DATA_SYS_DISPLAY}", "HW": null, "Major": "{DATA_SYS_MAJOR}", "Minor": "{DATA_SYS_MINOR}", "Patch": "{DATA_SYS_PATCH}"}}"""
 JSON_RESULT_TEST_SERIALIZE_ARGUMENT = f"""{{"direction": "{DATA_ARGUMENT_DIRECTION}", "name": "{DATA_ARGUMENT_NAME}", "relatedStateVariable": "{DATA_ARGUMENT_RELATEDSTATEVARIABLE}"}}"""
 JSON_RESULT_TEST_SERIALIZE_VALUERANGE = f"""{{"maximum": null, "minimum": null, "step": "{DATA_VALUERANGE_STEP}"}}"""
+JSON_RESULT_TEST_SERIALIZE_ACTION = f"""{{"name": "{DATA_ACTION_NAME}", "arguments": [{JSON_RESULT_TEST_SERIALIZE_ARGUMENT}, {JSON_RESULT_TEST_SERIALIZE_ARGUMENT}]}}"""
+
 
 JSON_RESULT_TEST_SERIALIZE_SERVICE = f"""{{"service_attributes": {{"SCPDURL": "{DATA_SERVICE_SCPDURL}", "controlURL": "{DATA_SERVICE_CONTROLURL}", "eventSubURL": "{DATA_SERVICE_EVENTSUBURL}", "serviceId": "{DATA_SERVICE_SERVICEID}", "serviceType": "{DATA_SERVICE_SERVICETYPE}"}}}}"""
 JSON_RESULT_TEST_SERIALIZE_DEVICE_01 = f"""{{"device": {{"device_attributes": {{"UDN": "{DATA_DEVICE_UDN}", "UPC": null, "deviceType": "{DATA_DEVICE_DEVICETYPE}", "friendlyName": "{DATA_DEVICE_FRIENDLYNAME}", "manufacturer": "{DATA_DEVICE_MANUFACTURER}", "manufacturerURL": "{DATA_DEVICE_MANUFACTURERURL}", "modelDescription": "{DATA_DEVICE_MODELDESCRIPTION}", "modelName": "{DATA_DEVICE_MODELNAME}", "modelNumber": "{DATA_DEVICE_MODELNUMBER}", "modelURL": "{DATA_DEVICE_MODELURL}", "presentationURL": "{DATA_DEVICE_PRESENTATIONURL}"}}, "device_services": [], "device_devices": []}}, "specVersion": {{"major": "{DATA_SPEC_MAJOR_VERSION}", "minor": "{DATA_SPEC_MINOR_VERSION}"}}, "systemVersion": {{"Buildnumber": null, "Display": "{DATA_SYS_DISPLAY}", "HW": null, "Major": "{DATA_SYS_MAJOR}", "Minor": "{DATA_SYS_MINOR}", "Patch": "{DATA_SYS_PATCH}"}}}}"""
@@ -92,6 +97,16 @@ def make_valuerange():
     valuerange.maximum = DATA_VALUERANGE_MAXIMUM
     valuerange.step = DATA_VALUERANGE_STEP
     return valuerange
+
+
+def make_action():
+    # an Action has a name and a list of arguments.
+    # make an Action with two arguments.
+    action = Action()
+    action.name = DATA_ACTION_NAME
+    action._arguments.append(make_argument())
+    action._arguments.append(make_argument())
+    return action
 
 
 def make_service():
@@ -242,6 +257,27 @@ def test_deserialize_valuerange():
     assert vr != valuerange
     vr.deserialize(json.loads(JSON_RESULT_TEST_SERIALIZE_VALUERANGE))
     assert vr == valuerange
+
+
+def test_serialize_action():
+    """
+    Serialize an Action with a name and two Argument instances in
+    _arguments
+    """
+    action = make_action()
+    result = json.dumps(action.serialize())
+    assert result == JSON_RESULT_TEST_SERIALIZE_ACTION
+
+
+def test_deserialize_action():
+    """
+    Deerialize an Action with a name and two Argument instances in
+    _arguments from json.
+    """
+    action = make_action()
+    ac = Action()
+    ac.deserialize(json.loads(JSON_RESULT_TEST_SERIALIZE_ACTION))
+    assert ac == action
 
 
 def test_serialize_service():

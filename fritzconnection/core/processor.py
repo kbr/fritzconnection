@@ -196,6 +196,15 @@ class Argument(Serializer):
         self.direction = None
         self.relatedStateVariable = None
 
+    @classmethod
+    def from_data(cls, data):
+        """
+        Returns a instance initialized with the given deserialized data.
+        """
+        self = cls()
+        self.deserialize(data)
+        return self
+
 
 @processor
 class ArgumentList(Storage):
@@ -207,7 +216,7 @@ class ArgumentList(Storage):
 
 
 @processor
-class Action:
+class Action(Serializer):
     """
     Every Action has a name and a list of arguments.
     """
@@ -217,6 +226,17 @@ class Action:
         # attributes are case sensitive node names:
         self.name = None
         self.argumentList = ArgumentList(self._arguments)
+
+    def __eq__(self, other):
+        # for testing: Action is equal to another if the name is the same
+        # and the arguments in self._arguments are the same and in the
+        # same order (because of the implementation).
+        if self.name == other.name:
+            for arg1, arg2 in zip(self._arguments, other._arguments):
+                if arg1 != arg2:
+                    return False
+            return True
+        return False
 
     @property
     def arguments(self):
@@ -228,6 +248,25 @@ class Action:
         if not self._arguments_storage:
             self._arguments_storage = {arg.name: arg for arg in self._arguments}
         return self._arguments_storage
+
+    def serialize(self):
+        """
+        Return a dictionary with json serializable data: the name of the
+        instance and a list of the serialized argument-instances in
+        self._arguments.
+        """
+        exclude = ["_arguments", "_arguments_storage", "argumentList"]
+        data = super().serialize(exclude=exclude)
+        data['arguments'] = [arg.serialize() for arg in self._arguments]
+        return data
+
+    def deserialize(self, data):
+        """
+        Deserialize the data back to an Action instance with a given
+        name and defined Argument-instances.
+        """
+        self.name = data['name']
+        self._arguments = [Argument.from_data(d) for d in data['arguments']]
 
 
 @processor
