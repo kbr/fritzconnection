@@ -111,7 +111,7 @@ class Serializer:
         if set(self.__dict__.keys()) ^ set(other.__dict__.keys()):
             # self and other have not the same set of instance attributes:
             return False
-        # both instances must have the same attribute values:
+        # both instances must have all the same attribute values:
         for key, value in self.__dict__.items():
             if getattr(other, key) != value:
                 return False
@@ -124,8 +124,7 @@ class Serializer:
         return {key: getattr(self, key) for key in sorted_keys}
 
     def deserialize(self, data):
-        for key, value in data.items():
-            setattr(self, key, value)
+        self.__dict__.update(data)
 
 
 @processor
@@ -186,7 +185,7 @@ class SystemVersion(Serializer):
 
 
 @processor
-class Argument:
+class Argument(Serializer):
     """
     An argument with name, direction and relatedStateVariable
     attributes.
@@ -242,7 +241,7 @@ class ActionList(Storage):
 
 
 @processor
-class ValueRange:
+class ValueRange(Serializer):
 
     def __init__(self):
         # attributes are case sensitive node names:

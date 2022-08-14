@@ -4,12 +4,14 @@ import pytest
 
 from fritzconnection.core.devices import DeviceManager
 from fritzconnection.core.processor import (
+    Argument,
     Description,
     Device,
     Serializer,
     Service,
     SpecVersion,
     SystemVersion,
+    ValueRange,
 )
 
 
@@ -23,6 +25,14 @@ DATA_SYS_MAJOR = "154"
 DATA_SYS_MINOR = "7"
 DATA_SYS_PATCH = "29"
 DATA_SYS_DISPLAY = "154.07.29"
+
+DATA_ARGUMENT_NAME = "NewManufacturerName"
+DATA_ARGUMENT_DIRECTION = "out"
+DATA_ARGUMENT_RELATEDSTATEVARIABLE = "ManufacturerName"
+
+DATA_VALUERANGE_MINIMUM = None
+DATA_VALUERANGE_MAXIMUM = None
+DATA_VALUERANGE_STEP = "1"  # for not having all the default values
 
 DATA_DEVICE_DEVICETYPE = "urn:schemas-upnp-org:device:InternetGatewayDevice:1"
 DATA_DEVICE_FRIENDLYNAME = "FRITZ!Box 7590"
@@ -42,11 +52,11 @@ DATA_SERVICE_EVENTSUBURL = "/upnp/control/deviceinfo"
 DATA_SERVICE_SCPDURL = "/deviceinfoSCPD.xml"
 
 JSON_RESULT_TEST_SERIALIZE_SPECVERSION = f"""{{"major": "{DATA_SPEC_MAJOR_VERSION}", "minor": "{DATA_SPEC_MINOR_VERSION}"}}"""
-
 JSON_RESULT_TEST_SERIALIZE_SYSTEMVERSION = f"""{{"Buildnumber": null, "Display": "{DATA_SYS_DISPLAY}", "HW": null, "Major": "{DATA_SYS_MAJOR}", "Minor": "{DATA_SYS_MINOR}", "Patch": "{DATA_SYS_PATCH}"}}"""
+JSON_RESULT_TEST_SERIALIZE_ARGUMENT = f"""{{"direction": "{DATA_ARGUMENT_DIRECTION}", "name": "{DATA_ARGUMENT_NAME}", "relatedStateVariable": "{DATA_ARGUMENT_RELATEDSTATEVARIABLE}"}}"""
+JSON_RESULT_TEST_SERIALIZE_VALUERANGE = f"""{{"maximum": null, "minimum": null, "step": "{DATA_VALUERANGE_STEP}"}}"""
 
 JSON_RESULT_TEST_SERIALIZE_SERVICE = f"""{{"service_attributes": {{"SCPDURL": "{DATA_SERVICE_SCPDURL}", "controlURL": "{DATA_SERVICE_CONTROLURL}", "eventSubURL": "{DATA_SERVICE_EVENTSUBURL}", "serviceId": "{DATA_SERVICE_SERVICEID}", "serviceType": "{DATA_SERVICE_SERVICETYPE}"}}}}"""
-
 JSON_RESULT_TEST_SERIALIZE_DEVICE_01 = f"""{{"device": {{"device_attributes": {{"UDN": "{DATA_DEVICE_UDN}", "UPC": null, "deviceType": "{DATA_DEVICE_DEVICETYPE}", "friendlyName": "{DATA_DEVICE_FRIENDLYNAME}", "manufacturer": "{DATA_DEVICE_MANUFACTURER}", "manufacturerURL": "{DATA_DEVICE_MANUFACTURERURL}", "modelDescription": "{DATA_DEVICE_MODELDESCRIPTION}", "modelName": "{DATA_DEVICE_MODELNAME}", "modelNumber": "{DATA_DEVICE_MODELNUMBER}", "modelURL": "{DATA_DEVICE_MODELURL}", "presentationURL": "{DATA_DEVICE_PRESENTATIONURL}"}}, "device_services": [], "device_devices": []}}, "specVersion": {{"major": "{DATA_SPEC_MAJOR_VERSION}", "minor": "{DATA_SPEC_MINOR_VERSION}"}}, "systemVersion": {{"Buildnumber": null, "Display": "{DATA_SYS_DISPLAY}", "HW": null, "Major": "{DATA_SYS_MAJOR}", "Minor": "{DATA_SYS_MINOR}", "Patch": "{DATA_SYS_PATCH}"}}}}"""
 
 
@@ -66,6 +76,22 @@ def make_system_version():
     system_version.Buildnumber = None
     system_version.Display = DATA_SYS_DISPLAY
     return system_version
+
+
+def make_argument():
+    argument = Argument()
+    argument.name = DATA_ARGUMENT_NAME
+    argument.direction = DATA_ARGUMENT_DIRECTION
+    argument.relatedStateVariable = DATA_ARGUMENT_RELATEDSTATEVARIABLE
+    return argument
+
+
+def make_valuerange():
+    valuerange = ValueRange()
+    valuerange.minimum = DATA_VALUERANGE_MINIMUM
+    valuerange.maximum = DATA_VALUERANGE_MAXIMUM
+    valuerange.step = DATA_VALUERANGE_STEP
+    return valuerange
 
 
 def make_service():
@@ -162,7 +188,6 @@ def test_deserialize_spec_version():
     assert sv == make_spec_version()
 
 
-
 def test_serialize_system_version():
     """
     Serialize a SystemVersion instance to json.
@@ -183,6 +208,40 @@ def test_deserialize_system_version():
     assert sv != system_version
     sv.deserialize(data)
     assert sv == system_version
+
+
+def test_serialize_argument():
+    """Serialize an Argument to json."""
+    argument = make_argument()
+    result = argument.serialize()
+    json_result = json.dumps(result)
+    assert json_result == JSON_RESULT_TEST_SERIALIZE_ARGUMENT
+
+
+def test_deserialize_argument():
+    """Deserialize an Argument from json."""
+    argument = make_argument()
+    data = json.loads(JSON_RESULT_TEST_SERIALIZE_ARGUMENT)
+    a = Argument()
+    assert a != argument
+    a.deserialize(data)
+    assert a == argument
+
+
+def test_serialize_valuerange():
+    """Serialize a ValueRange to json."""
+    valuerange = make_valuerange()
+    result = json.dumps(valuerange.serialize())
+    assert result == JSON_RESULT_TEST_SERIALIZE_VALUERANGE
+
+
+def test_deserialize_valuerange():
+    """Deserialize a ValueRange from json."""
+    valuerange = make_valuerange()
+    vr = ValueRange()
+    assert vr != valuerange
+    vr.deserialize(json.loads(JSON_RESULT_TEST_SERIALIZE_VALUERANGE))
+    assert vr == valuerange
 
 
 def test_serialize_service():
