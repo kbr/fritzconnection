@@ -112,19 +112,34 @@ class Serializer:
             # self and other have not the same set of instance attributes:
             return False
         # both instances must have all the same attribute values:
-        for key, value in self.__dict__.items():
-            if getattr(other, key) != value:
+        return self._compare_attributes(other, self.__dict__.keys())
+
+    def _compare_attributes(self, other, attributes):
+        # check for the same values in the attributes of self and other:
+        for attribute in attributes:
+            if getattr(self, attribute) != getattr(other, attribute):
                 return False
         return True
 
     def serialize(self, exclude=None):
         if exclude is None:
             exclude = []
-        sorted_keys = sorted(set(self.__dict__.keys()) - set(exclude))
-        return {key: getattr(self, key) for key in sorted_keys}
+        attribute_names = set(self.__dict__.keys()) - set(exclude)
+        return self.get_sorted_dict(
+            {name: getattr(self, name) for name in attribute_names}
+        )
 
     def deserialize(self, data):
         self.__dict__.update(data)
+
+    @staticmethod
+    def get_sorted_dict(dictionary):
+        """
+        Takes a dictionary and returns another one with all keys in
+        alphabetical order.
+        """
+        sorted_keys = sorted(dictionary.keys())
+        return {key: dictionary[key] for key in sorted_keys}
 
 
 @processor
@@ -268,6 +283,16 @@ class Action(Serializer):
         self.name = data['name']
         self._arguments = [Argument.from_data(d) for d in data['arguments']]
 
+    @classmethod
+    def from_data(cls, data):
+        """
+        Returns an instance of Action initialized with the data from the
+        `data` dictionary provided i.e. from a json.load.
+        """
+        action = cls()
+        action.deserialize(data)
+        return action
+
 
 @processor
 class ActionList(Storage):
@@ -290,7 +315,7 @@ class ValueRange(Serializer):
 
 
 @processor
-class StateVariable:
+class StateVariable(Serializer):
     """
     Represents a stateVariable with the attributes name, dataType,
     defaultValue, allowedValueList and allowedValueRange.
@@ -303,9 +328,42 @@ class StateVariable:
         self.name = None
         self.dataType = None
         self.defaultValue = None
-        self.allowed_values = list()
+        self.allowed_values = list()  # list of values as strings
         self.allowedValueList = self
         self.allowedValueRange = ValueRange()
+
+    def __eq__(self, other):
+        # two instances are equal on having the same attribute values.
+        attributes = ["name", "dataType", "defaultValue", "allowed_values"]
+        if not self._compare_attributes(other, attributes):
+            return False
+        return self.allowedValueRange == other.allowedValueRange
+
+    def serialize(self):
+        """
+        Returns a dictionary with json serializable attribute data.
+        """
+        exclude = ["allowedValueList", "allowedValueRange"]
+        data = {"attributes": super().serialize(exclude=exclude)}
+        data["allowedValueRange"] = self.allowedValueRange.serialize()
+        return data
+
+    def deserialize(self, data):
+        """
+        Deserialize the data back to a former state of a StateVariable
+        instance.
+        """
+        super().deserialize(data['attributes'])
+        self.allowedValueRange.deserialize(data['allowedValueRange'])
+
+    @classmethod
+    def from_data(cls, data):
+        """
+        Returns an instance of StateVariable initialized with the given data.
+        """
+        state_variable = cls()
+        state_variable.deserialize(data)
+        return state_variable
 
 
 @processor
@@ -317,7 +375,7 @@ class ServiceStateTable(Storage):
     stateVariable = InstanceAttributeFactory(StateVariable)
 
 
-class Scpd:
+class Scpd(Serializer):
     """
     Provides information about the Service Control Point Definitions
     for every Service. Every Service has one instance of this class for
@@ -341,6 +399,10 @@ class Scpd:
         # start node processing:
         process_node(self, root)
 
+    def __eq__(self, other):
+        attributes = ["_actions", "_state_variables", "specVersion"]
+        return self._compare_attributes(other, attributes)
+
     @property
     def spec_version(self):
         return self.specVersion.version
@@ -361,6 +423,26 @@ class Scpd:
         the StateVariable itself as value.
         """
         return {sv.name: sv for sv in self._state_variables}
+
+    def serialize(self):
+        data = {"actions": [action.serialize() for action in self._actions]}
+        data['state_variables'] = [sv.serialize() for sv in self._state_variables]
+        data['specVersion'] = self.specVersion.serialize()
+        return self.get_sorted_dict(data)
+
+    def deserialize(self, data):
+        self._actions = [Action.from_data(d) for d in data['actions']]
+        self._state_variables = [StateVariable.from_data(d) for d in data['state_variables']]
+        self.specVersion.deserialize(data['specVersion'])
+
+    @classmethod
+    def from_data(cls, data):
+        """
+        Returns an Scpd instance initialized with the content of data.
+        """
+        scpd = cls(root=[])
+        scpd.deserialize(data)
+        return scpd
 
 
 @processor
@@ -418,17 +500,28 @@ class Service(Serializer):
         Serialize the service instance attributes. Returns a dictionary
         with data that can be converted to json.
         """
-        data = {}
         exclude = ['_scpd', '_actions', '_state_variables']
-        data['service_attributes'] = super().serialize(exclude=exclude)
-        return data
+        return {
+            "attributes": super().serialize(exclude=exclude),
+            "scpd": self._scpd.serialize()
+        }
 
     def deserialize(self, data):
         """
         Inverse method for `serialize`. Takes the data (a dictionary)
         and populates the instance attributes extracted by `serialize`.
         """
-        super().deserialize(data['service_attributes'])
+        super().deserialize(data['attributes'])
+        self._scpd = Scpd.from_data(data['scpd'])
+
+    @classmethod
+    def from_data(cls, data):
+        """
+        Returns a Service instance initialized with the given data.
+        """
+        service = cls()
+        service.deserialize(data)
+        return service
 
 
 @processor
@@ -468,6 +561,14 @@ class Device(Serializer):
         self.serviceList = ServiceList(self._services)
         self.deviceList = DeviceList(self.devices)
 
+    def __eq__(self, other):
+        attributes = [
+            "deviceType", "friendlyName", "manufacturer", "manufacturerURL",
+            "modelDescription", "modelName", "modelNumber", "modelURL",
+            "UDN", "UPC", "presentationURL",
+        ]
+        return self._compare_attributes(other, attributes)
+
     @property
     def services(self):
         services = {service.name: service for service in self._services}
@@ -481,21 +582,29 @@ class Device(Serializer):
         and a list of serialized services that can be transformed to
         json-format.
         """
-        data = {}
-        exclude = set(["_services", "devices", "serviceList", "deviceList"])
-        data['device_attributes'] = super().serialize(exclude=exclude)
-        data['device_services'] = [service.serialize() for service in self._services]
-        data['device_devices'] = [device.serialize() for device in self.devices]
-        return data
+        exclude = ["_services", "devices", "serviceList", "deviceList",]
+        data = {'attributes': super().serialize(exclude=exclude)}
+        data['services'] = [service.serialize() for service in self._services]
+        data['devices'] = [device.serialize() for device in self.devices]
+        return self.get_sorted_dict(data)
 
     def deserialize(self, data):
         """
         Loads the data into the instance attributes. This is the
         reverse-function for serialize. No return value.
         """
-        super.deserialize(data['device_attributes'])
-#         for key, value in data['device_attributes']:
-#             setattr(self, key, value)
+        super().deserialize(data['attributes'])
+        self._services.extend([Service.from_data(d) for d in data['services']])
+        self.devices.extend([Device.from_data(d) for d in data['devices']])
+
+    @classmethod
+    def from_data(cls, data):
+        """
+        Returns a Device instance initialized with the given data.
+        """
+        device = cls()
+        device.deserialize(data)
+        return device
 
 
 @processor

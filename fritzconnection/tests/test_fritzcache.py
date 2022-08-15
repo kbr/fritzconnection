@@ -8,9 +8,11 @@ from fritzconnection.core.processor import (
     Argument,
     Description,
     Device,
+    Scpd,
     Serializer,
     Service,
     SpecVersion,
+    StateVariable,
     SystemVersion,
     ValueRange,
 )
@@ -37,6 +39,11 @@ DATA_VALUERANGE_MINIMUM = None
 DATA_VALUERANGE_MAXIMUM = None
 DATA_VALUERANGE_STEP = "1"  # for not having all the default values
 
+DATA_STATEVARIABLE_NAME = "LastConnectionError"
+DATA_STATEVARIABLE_DATATYPE = "string"
+DATA_STATEVARIABLE_DEFAULTVALUE = "ERROR_NONE"
+DATA_STATEVARIABLE_ALLOWED_VALUES = ["ERROR_NONE", "ERROR_ISP_TIME_OUT", "ERROR_COMMAND_ABORTED"]
+
 DATA_DEVICE_DEVICETYPE = "urn:schemas-upnp-org:device:InternetGatewayDevice:1"
 DATA_DEVICE_FRIENDLYNAME = "FRITZ!Box 7590"
 DATA_DEVICE_MANUFACTURER = "AVM Berlin"
@@ -60,8 +67,26 @@ JSON_RESULT_TEST_SERIALIZE_ARGUMENT = f"""{{"direction": "{DATA_ARGUMENT_DIRECTI
 JSON_RESULT_TEST_SERIALIZE_VALUERANGE = f"""{{"maximum": null, "minimum": null, "step": "{DATA_VALUERANGE_STEP}"}}"""
 JSON_RESULT_TEST_SERIALIZE_ACTION = f"""{{"name": "{DATA_ACTION_NAME}", "arguments": [{JSON_RESULT_TEST_SERIALIZE_ARGUMENT}, {JSON_RESULT_TEST_SERIALIZE_ARGUMENT}]}}"""
 
+# weird but f-strings substitute lists of strings different than json.dumps:
+JSON_RESULT_TEST_SERIALIZE_STATEVARIABLE = f"""{{"attributes": {{"allowed_values": """ + json.dumps(DATA_STATEVARIABLE_ALLOWED_VALUES) + f""", "dataType": "{DATA_STATEVARIABLE_DATATYPE}", "defaultValue": "{DATA_STATEVARIABLE_DEFAULTVALUE}", "name": "{DATA_STATEVARIABLE_NAME}"}}, "allowedValueRange": {JSON_RESULT_TEST_SERIALIZE_VALUERANGE}}}"""
+JSON_RESULT_TEST_SERIALIZE_SCPD = f"""{{"actions": [{JSON_RESULT_TEST_SERIALIZE_ACTION}, {JSON_RESULT_TEST_SERIALIZE_ACTION}], "specVersion": {JSON_RESULT_TEST_SERIALIZE_SPECVERSION}, "state_variables": [{JSON_RESULT_TEST_SERIALIZE_STATEVARIABLE}, {JSON_RESULT_TEST_SERIALIZE_STATEVARIABLE}]}}"""
+JSON_RESULT_TEST_SERIALIZE_SERVICE = f"""{{"attributes": {{"SCPDURL": "{DATA_SERVICE_SCPDURL}", "controlURL": "{DATA_SERVICE_CONTROLURL}", "eventSubURL": "{DATA_SERVICE_EVENTSUBURL}", "serviceId": "{DATA_SERVICE_SERVICEID}", "serviceType": "{DATA_SERVICE_SERVICETYPE}"}}, "scpd": {JSON_RESULT_TEST_SERIALIZE_SCPD}}}"""
 
-JSON_RESULT_TEST_SERIALIZE_SERVICE = f"""{{"service_attributes": {{"SCPDURL": "{DATA_SERVICE_SCPDURL}", "controlURL": "{DATA_SERVICE_CONTROLURL}", "eventSubURL": "{DATA_SERVICE_EVENTSUBURL}", "serviceId": "{DATA_SERVICE_SERVICEID}", "serviceType": "{DATA_SERVICE_SERVICETYPE}"}}}}"""
+JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC = f"""{{"attributes": {{"UDN": "{DATA_DEVICE_UDN}", "UPC": null, "deviceType": "{DATA_DEVICE_DEVICETYPE}", "friendlyName": "{DATA_DEVICE_FRIENDLYNAME}", "manufacturer": "{DATA_DEVICE_MANUFACTURER}", "manufacturerURL": "{DATA_DEVICE_MANUFACTURERURL}", "modelDescription": "{DATA_DEVICE_MODELDESCRIPTION}", "modelName": "{DATA_DEVICE_MODELNAME}", "modelNumber": "{DATA_DEVICE_MODELNUMBER}", "modelURL": "{DATA_DEVICE_MODELURL}", "presentationURL": "{DATA_DEVICE_PRESENTATIONURL}"}}"""
+
+JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC_SERVICE = f""", "services": [{JSON_RESULT_TEST_SERIALIZE_SERVICE}, {JSON_RESULT_TEST_SERIALIZE_SERVICE}]}}"""
+
+JSON_RESULT_TEST_SERIALIZE_DEVICE = JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC + f""", "devices": [], "services": []}}"""
+
+JSON_RESULT_TEST_SERIALIZE_DEVICE_WITH_SERVICES = JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC + ', "devices": []' + JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC_SERVICE
+
+# subdevices don't provide services and further devices
+JSON_RESULT_TEST_SERIALIZE_DEVICE_WITH_SERVICES_AND_SUBDEVICES = JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC + f""", "devices": [{JSON_RESULT_TEST_SERIALIZE_DEVICE}, {JSON_RESULT_TEST_SERIALIZE_DEVICE}]""" + JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC_SERVICE
+
+
+x_JSON_RESULT_TEST_SERIALIZE_DEVICE = f"""{{"attributes": {{"UDN": "{DATA_DEVICE_UDN}", "UPC": null, "deviceType": "{DATA_DEVICE_DEVICETYPE}", "friendlyName": "{DATA_DEVICE_FRIENDLYNAME}", "manufacturer": "{DATA_DEVICE_MANUFACTURER}", "manufacturerURL": "{DATA_DEVICE_MANUFACTURERURL}", "modelDescription": "{DATA_DEVICE_MODELDESCRIPTION}", "modelName": "{DATA_DEVICE_MODELNAME}", "modelNumber": "{DATA_DEVICE_MODELNUMBER}", "modelURL": "{DATA_DEVICE_MODELURL}", "presentationURL": "{DATA_DEVICE_PRESENTATIONURL}"}}, "devices": [], "services": []}}"""
+
+
 JSON_RESULT_TEST_SERIALIZE_DEVICE_01 = f"""{{"device": {{"device_attributes": {{"UDN": "{DATA_DEVICE_UDN}", "UPC": null, "deviceType": "{DATA_DEVICE_DEVICETYPE}", "friendlyName": "{DATA_DEVICE_FRIENDLYNAME}", "manufacturer": "{DATA_DEVICE_MANUFACTURER}", "manufacturerURL": "{DATA_DEVICE_MANUFACTURERURL}", "modelDescription": "{DATA_DEVICE_MODELDESCRIPTION}", "modelName": "{DATA_DEVICE_MODELNAME}", "modelNumber": "{DATA_DEVICE_MODELNUMBER}", "modelURL": "{DATA_DEVICE_MODELURL}", "presentationURL": "{DATA_DEVICE_PRESENTATIONURL}"}}, "device_services": [], "device_devices": []}}, "specVersion": {{"major": "{DATA_SPEC_MAJOR_VERSION}", "minor": "{DATA_SPEC_MINOR_VERSION}"}}, "systemVersion": {{"Buildnumber": null, "Display": "{DATA_SYS_DISPLAY}", "HW": null, "Major": "{DATA_SYS_MAJOR}", "Minor": "{DATA_SYS_MINOR}", "Patch": "{DATA_SYS_PATCH}"}}}}"""
 
 
@@ -109,8 +134,35 @@ def make_action():
     return action
 
 
+def make_statevariable():
+    # a StateVariable has a name like 'WANAccessType'
+    # a dataType like 'string' or 'ui2'
+    # a defaultValue
+    # a list of strings of allowed_values like 'DSL', 'Cable' etc.
+    # an allowedValueRange
+    # Not all Atrributes must be defined.
+    statevariable = StateVariable()
+    statevariable.name = DATA_STATEVARIABLE_NAME
+    statevariable.dataType = DATA_STATEVARIABLE_DATATYPE
+    statevariable.defaultValue = DATA_STATEVARIABLE_DEFAULTVALUE
+    statevariable.allowed_values = DATA_STATEVARIABLE_ALLOWED_VALUES
+    statevariable.allowedValueRange = make_valuerange()
+    return statevariable
+
+
+def make_scpd():
+    # a service control point definition has a list of Actions,
+    # a list of StateVariables and a SpecVersion.
+    scpd = Scpd(root=[])
+    scpd._actions = [make_action(), make_action()]
+    scpd._state_variables = [make_statevariable(), make_statevariable()]
+    scpd.specVersion = make_spec_version()
+    return scpd
+
+
 def make_service():
     service = Service()
+    service._scpd = make_scpd()
     service.serviceType = DATA_SERVICE_SERVICETYPE
     service.serviceId = DATA_SERVICE_SERVICEID
     service.controlURL = DATA_SERVICE_CONTROLURL
@@ -119,7 +171,7 @@ def make_service():
     return service
 
 
-def make_device():
+def make_device(with_services=True, with_subdevices=True):
     device = Device()
     device.deviceType = DATA_DEVICE_DEVICETYPE
     device.friendlyName = DATA_DEVICE_FRIENDLYNAME
@@ -132,6 +184,13 @@ def make_device():
     device.UDN = DATA_DEVICE_UDN
     device.UPC = None
     device.presentationURL = DATA_DEVICE_PRESENTATIONURL
+    if with_services:
+        device._services = [make_service(), make_service()]
+    if with_subdevices:
+        device.devices = [
+            make_device(with_services=False, with_subdevices=False),
+            make_device(with_services=False, with_subdevices=False)
+        ]
     return device
 
 
@@ -280,14 +339,40 @@ def test_deserialize_action():
     assert ac == action
 
 
+def test_serialize_statevariable():
+    statevariable = make_statevariable()
+    result = json.dumps(statevariable.serialize())
+    assert result == JSON_RESULT_TEST_SERIALIZE_STATEVARIABLE
+
+
+def test_deserialize_statevariable():
+    statevariable = make_statevariable()
+    sv = StateVariable()
+    assert sv != statevariable
+    sv.deserialize(json.loads(JSON_RESULT_TEST_SERIALIZE_STATEVARIABLE))
+    assert sv == statevariable
+
+
+def test_serialize_scpd():
+    scpd = make_scpd()
+    result = json.dumps(scpd.serialize())
+    assert result == JSON_RESULT_TEST_SERIALIZE_SCPD
+
+
+def test_deserialize_scpd():
+    scpd = make_scpd()
+    s = Scpd(root=[])
+    s.deserialize(json.loads(JSON_RESULT_TEST_SERIALIZE_SCPD))
+    assert s == scpd
+
+
 def test_serialize_service():
     """
     Serialize a Service Instance.
     """
     service = make_service()
-    result = service.serialize()
-    json_result = json.dumps(result)
-    assert json_result == JSON_RESULT_TEST_SERIALIZE_SERVICE
+    result = json.dumps(service.serialize())
+    assert result == JSON_RESULT_TEST_SERIALIZE_SERVICE
 
 
 def test_deserialize_service():
@@ -297,47 +382,49 @@ def test_deserialize_service():
     service = make_service()
     data = json.loads(JSON_RESULT_TEST_SERIALIZE_SERVICE)
     s = Service()
-    assert s != service
     s.deserialize(data)
     assert s == service
 
 
-def test_serialize_device_01():
-    """
-    Serialize a simple DeviceManager with a Description and one Device
-    but no services to json format.
-    """
-    spec_version = make_spec_version()
-    system_version = make_system_version()
-    device = make_device()
-
-    description = Description(root=[])  # suppress node processing
-    description.device = device
-    description.specVersion = spec_version
-    description.systemVersion = system_version
-
-    result = description.serialize()
-    json_result = json.dumps(result)
-    assert json_result == JSON_RESULT_TEST_SERIALIZE_DEVICE_01
-    return result
+def test_serialize_device():
+    device = make_device(with_services=False, with_subdevices=False)
+    result = json.dumps(device.serialize())
+    assert result == JSON_RESULT_TEST_SERIALIZE_DEVICE
 
 
-def x_test_reload_device_01():
-    """
-    Reoad a simple DeviceManager with a Description and one Device
-    but no services from json format.
-    """
+def test_deserialize_device():
+    device = make_device(with_services=False, with_subdevices=False)
+    d = Device()
+    d.deserialize(json.loads(JSON_RESULT_TEST_SERIALIZE_DEVICE))
+    assert d == device
 
 
+def test_serialize_device_with_services():
+    device = make_device(with_services=True, with_subdevices=False)
+    result = json.dumps(device.serialize())
+    assert result == JSON_RESULT_TEST_SERIALIZE_DEVICE_WITH_SERVICES
 
-def main():
-    result = test_serialize_device_01()
-    print(result)
-    print()
-    js = json.dumps(result)
-    print(js)
-    print()
-    print(json.loads(js))
 
-if __name__ == "__main__":
-    main()
+def test_deserialize_device_with_services():
+    device = make_device(with_services=True, with_subdevices=False)
+    d = Device()
+    d.deserialize(json.loads(JSON_RESULT_TEST_SERIALIZE_DEVICE_WITH_SERVICES))
+    assert d == device
+
+
+def test_serialize_device_with_services_and_subdevices():
+    device = make_device(with_services=True, with_subdevices=True)
+    result = json.dumps(device.serialize())
+    assert (
+        result == JSON_RESULT_TEST_SERIALIZE_DEVICE_WITH_SERVICES_AND_SUBDEVICES
+    )
+
+def test_deserialize_device_with_services_and_subdevices():
+    device = make_device(with_services=True, with_subdevices=True)
+    d = Device()
+    d.deserialize(
+        json.loads(
+            JSON_RESULT_TEST_SERIALIZE_DEVICE_WITH_SERVICES_AND_SUBDEVICES
+        )
+    )
+    assert d == device
