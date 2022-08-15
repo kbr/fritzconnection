@@ -2,7 +2,6 @@ import json
 
 import pytest
 
-from fritzconnection.core.devices import DeviceManager
 from fritzconnection.core.processor import (
     Action,
     Argument,
@@ -71,23 +70,13 @@ JSON_RESULT_TEST_SERIALIZE_ACTION = f"""{{"name": "{DATA_ACTION_NAME}", "argumen
 JSON_RESULT_TEST_SERIALIZE_STATEVARIABLE = f"""{{"attributes": {{"allowed_values": """ + json.dumps(DATA_STATEVARIABLE_ALLOWED_VALUES) + f""", "dataType": "{DATA_STATEVARIABLE_DATATYPE}", "defaultValue": "{DATA_STATEVARIABLE_DEFAULTVALUE}", "name": "{DATA_STATEVARIABLE_NAME}"}}, "allowedValueRange": {JSON_RESULT_TEST_SERIALIZE_VALUERANGE}}}"""
 JSON_RESULT_TEST_SERIALIZE_SCPD = f"""{{"actions": [{JSON_RESULT_TEST_SERIALIZE_ACTION}, {JSON_RESULT_TEST_SERIALIZE_ACTION}], "specVersion": {JSON_RESULT_TEST_SERIALIZE_SPECVERSION}, "state_variables": [{JSON_RESULT_TEST_SERIALIZE_STATEVARIABLE}, {JSON_RESULT_TEST_SERIALIZE_STATEVARIABLE}]}}"""
 JSON_RESULT_TEST_SERIALIZE_SERVICE = f"""{{"attributes": {{"SCPDURL": "{DATA_SERVICE_SCPDURL}", "controlURL": "{DATA_SERVICE_CONTROLURL}", "eventSubURL": "{DATA_SERVICE_EVENTSUBURL}", "serviceId": "{DATA_SERVICE_SERVICEID}", "serviceType": "{DATA_SERVICE_SERVICETYPE}"}}, "scpd": {JSON_RESULT_TEST_SERIALIZE_SCPD}}}"""
-
 JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC = f"""{{"attributes": {{"UDN": "{DATA_DEVICE_UDN}", "UPC": null, "deviceType": "{DATA_DEVICE_DEVICETYPE}", "friendlyName": "{DATA_DEVICE_FRIENDLYNAME}", "manufacturer": "{DATA_DEVICE_MANUFACTURER}", "manufacturerURL": "{DATA_DEVICE_MANUFACTURERURL}", "modelDescription": "{DATA_DEVICE_MODELDESCRIPTION}", "modelName": "{DATA_DEVICE_MODELNAME}", "modelNumber": "{DATA_DEVICE_MODELNUMBER}", "modelURL": "{DATA_DEVICE_MODELURL}", "presentationURL": "{DATA_DEVICE_PRESENTATIONURL}"}}"""
-
 JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC_SERVICE = f""", "services": [{JSON_RESULT_TEST_SERIALIZE_SERVICE}, {JSON_RESULT_TEST_SERIALIZE_SERVICE}]}}"""
-
 JSON_RESULT_TEST_SERIALIZE_DEVICE = JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC + f""", "devices": [], "services": []}}"""
-
 JSON_RESULT_TEST_SERIALIZE_DEVICE_WITH_SERVICES = JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC + ', "devices": []' + JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC_SERVICE
 
 # subdevices don't provide services and further devices
 JSON_RESULT_TEST_SERIALIZE_DEVICE_WITH_SERVICES_AND_SUBDEVICES = JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC + f""", "devices": [{JSON_RESULT_TEST_SERIALIZE_DEVICE}, {JSON_RESULT_TEST_SERIALIZE_DEVICE}]""" + JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC_SERVICE
-
-
-x_JSON_RESULT_TEST_SERIALIZE_DEVICE = f"""{{"attributes": {{"UDN": "{DATA_DEVICE_UDN}", "UPC": null, "deviceType": "{DATA_DEVICE_DEVICETYPE}", "friendlyName": "{DATA_DEVICE_FRIENDLYNAME}", "manufacturer": "{DATA_DEVICE_MANUFACTURER}", "manufacturerURL": "{DATA_DEVICE_MANUFACTURERURL}", "modelDescription": "{DATA_DEVICE_MODELDESCRIPTION}", "modelName": "{DATA_DEVICE_MODELNAME}", "modelNumber": "{DATA_DEVICE_MODELNUMBER}", "modelURL": "{DATA_DEVICE_MODELURL}", "presentationURL": "{DATA_DEVICE_PRESENTATIONURL}"}}, "devices": [], "services": []}}"""
-
-
-JSON_RESULT_TEST_SERIALIZE_DEVICE_01 = f"""{{"device": {{"device_attributes": {{"UDN": "{DATA_DEVICE_UDN}", "UPC": null, "deviceType": "{DATA_DEVICE_DEVICETYPE}", "friendlyName": "{DATA_DEVICE_FRIENDLYNAME}", "manufacturer": "{DATA_DEVICE_MANUFACTURER}", "manufacturerURL": "{DATA_DEVICE_MANUFACTURERURL}", "modelDescription": "{DATA_DEVICE_MODELDESCRIPTION}", "modelName": "{DATA_DEVICE_MODELNAME}", "modelNumber": "{DATA_DEVICE_MODELNUMBER}", "modelURL": "{DATA_DEVICE_MODELURL}", "presentationURL": "{DATA_DEVICE_PRESENTATIONURL}"}}, "device_services": [], "device_devices": []}}, "specVersion": {{"major": "{DATA_SPEC_MAJOR_VERSION}", "minor": "{DATA_SPEC_MINOR_VERSION}"}}, "systemVersion": {{"Buildnumber": null, "Display": "{DATA_SYS_DISPLAY}", "HW": null, "Major": "{DATA_SYS_MAJOR}", "Minor": "{DATA_SYS_MINOR}", "Patch": "{DATA_SYS_PATCH}"}}}}"""
 
 
 def make_spec_version():
