@@ -618,7 +618,7 @@ class DeviceList(Storage):
     device = InstanceAttributeFactory(Device)
 
 
-class Description:
+class Description(Serializer):
     """
     Root class for a given description information as the content from
     the files igddesc.xml or tr64desc.xml.
@@ -696,15 +696,21 @@ class Description:
             'systemVersion': self.systemVersion.serialize(),
         }
 
+    def deserialize(self, data):
+        """
+        Sets the instance attributes according to data.
+        """
+        self.device.deserialize(data['device'])
+        self.specVersion.deserialize(data['specVersion'])
+        self.systemVersion.deserialize(data['systemVersion'])
+
     @classmethod
-    def from_serialized_data(cls, data):
+    def from_data(cls, data):
         """
         Returns a new Description instance based on the provided data.
         The provided data should be the ones returned from serialized()
         and builds an instance with the original instance attributes.
         """
-        self = cls(root=[])
-        self.device.deserialize(data['device'])
-        self.specVersion.deserialize(data['specVersion'])
-        self.systemVersion.deserialize(data['systemVersion'])
-        return self
+        description = cls(root=[])
+        description.deserialize(data)
+        return description

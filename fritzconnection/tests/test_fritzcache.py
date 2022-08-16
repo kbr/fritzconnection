@@ -78,6 +78,9 @@ JSON_RESULT_TEST_SERIALIZE_DEVICE_WITH_SERVICES = JSON_RESULT_TEST_SERIALIZE_DEV
 # subdevices don't provide services and further devices
 JSON_RESULT_TEST_SERIALIZE_DEVICE_WITH_SERVICES_AND_SUBDEVICES = JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC + f""", "devices": [{JSON_RESULT_TEST_SERIALIZE_DEVICE}, {JSON_RESULT_TEST_SERIALIZE_DEVICE}]""" + JSON_RESULT_TEST_SERIALIZE_DEVICE_BASIC_SERVICE
 
+JSON_RESULT_TEST_SERIALIZE_DESCRIPTION = f"""{{"device": {JSON_RESULT_TEST_SERIALIZE_DEVICE_WITH_SERVICES_AND_SUBDEVICES}, "specVersion": {JSON_RESULT_TEST_SERIALIZE_SPECVERSION}, "systemVersion": {JSON_RESULT_TEST_SERIALIZE_SYSTEMVERSION}}}"""
+# JSON_RESULT_TEST_SERIALIZE_DESCRIPTION = f"""{{"systemVersion": {JSON_RESULT_TEST_SERIALIZE_SYSTEMVERSION}}}"""
+
 
 def make_spec_version():
     spec_version = SpecVersion()
@@ -181,6 +184,14 @@ def make_device(with_services=True, with_subdevices=True):
             make_device(with_services=False, with_subdevices=False)
         ]
     return device
+
+
+def make_description():
+    description = Description(root=[])
+    description.device = make_device()
+    description.specVersion = make_spec_version()
+    description.systemVersion = make_system_version()
+    return description
 
 
 class Check(Serializer):
@@ -417,3 +428,19 @@ def test_deserialize_device_with_services_and_subdevices():
         )
     )
     assert d == device
+
+
+def test_serialize_description():
+    description = make_description()
+    result = json.dumps(description.serialize())
+    assert result == JSON_RESULT_TEST_SERIALIZE_DESCRIPTION
+
+
+def test_deserialize_description():
+    description = make_description()
+    data = json.loads(JSON_RESULT_TEST_SERIALIZE_DESCRIPTION)
+    d = Description(root=[])
+    d.deserialize(data)
+    assert d == description
+    d = Description.from_data(data)
+    assert d == description
