@@ -45,7 +45,9 @@ FRITZ_APPLICATION_ACCESS_DISABLED = """\n
     Check: Home Network -> Network -> Network Settings
     for "Allow access for applications".\n"""
 FRITZ_CACHE_DIR = ".fritzconnection"
-FRITZ_CACHE_EXT = "_cache.pcl"
+FRITZ_CACHE_EXT = "_cache"
+FRITZ_CACHE_JSON_SUFFIX = "json"
+FRITZ_CACHE_PICKLE_SUFFIX = "pcl"
 FRITZ_ENV_USERNAME = "FRITZ_USERNAME"
 FRITZ_ENV_PASSWORD = "FRITZ_PASSWORD"
 FRITZ_ENV_USECACHE = "FRITZ_USECACHE"
@@ -193,8 +195,7 @@ class FritzConnection:
             address, port, user, password, timeout=timeout, session=session
         )
         self.device_manager = DeviceManager(timeout=timeout, session=session)
-
-        self._read_api_data(use_cache, cache_directory)
+        self._load_router_api(use_cache, cache_directory)
         # set default user for FritzOS >= 7.24:
         self._reset_user(user, password)
 
@@ -426,3 +427,8 @@ class FritzConnection:
         Reboot the system.
         """
         self.call_action("DeviceConfig1", "Reboot")
+
+    # -------------------------------------------
+    # load router-api:
+    # -------------------------------------------
+
