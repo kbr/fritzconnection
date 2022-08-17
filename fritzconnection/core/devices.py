@@ -100,3 +100,11 @@ class DeviceManager:
         representing the known api of the device.
         """
         return [description.serialize() for description in self.descriptions]
+
+    def deserialize(self, data):
+        """
+        Fills the collections `self.descriptions` and `self.services`
+        with the content provided by `data` (from a json-source).
+        """
+        for description_data in data:
+            self.descriptions.append(Description.from_data(description_data))
