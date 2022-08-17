@@ -141,6 +141,19 @@ class Serializer:
         sorted_keys = sorted(dictionary.keys())
         return {key: dictionary[key] for key in sorted_keys}
 
+    @classmethod
+    def from_data(cls, data):
+        """
+        Return a new instance with attributes initialized from data.
+        """
+        try:
+            instance = cls()
+        except TypeError:
+            # will happen on classes expecting a list of nodes:
+            instance = cls(root=[])
+        instance.deserialize(data)
+        return instance
+
 
 @processor
 class SpecVersion(Serializer):
@@ -211,15 +224,6 @@ class Argument(Serializer):
         self.direction = None
         self.relatedStateVariable = None
 
-    @classmethod
-    def from_data(cls, data):
-        """
-        Returns a instance initialized with the given deserialized data.
-        """
-        self = cls()
-        self.deserialize(data)
-        return self
-
 
 @processor
 class ArgumentList(Storage):
@@ -283,16 +287,6 @@ class Action(Serializer):
         self.name = data['name']
         self._arguments = [Argument.from_data(d) for d in data['arguments']]
 
-    @classmethod
-    def from_data(cls, data):
-        """
-        Returns an instance of Action initialized with the data from the
-        `data` dictionary provided i.e. from a json.load.
-        """
-        action = cls()
-        action.deserialize(data)
-        return action
-
 
 @processor
 class ActionList(Storage):
@@ -355,15 +349,6 @@ class StateVariable(Serializer):
         """
         super().deserialize(data['attributes'])
         self.allowedValueRange.deserialize(data['allowedValueRange'])
-
-    @classmethod
-    def from_data(cls, data):
-        """
-        Returns an instance of StateVariable initialized with the given data.
-        """
-        state_variable = cls()
-        state_variable.deserialize(data)
-        return state_variable
 
 
 @processor
@@ -435,15 +420,6 @@ class Scpd(Serializer):
         self._state_variables = [StateVariable.from_data(d) for d in data['state_variables']]
         self.specVersion.deserialize(data['specVersion'])
 
-    @classmethod
-    def from_data(cls, data):
-        """
-        Returns an Scpd instance initialized with the content of data.
-        """
-        scpd = cls(root=[])
-        scpd.deserialize(data)
-        return scpd
-
 
 @processor
 class Service(Serializer):
@@ -513,15 +489,6 @@ class Service(Serializer):
         """
         super().deserialize(data['attributes'])
         self._scpd = Scpd.from_data(data['scpd'])
-
-    @classmethod
-    def from_data(cls, data):
-        """
-        Returns a Service instance initialized with the given data.
-        """
-        service = cls()
-        service.deserialize(data)
-        return service
 
 
 @processor
@@ -596,15 +563,6 @@ class Device(Serializer):
         super().deserialize(data['attributes'])
         self._services.extend([Service.from_data(d) for d in data['services']])
         self.devices.extend([Device.from_data(d) for d in data['devices']])
-
-    @classmethod
-    def from_data(cls, data):
-        """
-        Returns a Device instance initialized with the given data.
-        """
-        device = cls()
-        device.deserialize(data)
-        return device
 
 
 @processor
@@ -703,14 +661,3 @@ class Description(Serializer):
         self.device.deserialize(data['device'])
         self.specVersion.deserialize(data['specVersion'])
         self.systemVersion.deserialize(data['systemVersion'])
-
-    @classmethod
-    def from_data(cls, data):
-        """
-        Returns a new Description instance based on the provided data.
-        The provided data should be the ones returned from serialized()
-        and builds an instance with the original instance attributes.
-        """
-        description = cls(root=[])
-        description.deserialize(data)
-        return description
