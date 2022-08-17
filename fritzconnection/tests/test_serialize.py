@@ -1,3 +1,7 @@
+"""
+tests for serialization and deserialization data from the processor classes.
+"""
+
 import json
 
 import pytest
