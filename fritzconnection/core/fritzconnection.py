@@ -7,6 +7,7 @@ Module to communicate with the AVM Fritz!Box.
 # Author: Klaus Bremer
 
 
+import json
 import os
 import pickle
 import string
@@ -48,6 +49,15 @@ FRITZ_CACHE_DIR = ".fritzconnection"
 FRITZ_CACHE_EXT = "_cache"
 FRITZ_CACHE_JSON_SUFFIX = "json"
 FRITZ_CACHE_PICKLE_SUFFIX = "pcl"
+FRITZ_CACHE_FORMAT_JSON = "json"
+FRITZ_CACHE_FORMAT_PICKLE = "pickle"
+FRITZ_CACHE_FORMATS = {
+    FRITZ_CACHE_FORMAT_JSON: FRITZ_CACHE_JSON_SUFFIX,
+    FRITZ_CACHE_FORMAT_PICKLE: FRITZ_CACHE_PICKLE_SUFFIX
+}
+FRITZ_CACHE_UNKNOWN_FORMAT_MESSAGE = f"""\
+    Unknown cache format "{{}}".\n
+    Use one of {tuple(FRITZ_CACHE_FORMATS.keys())}.\n"""
 FRITZ_ENV_USERNAME = "FRITZ_USERNAME"
 FRITZ_ENV_PASSWORD = "FRITZ_PASSWORD"
 FRITZ_ENV_USECACHE = "FRITZ_USECACHE"
@@ -328,28 +338,28 @@ class FritzConnection:
         with open(cache_path, "wb") as fobj:
             pickle.dump(cache_data, fobj)
 
-    def _read_api_data_from_router(self):
-        """
-        Read the api data from the router.
-        """
-        for description in FRITZ_DESCRIPTIONS:
-            source = f"{self.address}:{self.port}/{description}"
-            try:
-                self.device_manager.add_description(source)
-            except FritzResourceError:
-                # resource not available:
-                # this can happen on devices not providing
-                # an igddesc-file.
-                # ignore this
-                # But if the "tr64desc.xml" file is missing the router
-                # may not have TR-064 activated. In this case raise a
-                # useful error-message.
-                if description == FRITZ_TR64_DESC_FILE:
-                    raise FritzConnectionException(
-                        FRITZ_APPLICATION_ACCESS_DISABLED
-                    )
-        self.device_manager.scan()
-        self.device_manager.load_service_descriptions(self.address, self.port)
+#     def _read_api_data_from_router(self):
+#         """
+#         Read the api data from the router.
+#         """
+#         for description in FRITZ_DESCRIPTIONS:
+#             source = f"{self.address}:{self.port}/{description}"
+#             try:
+#                 self.device_manager.add_description(source)
+#             except FritzResourceError:
+#                 # resource not available:
+#                 # this can happen on devices not providing
+#                 # an igddesc-file.
+#                 # ignore this
+#                 # But if the "tr64desc.xml" file is missing the router
+#                 # may not have TR-064 activated. In this case raise a
+#                 # useful error-message.
+#                 if description == FRITZ_TR64_DESC_FILE:
+#                     raise FritzConnectionException(
+#                         FRITZ_APPLICATION_ACCESS_DISABLED
+#                     )
+#         self.device_manager.scan()
+#         self.device_manager.load_service_descriptions(self.address, self.port)
 
     def _reset_user(self, user, password):
         """
@@ -432,3 +442,88 @@ class FritzConnection:
     # load router-api:
     # -------------------------------------------
 
+    def _load_router_api(self, use_cache, cache_directory, cache_format):
+        """
+        Loads the router api.
+
+        If `use_cache` is False, load the api from the router. If
+        `use_cache` is True, the api data are loaded from cached data in
+        `cache_format` (pickle or json) at the `cache_directory`. If
+        `cache_directory` is not given, the default-directory gets used
+        (which is in most cases a subdirectory of the user home directory).
+        After loading the cached api, the cached data are checked for
+        matching the connected router and system-software. If this check
+        fails, the api gets loaded from the router and the cache data are
+        updated.
+
+        If no cache data are found, the api gets loaded from the router and
+        stored in a cache file.
+        """
+        if use_cache:
+            path = self._get_cache_path(cache_directory, cache_format)
+            self._load_api_from_cache(path, cache_format)
+            # if check_data:
+            #     return
+        else:
+            self._load_api_from_router()
+
+    def _get_cache_path(self, cache_directory, cache_format):
+        """
+        Returns the path to the cache file (including the filename and
+        extension) as a Path instance.
+        """
+        # ignore optional scheme:
+        address = self.address.split('//')[-1]
+        address = address.replace(".", "_")
+        try:
+            suffix = FRITZ_CACHE_FORMATS[cache_format]
+        except KeyError:
+            message = FRITZ_CACHE_UNKNOWN_FORMAT_MESSAGE.format(cache_format)
+            raise FritzConnectionException(message)
+        filename = f"{address}{FRITZ_CACHE_EXT}.{suffix}"
+        if cache_directory:
+            return Path(cache_directory) / filename
+        return Path().home() / FRITZ_CACHE_DIR /filename
+
+    def _load_api_from_cache(self, path, cache_format):
+        """
+        Read the api data from a cache-file and forwards the data to the
+        device_manager.
+        Currently two formats are supported: `pickle` and `json`. If
+        `cache_format` is not `pickle` it is assumed that the format is
+        `json`.
+        Raise a FileNotFoundError in case of an invalide path.
+        """
+        binary = "rb"
+        text = "rt"
+        mode = binary if cache_format == FRITZ_CACHE_FORMAT_PICKLE else text
+        with open(path, mode) as fobj:
+            if mode == binary:
+                self.device_manager.descriptions = pickle.load(fobj)
+            else:
+                self.device_manager.deserialize(json.load(fobj))
+        self.device_manager.scan()
+
+    def _load_api_from_router(self):
+        """
+        Read the api data from the router and forwards the data to the
+        device_manager.
+        """
+        for description in FRITZ_DESCRIPTIONS:
+            source = f"{self.address}:{self.port}/{description}"
+            try:
+                self.device_manager.add_description(source)
+            except FritzResourceError:
+                # resource not available:
+                # this can happen on devices not providing
+                # an igddesc-file.
+                # ignore this
+                # But if the "tr64desc.xml" file is missing the router
+                # may not have TR-064 activated. In this case raise a
+                # useful error-message.
+                if description == FRITZ_TR64_DESC_FILE:
+                    raise FritzConnectionException(
+                        FRITZ_APPLICATION_ACCESS_DISABLED
+                    )
+        self.device_manager.scan()
+        self.device_manager.load_service_descriptions(self.address, self.port)
