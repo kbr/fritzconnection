@@ -461,11 +461,42 @@ class FritzConnection:
         """
         if use_cache:
             path = self._get_cache_path(cache_directory, cache_format)
-            self._load_api_from_cache(path, cache_format)
-            # if check_data:
-            #     return
+            try:
+                self._load_api_from_cache(path, cache_format)
+            except FileNotFoundError:
+                # can happen on first run or directory changes
+                self._load_api_from_router()
+                # write cache
+            else:
+                if not self._is_valid_cache():
+                    self._load_api_from_router()
+                    # write cache
         else:
             self._load_api_from_router()
+
+    def _is_valid_cache(self):
+        """
+        Checks whether the cache-data seems to be valid. Returns a
+        booean: `True` if valid, `False` otherwise.
+        """
+        # system_id is something like ('FRITZ!Box 7590', '154.07.29') which
+        # originates from the device description and is part of the cache data.
+        cached_id = (
+            self.device_manager.modelname,
+            fc.device_manager.system_info[-1]
+        )
+        # retrive the same information from an api call. If the result
+        # is the same, the cache-data can considered as valid.
+        try:
+            device_info = self.call_action("DeviceInfo:1", "GetInfo")
+        except FritzConnectionException:
+            # something went wrong, cache data can not be verified.
+            return False
+        current_id = (
+            device_info['NewModelName'],
+            device_info['NewSoftwareVersion']
+        )
+        return cached_id == current_id
 
     def _get_cache_path(self, cache_directory, cache_format):
         """
@@ -484,6 +515,19 @@ class FritzConnection:
         if cache_directory:
             return Path(cache_directory) / filename
         return Path().home() / FRITZ_CACHE_DIR /filename
+
+    def _write_api_to_cache(self, path, cache_format):
+        """
+        Stores the api data in a cache-file.
+        """
+        binary = "wb"
+        text = "wt"
+        mode = binary if cache_format == FRITZ_CACHE_FORMAT_PICKLE else text
+        with open(path, mode) as fobj:
+            if mode == binary:
+                pickle.dump(self.device_manager.descriptions, fobj)
+            else:
+                json.dump(self.device_manager.serialize(), fobj)
 
     def _load_api_from_cache(self, path, cache_format):
         """

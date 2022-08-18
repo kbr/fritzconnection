@@ -102,3 +102,43 @@ def test_load_api_from_cache(file_name, cache_format, datadir):
     for name in service_names:
         assert name in known_services
 
+
+@pytest.mark.parametrize(
+    "file_name, cache_format", [
+        ("description.json", FRITZ_CACHE_FORMAT_JSON),
+        ("description.pcl", FRITZ_CACHE_FORMAT_PICKLE),
+    ]
+)
+def test_write_api_to_cache(file_name, cache_format, datadir):
+    """
+    Tests writing the api data.
+
+    For writing there must be some data first. If the test
+    `test_load_api_from_cache` succeeds, the data can safely loaded to a
+    FritzConnection mock object. The data are then exported to a file
+    and loaded again to another FritzConnection mock object. Then the
+    Decription objects are compared.
+    """
+    os.chdir(datadir)
+    # 1. load the api data
+    mock = SimpleNamespace(device_manager=DeviceManager())
+    FritzConnection._load_api_from_cache(mock, file_name, cache_format)
+    # 2. save the api data
+    cache_filename = f"x_tmp_cache_{file_name}"
+    cache_file = Path(cache_filename)
+    cache_file.unlink(missing_ok=True)  # in case of artefacts
+    FritzConnection._write_api_to_cache(mock, cache_filename, cache_format)
+    assert cache_file.exists() is True
+    # 3. read the api data to another mock
+    other_mock = SimpleNamespace(device_manager=DeviceManager())
+    FritzConnection._load_api_from_cache(other_mock, cache_filename, cache_format)
+    # 4. the Descriptions are serializable and therefore comparable objects:
+    for desc1, desc2 in zip(
+        mock.device_manager.descriptions, other_mock.device_manager.descriptions
+    ):
+        assert desc1 == desc2
+    # clean up
+    cache_file.unlink()
+    assert cache_file.exists() is False
+
+
