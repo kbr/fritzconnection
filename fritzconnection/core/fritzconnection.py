@@ -107,14 +107,22 @@ class FritzConnection:
 
     .. versionadded:: 1.6
 
-    The flag `use_cache` activates caching if set to `True` (default
+    The flag `use_cache` activates caching (default
     `False`). Caching can speed up instanciation  significantly. The
     cached data are specific for the router ip, the router model and the
     installed FritzOS version. Multiple devices in the network have
     separate caches and can get used in parallel. The cache files are
     stored in the user home-directory in a `.fritzconnection` subfolder.
     To change this location use the parameter `cache_directory` providing
-    a string or a `pathlib.Path` object.
+    a string or a `pathlib.Path` object. With `cache_format` two formats
+    can specified for data serialization: `json` and `pickle`. These two
+    values are available as constants `FRITZ_CACHE_FORMAT_JSON` and
+    `FRITZ_CACHE_FORMAT_PICKLE`. The `pickle` format is more compact and
+    for local applications often safe enough. Default is `json`. The
+    flag `verify_cache` will enable cache verification (default
+    is `True`). If turned off (set to `False`) the cache will not get
+    renewed in case of FritzOS updates or model changes (you be
+    warned).
 
     .. versionadded:: development
     """
@@ -128,7 +136,9 @@ class FritzConnection:
         timeout=None,
         use_tls=False,
         use_cache=None,
+        verify_cache=True,
         cache_directory=None,
+        cache_format=FRITZ_CACHE_FORMAT_JSON,
         pool_connections=DEFAULT_POOL_CONNECTIONS,
         pool_maxsize=DEFAULT_POOL_MAXSIZE,
     ):
@@ -136,34 +146,49 @@ class FritzConnection:
         Initialisation of FritzConnection: reads all data from the box
         and also the api-description (the servicenames and according
         actionnames as well as the parameter-types) that can vary among
-        models and stores the information as instance-attributes.
-        This can be an expensive operation. Because of this an instance
-        of FritzConnection should be created once and reused in an
-        application. All parameters are optional. But if there is more
-        than one FritzBox in the network, an address (ip as string) must
-        be given, otherwise it is not defined which box may respond. If
-        no user is given the Environment gets checked for a
-        FRITZ_USERNAME setting. If there is no entry in the environment
-        the avm-default-username will be used. If no password is given
-        the Environment gets checked for a FRITZ_PASSWORD setting. So
+        models and stores the information as instance-attributes. This
+        can be an expensive operation. Because of this an instance of
+        FritzConnection should be created once and reused in an
+        application.
+
+        All parameters are optional. But if there is more than one
+        FritzBox in the network, an address (ip as string) must be
+        given, otherwise it is not defined which box may respond. If no
+        user is given the Environment gets checked for a FRITZ_USERNAME
+        setting. If there is no entry in the environment the
+        avm-default-username will be used. If no password is given the
+        Environment gets checked for a FRITZ_PASSWORD setting. So
         password can be used without using configuration-files or even
-        hardcoding. The optional parameter `timeout` is a floating point
-        number in seconds limiting the time waiting for a router
-        response. The timeout can also be a tuple for different values
-        for connection- and read-timeout values: (connect timeout, read
-        timeout). The timeout is a global setting for the internal
-        communication with the router. In case of a timeout a
-        `requests.ConnectTimeout` exception gets raised. `use_tls`
-        accepts a boolean for using encrypted communication with the
-        Fritz!Box. Default is `False`. `use_cache` is a boolean whether
-        a cache should get used for the router api data. By default the
-        api data are loaded from the router at instanciation time what
-        can take several seconds to complete. `cache_directory` is the
-        path to the directory storing the cached data. By default this
-        is a folder named '.fritzconnection' in the users
-        home-directory. `pool_connections` and `pool_maxsize` accept
-        integers for changing the default urllib3 settings in order to
-        modify the number of reusable connections.
+        hardcoding.
+
+        The optional parameter `timeout` is a floating point number in
+        seconds limiting the time waiting for a router response. The
+        timeout can also be a tuple for different values for connection-
+        and read-timeout values: (connect timeout, read timeout). The
+        timeout is a global setting for the internal communication with
+        the router. In case of a timeout a `requests.ConnectTimeout`
+        exception gets raised.
+
+        `use_tls` accepts a boolean for using encrypted communication
+        with the Fritz!Box. Default is `False`.
+
+        `use_cache` is a boolean whether a cache should get used for the
+        router api data. By default the api data are loaded from the
+        router at instanciation time what can take several seconds to
+        complete. `cache_directory` is the path to the directory storing
+        the cached data. By default this is a folder named
+        '.fritzconnection' in the users home-directory. `cache_format`
+        supports two file-formats: json and pickle. The latter is more
+        compact, can be faster and is for local applications often safe
+        enough. Default is `json`. If `verify_cache` is `True` it checks
+        whether the model has changed or the system software has got an
+        update. In this case the cache gets renewed. Default is `True`.
+        Deactivating the verification gives another gain in speed, but
+        on updates and other changes you are on your own.
+
+        `pool_connections` and `pool_maxsize` accept integers for
+        changing the default urllib3 settings in order to modify the
+        number of reusable connections.
         """
         if address is None:
             address = FRITZ_IP_ADDRESS
@@ -205,7 +230,9 @@ class FritzConnection:
             address, port, user, password, timeout=timeout, session=session
         )
         self.device_manager = DeviceManager(timeout=timeout, session=session)
-        self._load_router_api(use_cache, cache_directory)
+        self._load_router_api(
+            use_cache, cache_directory, cache_format, verify_cache
+        )
         # set default user for FritzOS >= 7.24:
         self._reset_user(user, password)
 
@@ -269,98 +296,6 @@ class FritzConnection:
         url = url.split("//", 1)[-1]
         return PROTOCOLS[use_tls] + url
 
-    def _read_api_data(self, use_cache, cache_directory):
-        """
-        Read the api description from the router or from an optional cache.
-        """
-        if use_cache:
-            cache_path = self._get_cache_path(cache_directory)
-            try:
-                with open(cache_path, "rb") as fobj:
-                    cached_data = pickle.load(fobj)
-            except FileNotFoundError:
-                self._read_api_data_from_router()
-                self._write_api_data_to_cache(cache_path)
-            else:
-                if not self._cached_data_valid(cached_data):
-                    self._read_api_data_from_router()
-                    self._write_api_data_to_cache(cache_path)
-        else:
-            self._read_api_data_from_router()
-
-    def _get_cache_path(self, cache_directory):
-        """
-        Returns the path to the cache file (including the filename and
-        extension) as a Path instance.
-        """
-        # ignore optional scheme:
-        address = self.address.split('//')[-1]
-        address = address.replace(".", "_")
-        filename = f"{address}{FRITZ_CACHE_EXT}"
-        if cache_directory:
-            return Path(cache_directory) / filename
-        return Path().home() / FRITZ_CACHE_DIR /filename
-
-    def _cached_data_valid(self, cached_data):
-        """
-        Takes the unpickled cache data, applies the data to the
-        fritzconnection instance and checks whether the data are still
-        valid. Returns a boolean: True on valid data, False on invalid
-        data.
-        """
-        cached_device_description, descriptions, services = cached_data
-        self.device_manager.descriptions = descriptions
-        self.device_manager.services = services
-        try:
-            assert self.device_description == cached_device_description
-        except (AssertionError, FritzConnectionException):
-            # either the description does not match or call_action
-            # has failed. In both cases the cache is invalid.
-            # Clean up the cached attributes before returning:
-            self.device_manager.descriptions = []
-            self.device_manager.services = {}
-            return False
-        return True
-
-    def _write_api_data_to_cache(self, cache_path):
-        """
-        Save device data in the cache-file, which is given as a Path
-        object. If the directory for the cache does not exist, the
-        directory gets created.
-        """
-        cache_data = (
-            self.device_description,
-            self.device_manager.descriptions,
-            self.device_manager.services
-        )
-        # create cache-path if not existing:
-        cache_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(cache_path, "wb") as fobj:
-            pickle.dump(cache_data, fobj)
-
-#     def _read_api_data_from_router(self):
-#         """
-#         Read the api data from the router.
-#         """
-#         for description in FRITZ_DESCRIPTIONS:
-#             source = f"{self.address}:{self.port}/{description}"
-#             try:
-#                 self.device_manager.add_description(source)
-#             except FritzResourceError:
-#                 # resource not available:
-#                 # this can happen on devices not providing
-#                 # an igddesc-file.
-#                 # ignore this
-#                 # But if the "tr64desc.xml" file is missing the router
-#                 # may not have TR-064 activated. In this case raise a
-#                 # useful error-message.
-#                 if description == FRITZ_TR64_DESC_FILE:
-#                     raise FritzConnectionException(
-#                         FRITZ_APPLICATION_ACCESS_DISABLED
-#                     )
-#         self.device_manager.scan()
-#         self.device_manager.load_service_descriptions(self.address, self.port)
-
     def _reset_user(self, user, password):
         """
         For Fritz!OS >= 7.24: if a password is given and the username is
@@ -382,7 +317,9 @@ class FritzConnection:
             and password
         ):
             last_user = None
-            response = self.call_action('LANConfigSecurity1', 'X_AVM-DE_GetUserList')
+            response = self.call_action(
+                'LANConfigSecurity1', 'X_AVM-DE_GetUserList'
+            )
             root = ElementTree.fromstring(response['NewX_AVM-DE_UserList'])
             for node in root:
                 if node.tag == 'Username' and node.attrib['last_user'] == '1':
@@ -398,23 +335,32 @@ class FritzConnection:
     # public api:
     # -------------------------------------------
 
-    def call_action(self, service_name, action_name, *, arguments=None, **kwargs):
+    def call_action(
+        self,
+        service_name,
+        action_name,
+        *,
+        arguments=None,
+        **kwargs
+    ):
         """
         Executes the given action of the given service. Both parameters
         are required. Arguments are optional and can be provided as a
         dictionary given to 'arguments' or as separate keyword
         parameters. If 'arguments' is given additional
         keyword-parameters as further arguments are ignored.
+
         The argument values can be of type *str*, *int* or *bool*.
-        (Note: *bool* is provided since 1.3. In former versions
-        booleans must be provided as numeric values: 1, 0).
-        If the service_name does not end with a number (like 1), a 1
-        gets added by default. If the service_name ends with a colon and a
-        number, the colon gets removed. So i.e. WLANConfiguration
-        expands to WLANConfiguration1 and WLANConfiguration:2 converts
-        to WLANConfiguration2.
-        Invalid service names will raise a ServiceError and invalid
-        action names will raise an ActionError.
+        (Note: *bool* is provided since 1.3. In former versions booleans
+        must be provided as numeric values: 1, 0).
+
+        If the service_name does not end with a number-character (like
+        "1""), a "1" gets added by default. If the service_name ends
+        with a colon and a number, the colon gets removed. So i.e.
+        "WLANConfiguration" expands to "WLANConfiguration1" and
+        "WLANConfiguration:2" converts to "WLANConfiguration2"". Invalid
+        service names will raise a ServiceError and invalid action names
+        will raise an ActionError.
         """
         arguments = arguments if arguments else dict()
         if not arguments:
@@ -442,7 +388,13 @@ class FritzConnection:
     # load router-api:
     # -------------------------------------------
 
-    def _load_router_api(self, use_cache, cache_directory, cache_format):
+    def _load_router_api(
+        self,
+        use_cache,
+        cache_directory,
+        cache_format,
+        verify_cache
+    ):
         """
         Loads the router api.
 
@@ -459,18 +411,21 @@ class FritzConnection:
         If no cache data are found, the api gets loaded from the router and
         stored in a cache file.
         """
+        def reload_api():
+            self._load_api_from_router()
+            self._write_api_to_cache(path, cache_format)
+
         if use_cache:
             path = self._get_cache_path(cache_directory, cache_format)
             try:
                 self._load_api_from_cache(path, cache_format)
             except FileNotFoundError:
-                # can happen on first run or directory changes
-                self._load_api_from_router()
-                # write cache
+                # can happen i.e. on first run or directory changes
+                reload_api()
             else:
-                if not self._is_valid_cache():
-                    self._load_api_from_router()
-                    # write cache
+                if verify_cache and not self._is_valid_cache():
+                    # can happen on model changes or updates
+                    reload_api()
         else:
             self._load_api_from_router()
 
@@ -483,7 +438,7 @@ class FritzConnection:
         # originates from the device description and is part of the cache data.
         cached_id = (
             self.device_manager.modelname,
-            fc.device_manager.system_info[-1]
+            self.device_manager.system_info[-1]
         )
         # retrive the same information from an api call. If the result
         # is the same, the cache-data can considered as valid.
