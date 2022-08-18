@@ -7,6 +7,10 @@ Version History
 development
 -----------
 
+- FritzConnection
+
+  - API cache integration added: for faster start up times the router API can optional get saved in a cache-file. This can save up to several seconds run-time on instanciation.
+
 - FritzHosts:
 
   - New method `get_hosts_attributes` providing a list of dictionaries with the attribues of all known hosts (#134)
