@@ -126,7 +126,16 @@ def test_write_api_to_cache(file_name, cache_format, datadir):
     # 2. save the api data
     cache_filename = f"x_tmp_cache_{file_name}"
     cache_file = Path(cache_filename)
-    cache_file.unlink(missing_ok=True)  # in case of artefacts
+
+# TODO: (potentially)
+# code for Python >= 3.8:
+# cache_file.unlink(missing_ok=True)  # in case of artefacts
+# code for Python < 3.8:
+    try:
+        cache_file.unlink()
+    except FileNotFoundError:
+        pass  # ignore
+
     FritzConnection._write_api_to_cache(mock, cache_filename, cache_format)
     assert cache_file.exists() is True
     # 3. read the api data to another mock
