@@ -14,6 +14,10 @@ from ..core.fritzconnection import (
     FritzConnection,
     FRITZ_IP_ADDRESS,
     FRITZ_TCP_PORT,
+    FRITZ_ENV_USERNAME,
+    FRITZ_ENV_PASSWORD,
+    FRITZ_ENV_USECACHE,
+    FRITZ_ENV_CACHEDIRECTORY,
 )
 from .. import __version__
 
@@ -34,6 +38,8 @@ def get_instance(cls, args):
         user=args.username,
         password=args.password,
         use_tls=args.encrypt,
+        use_cache=args.use_cache,
+        cache_directory=args.cache_directory,
     )
 
 
@@ -49,14 +55,27 @@ def get_cli_arguments(scan_additional_arguments=None):
                         help='Port of the FritzBox to connect to. '
                              'Default: %s' % FRITZ_TCP_PORT)
     parser.add_argument('-u', '--username',
-                        nargs='?', default=os.getenv('FRITZ_USERNAME', None),
+                        nargs='?', default=os.getenv(FRITZ_ENV_USERNAME, None),
                         help='Fritzbox authentication username')
     parser.add_argument('-p', '--password',
-                        nargs='?', default=os.getenv('FRITZ_PASSWORD', None),
+                        nargs='?', default=os.getenv(FRITZ_ENV_PASSWORD, None),
                         help='Fritzbox authentication password')
     parser.add_argument('-e', '--encrypt',
                         nargs='?', default=False, const=True,
-                        help='use secure connection')
+                        help='Flag: use secure connection')
+    parser.add_argument('-C', '--use-cache',
+                        nargs='?', default=os.getenv(FRITZ_ENV_USECACHE, None),
+                        dest='use_cache',
+                        help='Flag: use api cache (speed-up subsequent '
+                             'instanciations)')
+    parser.add_argument('--cache-directory',
+                        nargs='?',
+                        default=os.getenv(FRITZ_ENV_CACHEDIRECTORY, None),
+                        const=None,
+                        dest='cache_directory',
+                        help="path to cache directory if it's not the "
+                             "default one")
+
     if scan_additional_arguments:
         scan_additional_arguments(parser)
     args = parser.parse_args()
