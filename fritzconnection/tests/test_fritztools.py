@@ -79,6 +79,88 @@ def test_argument_namespace():
         "serial_number": "NewSerialNumber",
         "model_name": "NewModelName",
     }
-    info = ArgumentNamespace(mapping, source)
+    info = ArgumentNamespace(source, mapping)
     assert info.serial_number == '989BCB2B93B0'
     assert info['model_name'] == 'FRITZ!Box 7590'
+
+
+@pytest.mark.parametrize(
+    "name, expected_result", [
+        ("description", "description"),
+        ("Description", "description"),
+        ("ModelName", "model_name"),
+        ("NewUpTime", "new_up_time"),
+        ("new_up_time", "new_up_time"),
+    ]
+)
+def test_argument_namespace_rewrite(name, expected_result):
+    result = ArgumentNamespace.rewrite_argument(name, suppress_new=False)
+    assert result == expected_result
+
+
+@pytest.mark.parametrize(
+    "name, expected_result", [
+        ("NewUpTime", "up_time"),
+        ("UpTime", "up_time"),
+        ("upTime", "up_time"),
+        ("up_time", "up_time"),
+        ("uptime", "uptime"),
+        ("newuptime", "newuptime"),
+        ("Newuptime", "newuptime"),
+        ("New_uptime", "uptime"),
+    ]
+)
+def test_argument_namespace_rewrite_no_new(name, expected_result):
+    result = ArgumentNamespace.rewrite_argument(name)
+    assert result == expected_result
+
+
+@pytest.fixture()
+def avm_source():
+    source = {
+        'NewModelName': 'FRITZ!Box 7590',
+        'NewDescription': 'FRITZ!Box 7590 154.07.29',
+        'NewProductClass': 'AVMFB7590',
+        'NewSerialNumber': '989BCB2B93B0',
+    }
+    return source
+
+
+def test_argument_namespace_no_mapping(avm_source):
+    """
+    In case of a missing mapping, all values from source should get
+    transfered to the ArgumentNamespace and the key should get converted
+    to snake_case.
+    """
+    info = ArgumentNamespace(avm_source)
+    assert info.model_name == 'FRITZ!Box 7590'
+    assert info['model_name'] == 'FRITZ!Box 7590'
+
+
+def test_argument_namespace_no_mapping_no_suppress(avm_source):
+    """
+    In case of a missing mapping, all values from source should get
+    transfered to the ArgumentNamespace and the key should get converted
+    to snake_case.
+    """
+    info = ArgumentNamespace(avm_source, suppress_new=False)
+    assert info.new_serial_number == '989BCB2B93B0'
+    assert info['new_serial_number'] == '989BCB2B93B0'
+    assert info.new_model_name == 'FRITZ!Box 7590'
+    assert info['new_model_name'] == 'FRITZ!Box 7590'
+
+
+def test_argument_namespace_has_len(avm_source):
+    info = ArgumentNamespace(avm_source)
+    assert len(info) == len(avm_source)
+
+
+def test_argument_namespace_assignment(avm_source):
+    info = ArgumentNamespace(avm_source)
+    info.new_value = 42
+    assert info.new_value == 42
+    assert len(info) == len(avm_source) + 1
+    info["minus"] = -3
+    assert info["minus"] == -3
+    assert info.minus == -3
+    assert len(info) == len(avm_source) + 2
