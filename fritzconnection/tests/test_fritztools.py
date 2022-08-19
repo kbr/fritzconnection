@@ -91,6 +91,7 @@ def test_argument_namespace():
         ("ModelName", "model_name"),
         ("NewUpTime", "new_up_time"),
         ("new_up_time", "new_up_time"),
+        ("NewManufacturerOUI", "new_manufacturer_oui"),
     ]
 )
 def test_argument_namespace_rewrite(name, expected_result):
@@ -108,6 +109,7 @@ def test_argument_namespace_rewrite(name, expected_result):
         ("newuptime", "newuptime"),
         ("Newuptime", "newuptime"),
         ("New_uptime", "uptime"),
+        ("NewManufacturerOUI", "manufacturer_oui"),
     ]
 )
 def test_argument_namespace_rewrite_no_new(name, expected_result):

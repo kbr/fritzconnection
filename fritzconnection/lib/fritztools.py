@@ -3,7 +3,11 @@ Some helper functions for the library.
 """
 
 import math
+import re
 from types import SimpleNamespace
+
+
+RE_UPPER_CASE = re.compile(r"([A-Z]+)")
 
 
 def byte_formatter(value):
@@ -172,9 +176,7 @@ class ArgumentNamespace(SimpleNamespace):
         "NewMixedCased" will get converted to "mixed_case".
         """
         new = "new_"
-        result = "".join(
-            f"_{char.lower()}" if char.isupper() else char for char in name
-        )
+        result = RE_UPPER_CASE.sub(r"_\1", name).lower()
         if result.startswith("_"):
             result = result[1:]
         if suppress_new and result.startswith(new):
