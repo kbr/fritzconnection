@@ -3,7 +3,6 @@ Common functions for other core-modules.
 """
 
 import re
-from types import SimpleNamespace
 from xml.etree import ElementTree as etree
 
 import requests
@@ -79,66 +78,3 @@ def get_xml_root(source, timeout=None, session=None):
         with open(source) as fobj:
             source = fobj.read()
     return etree.fromstring(source)
-
-
-class ArgumentNamespace(SimpleNamespace):
-    """
-    Namespace object that also behaves like a dictionary.
-
-    Usecase is as a wrapper for the dictionary returned from
-    `FritzConnection.call_action()`. This dictionary has keys named
-    "arguments" as described by the AVM documentation, combined with
-    values as the corresponding return values. Instances of
-    `ArgumentNamespace` can get used to extract a subset of this
-    dictionary and transfer the Argument-names to more readable
-    ones. For example consider that `fc` is a FritzConnection instance.
-    Then the following call: ::
-
-        result = fc.call_action("DeviceInfo1", "GetInfo")
-
-    will return a dictionary like: ::
-
-        {'NewManufacturerName': 'AVM',
-         'NewManufacturerOUI': '00040E',
-         'NewModelName': 'FRITZ!Box 7590',
-         'NewDescription': 'FRITZ!Box 7590 154.07.29',
-         'NewProductClass': 'AVMFB7590',
-         'NewSerialNumber': '989BCB2B93B0',
-         'NewSoftwareVersion': '154.07.29',
-         'NewHardwareVersion': 'FRITZ!Box 7590',
-         'NewSpecVersion': '1.0',
-         'NewProvisioningCode': '000.044.004.000',
-         'NewUpTime': 9516949,
-         'NewDeviceLog': 'long string here ...'}
-
-    In case that just the model name and serial number are of interest,
-    and should have better names, first define a mapping: ::
-
-        mapping = {
-            "modelname": "NewModelName",
-            "serial_number": "NewSerialNumber"
-        }
-
-    and use this `mapping` with the `result` to create an `ArgumentNamespace`
-    instance: ::
-
-        info = ArgumentNamespace(mapping, result)
-
-    The `info` instance can now get used like a namespace object and
-    like a dictionary: ::
-
-        >>> info.serial_number
-        >>> '989BCB2B93B0'
-
-        >>> info['modelname']
-        >>> 'FRITZ!Box 7590'
-
-    """
-    def __init__(self, mapping, source):
-        super().__init__(
-            **{name: source[attribute] for name, attribute in mapping.items()}
-        )
-
-    def __getitem__(self, key):
-        return getattr(self, key)
-
