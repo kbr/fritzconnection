@@ -164,3 +164,11 @@ def test_argument_namespace_assignment(avm_source):
     assert info["minus"] == -3
     assert info.minus == -3
     assert len(info) == len(avm_source) + 2
+
+
+def test_argument_namespace_extract(avm_source):
+    extract = "NewModelName", "NewProductClass"
+    info = ArgumentNamespace(avm_source, extract=extract)
+    assert len(info) == len(extract)
+    assert info.model_name == avm_source['NewModelName']
+    assert info.product_class == avm_source['NewProductClass']

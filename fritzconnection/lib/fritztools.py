@@ -120,11 +120,33 @@ class ArgumentNamespace(SimpleNamespace):
         >>> info.up_time
         9516949
 
+    If no mapping is given then also a sequence of the original
+    Argument-names can provided as keyword-argument `extract` to get an
+    ArgumentNamespace object with the subset of the "extracted
+    arguments" and converted attribute names (to snake_case): ::
+
+        >>> extract = "NewSerialNumber", "NewModelName"
+        >>> info = ArgumentNamespace(result, extract=extract)
+        >>> info.serial_number
+        '989BCB2B93B0'
+        >>> info.model_name
+        'FRITZ!Box 7590'
+
+    If `mapping` and `extract` are given, `mapping` has precedence and
+    `extract` gets ignored.
+
+    So by providing a mapping gives control about converting the
+    attribute names and the number of attributes of the
+    `ArgumentNamespace` instance. Providing no mapping will convert all
+    attributes and providing no mapping but a series of original
+    attribute names will extract the given subset of attributes.
     """
-    def __init__(self, source, mapping=None, suppress_new=True):
+
+    def __init__(self, source, mapping=None, extract=None, suppress_new=True):
         if mapping is None:
+            keys = extract if extract else source.keys()
             mapping = {
-                self.rewrite_argument(key, suppress_new): key for key in source
+                self.rewrite_argument(key, suppress_new): key for key in keys
             }
         super().__init__(
             **{name: source[attribute] for name, attribute in mapping.items()}
@@ -144,9 +166,10 @@ class ArgumentNamespace(SimpleNamespace):
     def rewrite_argument(name, suppress_new=True):
         """
         Rewrite `name` from MixedCase to snake_case. So i.e. "MixedCase"
-        would converted to "mixed_case". The result may start with
-        "new_" in case of AVM standard argument names. if `suppress_new`
-        is `True` the prefix "new_" will get removed.
+        gets converted to "mixed_case". The result may start with "new_"
+        in case of AVM standard argument names. if `suppress_new` is
+        `True` (the default) the prefix "new_" will get removed, so also
+        "NewMixedCased" will get converted to "mixed_case".
         """
         new = "new_"
         result = "".join(
