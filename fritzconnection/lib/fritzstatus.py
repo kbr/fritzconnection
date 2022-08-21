@@ -103,7 +103,7 @@ class FritzStatus(AbstractLibraryBase):
     def uptime(self):
         """
         .. deprecated:: 1.9.0
-        Use :func:`connection_uptime` instead.
+           Use :func:`connection_uptime` instead.
         """
         warn('This method is deprecated. Use "connection_uptime" instead.', DeprecationWarning)
         return self.connection_uptime

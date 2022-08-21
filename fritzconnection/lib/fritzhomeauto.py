@@ -60,7 +60,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
     def device_informations(self):
         """
         .. deprecated:: 1.9.0
-        Use :func:`device_information` instead.
+           Use :func:`device_information` instead.
         """
         warn('This method is deprecated. Use "device_information" instead.', DeprecationWarning)
         return self.device_information()

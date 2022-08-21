@@ -442,8 +442,6 @@ FritzWLAN API
 FritzBase
 ---------
 
-An internal module providing the `AbstractLibraryBase` class. This is an abstract class that should not get instantiated but should serve as a base class for library classes providing a common initialisation.
-
 .. automodule:: fritzconnection.lib.fritzbase
     :members:
 
