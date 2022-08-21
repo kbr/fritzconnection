@@ -385,34 +385,33 @@ class FritzConnection:
         self.call_action("DeviceConfig1", "Reboot")
 
     # -------------------------------------------
-    # load router-api:
+    # internal methods to load router-api:
     # -------------------------------------------
 
     def _load_router_api(
         self,
-        use_cache,
-        cache_directory,
-        cache_format,
-        verify_cache
+        use_cache=False,
+        cache_directory=None,
+        cache_format=FRITZ_CACHE_FORMAT_JSON,
+        verify_cache=True,
     ):
         """
-        Loads the router api.
+        Load the router api.
 
-        If `use_cache` is False, load the api from the router. If
-        `use_cache` is True, the api data are loaded from cached data in
-        `cache_format` (pickle or json) at the `cache_directory`. If
-        `cache_directory` is not given, the default-directory gets used
-        (which is in most cases a subdirectory of the user home directory).
-        After loading the cached api, the cached data are checked for
-        matching the connected router and system-software. If this check
-        fails, the api gets loaded from the router and the cache data are
-        updated.
-
-        If no cache data are found, the api gets loaded from the router and
-        stored in a cache file.
+        If `use_cache` is `False``, load the api from the router. If
+        `use_cache` is `True``, the api data are loaded from a file,
+        which is in pickle or json format, according to the setting of
+        `cache_format`.  The file location can get set by the argument
+        `cache_directory`. If `cache_directory` is not given, the
+        default-directory is used (which is in most cases a subdirectory
+        of the user home directory). After loading from a file the
+        cached data are checked to detect a software-update or a change
+        of the router model. If this check fails, the api gets reloaded
+        from the router and the cache data are updated. The same happens
+        on errors loading the cache-file.
         """
         def reload_api():
-            # remove possible artefacts:
+            # reset in case of remaining artefacts:
             self.device_manager.descriptions = []
             self.device_manager.services = {}
             # reload and save again:
@@ -424,11 +423,11 @@ class FritzConnection:
             try:
                 self._load_api_from_cache(path, cache_format)
             except FileNotFoundError:
-                # can happen i.e. on first run or directory changes
+                # can happen i.e. on first run
                 reload_api()
             else:
                 if verify_cache and not self._is_valid_cache():
-                    # can happen on model changes or updates
+                    # can happen on model changes or software updates
                     reload_api()
         else:
             self._load_api_from_router()

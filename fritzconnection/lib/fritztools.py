@@ -1,5 +1,5 @@
 """
-Some helper functions for the library.
+Some helpers for the library.
 """
 
 import math
@@ -76,7 +76,7 @@ class ArgumentNamespace(SimpleNamespace):
     ones. For example consider that `fc` is a FritzConnection instance.
     Then the following call: ::
 
-        result = fc.call_action("DeviceInfo1", "GetInfo")
+        >>> result = fc.call_action("DeviceInfo1", "GetInfo")
 
     will return a dictionary like: ::
 
@@ -85,7 +85,7 @@ class ArgumentNamespace(SimpleNamespace):
          'NewModelName': 'FRITZ!Box 7590',
          'NewDescription': 'FRITZ!Box 7590 154.07.29',
          'NewProductClass': 'AVMFB7590',
-         'NewSerialNumber': '989BCB2B93B0',
+         'NewSerialNumber': '989BCB2xxxxx',
          'NewSoftwareVersion': '154.07.29',
          'NewHardwareVersion': 'FRITZ!Box 7590',
          'NewSpecVersion': '1.0',
@@ -98,18 +98,18 @@ class ArgumentNamespace(SimpleNamespace):
 
         mapping = {
             "modelname": "NewModelName",
-            "serial_number": "NewSerialNumber"
+            "serialnumber": "NewSerialNumber"
         }
 
-    and use this `mapping` with the `result` to create an `ArgumentNamespace`
-    instance: ::
+    and use this `mapping` with the dictionary `result` to create an
+    `ArgumentNamespace` instance: ::
 
         >>> info = ArgumentNamespace(result, mapping)
 
     The `info` instance can now get used like a namespace object and
     like a dictionary: ::
 
-        >>> info.serial_number
+        >>> info.serialnumber
         '989BCB2B93B0'
 
         >>> info['modelname']
@@ -117,17 +117,16 @@ class ArgumentNamespace(SimpleNamespace):
 
     If no mapping is given, then `ArgumentNamespace` will consume the
     provided dictionary converting all keys from "MixedCase" style to
-    "snake_case" removing the leading "new_" (removing "new_" can get
-    turned of by setting `suppress_new` to `False`): ::
+    "snake_case" and removing the leading "new_" originating from the
+    AVM "New" prefix for all keys. (Removing "new_" can get turned of by
+    setting the flag `suppress_new` to `False`.): ::
 
         >>> info = ArgumentNamespace(result)
         >>> info.up_time
         9516949
 
-    If no mapping is given then also a sequence of the original
-    Argument-names can provided as keyword-argument `extract` to get an
-    ArgumentNamespace object with the subset of the "extracted
-    arguments" and converted attribute names (to snake_case): ::
+    To just extract a subset of `result` provide a sequence of key-names
+    for the `extract` argument: ::
 
         >>> extract = "NewSerialNumber", "NewModelName"
         >>> info = ArgumentNamespace(result, extract=extract)
@@ -136,8 +135,8 @@ class ArgumentNamespace(SimpleNamespace):
         >>> info.model_name
         'FRITZ!Box 7590'
 
-    If `mapping` and `extract` are given, `mapping` has precedence and
-    `extract` gets ignored.
+    If both arguments `mapping` and `extract` are given, `mapping` has
+    precedence and `extract` gets ignored.
 
     So by providing a mapping gives control about converting the
     attribute names and the number of attributes of the
@@ -173,7 +172,9 @@ class ArgumentNamespace(SimpleNamespace):
         gets converted to "mixed_case". The result may start with "new_"
         in case of AVM standard argument names. if `suppress_new` is
         `True` (the default) the prefix "new_" will get removed, so also
-        "NewMixedCased" will get converted to "mixed_case".
+        "NewMixedCased" will get converted to "mixed_case". Consecutive
+        upper-case characters are handled as a group: "ManufacturerOUI"
+        -> "manufacturer_oui".
         """
         new = "new_"
         result = RE_UPPER_CASE.sub(r"_\1", name).lower()
