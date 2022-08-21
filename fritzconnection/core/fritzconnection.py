@@ -107,22 +107,22 @@ class FritzConnection:
 
     .. versionadded:: 1.6
 
-    The flag `use_cache` activates caching (default
-    `False`). Caching can speed up instanciation  significantly. The
-    cached data are specific for the router ip, the router model and the
-    installed FritzOS version. Multiple devices in the network have
-    separate caches and can get used in parallel. The cache files are
-    stored in the user home-directory in a `.fritzconnection` subfolder.
-    To change this location use the parameter `cache_directory` providing
-    a string or a `pathlib.Path` object. With `cache_format` two formats
-    can specified for data serialization: `json` and `pickle`. These two
-    values are available as constants `FRITZ_CACHE_FORMAT_JSON` and
-    `FRITZ_CACHE_FORMAT_PICKLE`. The `pickle` format is more compact and
-    for local applications often safe enough. Default is `json`. The
-    flag `verify_cache` will enable cache verification (default
-    is `True`). If turned off (set to `False`) the cache will not get
-    renewed in case of FritzOS updates or model changes (you be
-    warned).
+    The flag `use_cache` activates caching (default `False`). Caching
+    can speed up instanciation significantly. The cached data are
+    specific for the router ip, the router model and the installed
+    FritzOS version. Multiple devices in the network can have separate
+    cache-fies and can get used in parallel. By default the cache files
+    are stored in the user home-directory in a `.fritzconnection`
+    subfolder. To change this location use the parameter
+    `cache_directory` providing a string or a `pathlib.Path` object.
+    With `cache_format` two formats can specified for data
+    serialization: `json` and `pickle`. These two values are available
+    as constants `FRITZ_CACHE_FORMAT_JSON` and
+    `FRITZ_CACHE_FORMAT_PICKLE`. Default is `json`. The flag
+    `verify_cache` will enable cache verification (default is `True`).
+    If set to `False` loading of the api-data will be even faster, but
+    the cache will not get renewed in case of FritzOS updates or a
+    router change.
 
     .. versionadded:: development
     """
