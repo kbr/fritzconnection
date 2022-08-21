@@ -412,6 +412,10 @@ class FritzConnection:
         stored in a cache file.
         """
         def reload_api():
+            # remove possible artefacts:
+            self.device_manager.descriptions = []
+            self.device_manager.services = {}
+            # reload and save again:
             self._load_api_from_router()
             self._write_api_to_cache(path, cache_format)
 
