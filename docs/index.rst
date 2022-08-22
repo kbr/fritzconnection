@@ -42,9 +42,9 @@ fritzconnection comes with a library to make some common tasks easier. For a det
 
    sources/install
    sources/introduction
-   sources/call_monitoring
-   sources/library
    sources/api
+   sources/library
+   sources/call_monitoring
    sources/further_reading
    sources/changes
    sources/authors

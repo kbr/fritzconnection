@@ -15,17 +15,14 @@ The installation of fritzconnection (using pip) will also install a command line
     To use the TR-064 interface of the Fritz!Box, the settings for `Allow access for applications` and `Transmit status information over UPnP` in the `Home Network` -> `Network` -> `Network Settings` menu have to be activated.
 
 
-Internal defaults
------------------
+Default IP-Address
+------------------
 
-To access the router in a local network, fritzconnection use some default values: ::
+To access the router in a local network, fritzconnection uses a default ip-address: ::
 
     FRITZ_IP_ADDRESS = '169.254.1.1'
-    FRITZ_TCP_PORT = 49000
-    FRITZ_TLS_PORT = 49443
-    FRITZ_USERNAME = 'dslf-config'  # for Fritz!OS < 7.24
 
-The ip-adress is a fallback-address common to every fritzbox-router, regardless of the individual configuration. In case of more than a single router in the local network (i.e. multiple Fritz!Boxes building a Mesh or connected by LAN building multiple WLAN access-points) the option :command:`-i` (for the command line) or the keyword-parameter `address` (module usage) is required to address the router, otherwise it is not defined which device will respond first.
+This ip-adress is a fallback-address common to every fritzbox-router, regardless of the individual configuration. In case of more than a single router in the local network (i.e. multiple Fritz!Boxes building a Mesh or connected by LAN building multiple WLAN access-points) the option :command:`-i` (for the command line) or the keyword-parameter `address` (module usage) is required to address the router, otherwise it is not defined which device will respond.
 
 
 Usernames and passwords
