@@ -149,6 +149,9 @@ class ArgumentNamespace(SimpleNamespace):
     attributes to snake_case and providing no mapping but a series of
     original attribute names (by the argument `extract`) will extract
     the given subset of attributes, also converted to snake_case.
+
+    .. versionadded:: development
+
     """
 
     def __init__(self, source, mapping=None, extract=None, suppress_new=True):
