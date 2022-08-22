@@ -1,5 +1,5 @@
-Structure and API
-=================
+FritzConnection API
+===================
 
 
 fritzconnection is structured into subpackages: ::
