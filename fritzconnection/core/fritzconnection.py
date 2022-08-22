@@ -61,6 +61,7 @@ FRITZ_CACHE_UNKNOWN_FORMAT_MESSAGE = f"""\
 FRITZ_ENV_USERNAME = "FRITZ_USERNAME"
 FRITZ_ENV_PASSWORD = "FRITZ_PASSWORD"
 FRITZ_ENV_USECACHE = "FRITZ_USECACHE"
+FRITZ_ENV_CACHE_FORMAT = "FRITZ_CACHEFORMAT"
 FRITZ_ENV_CACHEDIRECTORY = "FRITZ_CACHEDIRECTORY"
 
 # same defaults as used by requests:
@@ -113,16 +114,17 @@ class FritzConnection:
     FritzOS version. Multiple devices in the network can have separate
     cache-fies and can get used in parallel. By default the cache files
     are stored in the user home-directory in a `.fritzconnection`
-    subfolder. To change this location use the parameter
-    `cache_directory` providing a string or a `pathlib.Path` object.
-    With `cache_format` two formats can specified for data
-    serialization: `json` and `pickle`. These two values are available
-    as constants `FRITZ_CACHE_FORMAT_JSON` and
-    `FRITZ_CACHE_FORMAT_PICKLE`. Default is `json`. The flag
-    `verify_cache` will enable cache verification (default is `True`).
-    If set to `False` loading of the api-data will be even faster, but
-    the cache will not get renewed in case of FritzOS updates or a
-    router change.
+    folder. To change this location use the parameter `cache_directory`
+    providing a string or a `pathlib.Path` object. With `cache_format`
+    two formats can specified for data serialization: `json` and
+    `pickle`. These two values are available as constants
+    `FRITZ_CACHE_FORMAT_JSON` and `FRITZ_CACHE_FORMAT_PICKLE`. Default
+    is `pickle`. The flag `verify_cache` will enable cache verification
+    (default is `True`). If set to `False` loading the api-data will be
+    even faster, but the cache will not get renewed in case of FritzOS
+    updates or a router change. All cache-settings can also configured
+    in the environment: FRITZ_USECACHE (True|False), FRITZ_CACHEFORMAT
+    (json|pickle) and FRITZ_CACHEDIRECTORY (a path).
 
     .. versionadded:: development
     """
@@ -135,10 +137,10 @@ class FritzConnection:
         password=None,
         timeout=None,
         use_tls=False,
-        use_cache=None,
+        use_cache=False,
         verify_cache=True,
         cache_directory=None,
-        cache_format=FRITZ_CACHE_FORMAT_JSON,
+        cache_format=None,
         pool_connections=DEFAULT_POOL_CONNECTIONS,
         pool_maxsize=DEFAULT_POOL_MAXSIZE,
     ):
@@ -178,13 +180,16 @@ class FritzConnection:
         complete. `cache_directory` is the path to the directory storing
         the cached data. By default this is a folder named
         '.fritzconnection' in the users home-directory. `cache_format`
-        supports two file-formats: json and pickle. The latter is more
-        compact, can be faster and is for local applications often safe
-        enough. Default is `json`. If `verify_cache` is `True` it checks
-        whether the model has changed or the system software has got an
-        update. In this case the cache gets renewed. Default is `True`.
-        Deactivating the verification gives another gain in speed, but
-        on updates and other changes you are on your own.
+        supports two file-formats: json and pickle (default). All cache
+        settings can also defined in the environment: FRITZ_USECACHE
+        (True|False), FRITZ_CACHEFORMAT (json|pickle) and
+        FRITZ_CACHEDIRECTORY (a path).
+
+        If `verify_cache` is `True` it checks whether the model has
+        changed or the system software has got an update. In this case
+        the cache gets renewed. Default is `True`. Deactivating the
+        verification gives another gain in speed, but on updates and
+        other changes you are on your own.
 
         `pool_connections` and `pool_maxsize` accept integers for
         changing the default urllib3 settings in order to modify the
@@ -203,6 +208,10 @@ class FritzConnection:
             except AttributeError:
                 # in case use_cache is something else than None:
                 use_cache = None
+        if cache_format is None:
+            cache_format = os.getenv(
+                FRITZ_ENV_CACHE_FORMAT, FRITZ_CACHE_FORMAT_PICKLE
+            )
         if cache_directory is None:
             cache_directory = os.getenv(FRITZ_ENV_CACHEDIRECTORY, None)
         if port is None and use_tls:
