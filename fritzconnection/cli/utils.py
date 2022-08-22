@@ -12,12 +12,14 @@ import os
 
 from ..core.fritzconnection import (
     FritzConnection,
+    FRITZ_CACHE_FORMAT_PICKLE,
     FRITZ_IP_ADDRESS,
     FRITZ_TCP_PORT,
     FRITZ_ENV_USERNAME,
     FRITZ_ENV_PASSWORD,
     FRITZ_ENV_USECACHE,
     FRITZ_ENV_CACHEDIRECTORY,
+    FRITZ_ENV_CACHE_FORMAT,
 )
 from .. import __version__
 
@@ -40,6 +42,7 @@ def get_instance(cls, args):
         use_tls=args.encrypt,
         use_cache=args.use_cache,
         cache_directory=args.cache_directory,
+        cache_format=args.cache_format,
     )
 
 
@@ -63,11 +66,20 @@ def get_cli_arguments(scan_additional_arguments=None):
     parser.add_argument('-e', '--encrypt',
                         nargs='?', default=False, const=True,
                         help='Flag: use secure connection')
-    parser.add_argument('-C', '--use-cache',
-                        nargs='?', default=os.getenv(FRITZ_ENV_USECACHE, None),
+    parser.add_argument('-x', '--use-cache',
+                        nargs='?',
+                        default=os.getenv(FRITZ_ENV_USECACHE, None),
+                        const=True,
                         dest='use_cache',
                         help='Flag: use api cache (speed-up subsequent '
                              'instanciations)')
+    parser.add_argument('-f', '--cache-format',
+                        nargs='?', default=os.getenv(
+                            FRITZ_ENV_CACHE_FORMAT, FRITZ_CACHE_FORMAT_PICKLE
+                        ),
+                        dest='cache_format',
+                        help="cache-file format: json|pickle"
+                        )
     parser.add_argument('--cache-directory',
                         nargs='?',
                         default=os.getenv(FRITZ_ENV_CACHEDIRECTORY, None),
