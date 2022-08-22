@@ -439,9 +439,13 @@ FritzWLAN API
     :members:
 
 
+Library-Tools
+-------------
+
 FritzBase
----------
+.........
 
 .. automodule:: fritzconnection.lib.fritzbase
+    :noindex:
     :members:
 

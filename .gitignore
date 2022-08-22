@@ -10,9 +10,8 @@
 *.pyc
 __pycache__/*
 bin
-build/*
 dist/*
-docs/_build/*
+docs/_static/*
 fritzconnection.egg-info/*
 include
 lib_
