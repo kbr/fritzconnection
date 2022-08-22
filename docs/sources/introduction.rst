@@ -1,7 +1,7 @@
 
 
-Get Started
-===========
+Getting Started
+===============
 
 Technically the communication with the Fritz!Box works by UPnP using SCPD and SOAP for information transfer which is based on the TR-064 protocol. The TR-064 protocol uses the concepts of ``services`` and ``actions``. A service is a collection of actions for a given topic like WLAN-connections, registered hosts, phone calls, home-automation tasks and so on.
 
@@ -25,8 +25,8 @@ To access the router in a local network, fritzconnection uses a default ip-addre
 This ip-adress is a fallback-address common to every fritzbox-router, regardless of the individual configuration. In case of more than a single router in the local network (i.e. multiple Fritz!Boxes building a Mesh or connected by LAN building multiple WLAN access-points) the option :command:`-i` (for the command line) or the keyword-parameter `address` (module usage) is required to address the router, otherwise it is not defined which device will respond.
 
 
-Usernames and passwords
------------------------
+Username and password
+---------------------
 
 For some operations a username and/or a password is required. This can be given on the command line as parameters or, by using a module, as arguments. To not present these information in clear text, username and password can get stored in the **environment variables** ``FRITZ_USERNAME`` and ``FRITZ_PASSWORD``. FritzConnection will check for these environment variables first and, if set, will use the corresponding values.
 
@@ -340,6 +340,21 @@ fritzconnection can raise several exceptions. For example using a service not pr
 All exceptions are inherited from `FritzConnectionException`. `FritzServiceError` and `FritzActionError` are superseding the older `ServiceError` and `ActionError` exceptions, that are still existing for backward compatibility. These exceptions are raised by calling unknown services and actions. All other exceptions are raised according to errors reported from the router. `FritzLookUpError` and `FritzArrayIndexError` are conceptually the same as Pythons `KeyError` or `IndexError`. Because of this they are also inherited from these Exceptions.
 
 
+API-Cache
+---------
+
+Stores the router api in an external file (*new in 1.10.0*). Loading the router-api from the router requires a lot of requests and can take several seconds. Reading the api-data from a single file is much faster. The cache is activated by the `use_cache` argument: ::
+
+    fc = FritzConnection(address=192.168.178.1, use_cache=True)
+
+With the argument `cache_directory` the location of the cache files can be specified. Default is the `.fritzconnection` folder in the user home-directory on systems providing this default location. Every device, routers and repeaters, has a separate chache-file.
+
+After loading the api from the cache, the data are verified for being still valid for the given hardware-model and installed software version. In case the cache is outdated, the api-date are reloaded from the router and the cache file gets updated. This requires a request to the router. With the argument `verify_cache=False` verifying can turned off. This makes loading the api even faster, but the cache data may be outdated if something has changed on the router side. You be warned!
+
+.. note ::
+    Default cache-format is `pickle`. This format is compact and fast and can considered to be safe as it is your own data. However, with the argument `cache_format` the format can changed to `json`.
+
+
 TLS-Encryption
 --------------
 
@@ -355,3 +370,16 @@ The default setting for `use_tls` is `False`. For the command line tools encrypt
     - Since the router uses a self-signed certificate, currently certificate-verification is disabled.
     - In case the client communicates with the router by WLAN and WPA is enabled, the communication is already encrypted.
     - In case the client communicates by VPN there is also no need to add an additional encryption layer.
+
+
+Environment-Variables
+---------------------
+
+Some arguments given to `FritzConnection` can be stored in the environment. This has the advantage that arguments like `user` and `password` don't have to be hardcoded and other defaults can be defined.
+
+- ``FRITZ_USERNAME`` provide the username
+- ``FRITZ_PASSWORD`` provide the password
+- ``FRITZ_USECACHE`` set to `True` or `False` (default: `False`)
+- ``FRITZ_CACHEFORMAT`` set to `json` or `pickle` (default: `pickle`)
+- ``FRITZ_CACHEDIRECTORY`` set to path (default: `~.fritzconnection`)
+
