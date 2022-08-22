@@ -110,19 +110,24 @@ class ArgumentNamespace(SimpleNamespace):
     like a dictionary: ::
 
         >>> info.serialnumber
-        '989BCB2B93B0'
+        '989BCB2xxxxx'
 
         >>> info['modelname']
         'FRITZ!Box 7590'
 
     If no mapping is given, then `ArgumentNamespace` will consume the
     provided dictionary converting all keys from "MixedCase" style to
-    "snake_case" and removing the leading "new_" originating from the
-    AVM "New" prefix for all keys. (Removing "new_" can get turned of by
-    setting the flag `suppress_new` to `False`.): ::
+    "snake_case" and removing the leading "new" originating from the
+    AVM "New" prefix for all keys: ::
 
         >>> info = ArgumentNamespace(result)
         >>> info.up_time
+        9516949
+
+    Setting the flag `suppress_new` to `False` will keep to prefix: ::
+
+        >>> info = ArgumentNamespace(result, suppress_new=False)
+        >>> info.new_up_time
         9516949
 
     To just extract a subset of `result` provide a sequence of key-names
@@ -131,18 +136,19 @@ class ArgumentNamespace(SimpleNamespace):
         >>> extract = "NewSerialNumber", "NewModelName"
         >>> info = ArgumentNamespace(result, extract=extract)
         >>> info.serial_number
-        '989BCB2B93B0'
+        '989BCB2xxxxx'
         >>> info.model_name
         'FRITZ!Box 7590'
 
     If both arguments `mapping` and `extract` are given, `mapping` has
     precedence and `extract` gets ignored.
 
-    So by providing a mapping gives control about converting the
-    attribute names and the number of attributes of the
+    Providing a mapping gives control about converting attribute names
+    to other defined names and the number of attributes of the
     `ArgumentNamespace` instance. Providing no mapping will convert all
-    attributes and providing no mapping but a series of original
-    attribute names will extract the given subset of attributes.
+    attributes to snake_case and providing no mapping but a series of
+    original attribute names (by the argument `extract`) will extract
+    the given subset of attributes, also converted to snake_case.
     """
 
     def __init__(self, source, mapping=None, extract=None, suppress_new=True):
@@ -169,12 +175,12 @@ class ArgumentNamespace(SimpleNamespace):
     def rewrite_argument(name, suppress_new=True):
         """
         Rewrite `name` from MixedCase to snake_case. So i.e. "MixedCase"
-        gets converted to "mixed_case". The result may start with "new_"
-        in case of AVM standard argument names. if `suppress_new` is
-        `True` (the default) the prefix "new_" will get removed, so also
-        "NewMixedCased" will get converted to "mixed_case". Consecutive
-        upper-case characters are handled as a group: "ManufacturerOUI"
-        -> "manufacturer_oui".
+        gets converted to "mixed_case". AVM standard argument names
+        starting with "New" like "NewMixedCase" will get converted to
+        "new_mixed_case". If `suppress_new` is `True` (the default) the
+        "new"-prefix will get removed, so "NewMixedCased" will get
+        converted to "mixed_case". Consecutive upper-case characters are
+        handled as a group: "ManufacturerOUI" -> "manufacturer_oui".
         """
         new = "new_"
         result = RE_UPPER_CASE.sub(r"_\1", name).lower()

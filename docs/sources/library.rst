@@ -442,6 +442,8 @@ FritzWLAN API
 Library-Tools
 -------------
 
+Helper classes and functions for library-development.
+
 FritzBase
 .........
 
@@ -449,3 +451,9 @@ FritzBase
     :noindex:
     :members:
 
+
+FritzTools
+..........
+
+.. automodule:: fritzconnection.lib.fritztools
+    :members:
