@@ -44,9 +44,7 @@ Here the *fc.reconnect()* is a shortcut. The basic method FritzConnection provid
     fc = FritzConnection(address='192.168.178.1')
     fc.call_action("WANIPConn1", "ForceTermination")
 
-The method *call_action()* expects a service- and an action-name (and optional arguments). In general FritzConnection can execute every service and action provided by the (model-specific) API as documented by AVM. For i.e. this can be network settings, status informations, access to home automation devices and much more.
-
-In case a call to the FRITZ-API provides information the *call_action()* method returns a dictionary with the results.
+The method *call_action()* expects a service- and an action-name (and optional arguments). In general FritzConnection can execute every service and action provided by the (model-specific) API as documented by AVM. For i.e. this can be network settings, status informations, access to home automation devices and much more. In case a call to the FritzOS-API provides information the *call_action()* method returns a dictionary with the results.
 
 The package comes with some library-modules as examples how to implement applications on top of FritzConnection.
 
