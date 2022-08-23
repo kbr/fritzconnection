@@ -235,7 +235,6 @@ class FritzConnection:
             address, port, user, password, timeout=timeout, session=session
         )
         self.device_manager = DeviceManager(timeout=timeout, session=session)
-        breakpoint()
         self._load_router_api(
             use_cache, cache_directory, cache_format, verify_cache
         )
