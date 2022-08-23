@@ -407,7 +407,7 @@ class FritzConnection:
         """
         Load the router api.
 
-        If `use_cache` is `False``, load the api from the router. If
+        If `use_cache` is `False`, load the api from the router. If
         `use_cache` is `True``, the api data are loaded from a file,
         which is in pickle or json format, according to the setting of
         `cache_format`.  The file location can get set by the argument

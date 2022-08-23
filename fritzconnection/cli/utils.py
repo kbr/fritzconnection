@@ -51,7 +51,7 @@ def get_cli_arguments(scan_additional_arguments=None):
     parser.add_argument('-i', '--ip-address',
                         nargs='?', default=FRITZ_IP_ADDRESS, const=None,
                         dest='address',
-                        help='Specify ip-address of the FritzBox to connect to.'
+                        help='Specify ip-address of the FritzBox to connect to. '
                              'Default: %s' % FRITZ_IP_ADDRESS)
     parser.add_argument('--port',
                         nargs='?', default=None, const=None,
@@ -65,29 +65,27 @@ def get_cli_arguments(scan_additional_arguments=None):
                         help='Fritzbox authentication password')
     parser.add_argument('-e', '--encrypt',
                         nargs='?', default=False, const=True,
-                        help='Flag: use secure connection')
+                        help='Flag: use secure connection (TLS)')
     parser.add_argument('-x', '--use-cache',
-                        nargs='?',
-                        default=os.getenv(FRITZ_ENV_USECACHE, None),
-                        const=True,
+                        default=os.getenv(FRITZ_ENV_USECACHE, False),
+                        action="store_true",
                         dest='use_cache',
-                        help='Flag: use api cache (speed-up subsequent '
+                        help='Flag: use api cache (e[x]cellerate: speed-up subsequent '
                              'instanciations)')
-    parser.add_argument('-f', '--cache-format',
+    parser.add_argument('--cache-format',
                         nargs='?', default=os.getenv(
                             FRITZ_ENV_CACHE_FORMAT, FRITZ_CACHE_FORMAT_PICKLE
                         ),
                         dest='cache_format',
-                        help="cache-file format: json|pickle"
+                        help="cache-file format: json|pickle (default: pickle)"
                         )
     parser.add_argument('--cache-directory',
                         nargs='?',
                         default=os.getenv(FRITZ_ENV_CACHEDIRECTORY, None),
                         const=None,
                         dest='cache_directory',
-                        help="path to cache directory if it's not the "
-                             "default one")
-
+                        help="path to cache directory (default: ~.fritzconnection)"
+                        )
     if scan_additional_arguments:
         scan_additional_arguments(parser)
     args = parser.parse_args()
