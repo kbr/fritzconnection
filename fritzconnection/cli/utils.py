@@ -42,6 +42,7 @@ def get_instance(cls, args):
         password=args.password,
         use_tls=args.encrypt,
         use_cache=args.use_cache,
+        verify_cache=args.verify_cache,
         cache_directory=args.cache_directory,
         cache_format=args.cache_format,
     )
@@ -72,7 +73,14 @@ def get_cli_arguments(scan_additional_arguments=None):
                         action="store_true",
                         dest='use_cache',
                         help='Flag: use api cache (e[x]cellerate: speed-up subsequent '
-                             'instanciations)')
+                             'instanciations)'
+                        )
+    parser.add_argument('-y', '--suppress-cache-verification',
+                        action='store_false',
+                        default=True,
+                        dest='verify_cache',  # needs inverted boolean to suppress.
+                        help='suppress cache verification (at you own risk!)'
+                        )
     parser.add_argument('--cache-format',
                         nargs='?', default=os.getenv(
                             FRITZ_ENV_CACHE_FORMAT, FRITZ_CACHE_FORMAT_PICKLE
