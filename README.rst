@@ -23,10 +23,10 @@ Installation:
 For installation use pip ::
 
     $ pip install fritzconnection
-    or
+      or
     $ pip install fritzconnection[qr]
 
-The latter will enable QR-code creation for wifi login.
+The latter will install the dependency to enable QR-code creation for wifi login.
 
 Quickstart:
 -----------
@@ -39,12 +39,12 @@ Using fritzconnection is as easy as: ::
     fc.reconnect()  # get a new external ip from the provider
     print(fc)  # print router model informations
 
-In general FritzConnection can execute every action provided by the (model-specific) API. For i.e. this can be network settings, status informations, access to home automation devices and much more.
-
-The basic method FritzConnection provides to access the FritzOS-API is the `call_action()` method. A reconnection by means of *call_action()* would look like this: ::
+Here the `fc.reconnect()` is a shortcut. The basic method FritzConnection provides to access the FritzOS-API is the `call_action()` method. A reconnection by means of *call_action()* would look like this: ::
 
     fc = FritzConnection(address='192.168.178.1')
     fc.call_action("WANIPConn1", "ForceTermination")
+
+The method `call_action()` expects a service- and an action-name (and optional arguments). In general FritzConnection can execute every service and action provided by the (model-specific) API as documented by AVM. For i.e. this can be network settings, status informations, access to home automation devices and much more.
 
 The package comes with a library providing modules as examples how to implement applications on top of FritzConnection.
 
