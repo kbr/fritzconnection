@@ -24,6 +24,7 @@ from .exceptions import (
     FritzServiceError,
 )
 from .soaper import Soaper
+from .utils import get_bool_env
 
 # disable InsecureRequestWarning from urllib3
 # because of skipping certificate verification:
@@ -202,12 +203,7 @@ class FritzConnection:
         if password is None:
             password = os.getenv(FRITZ_ENV_PASSWORD, "")
         if use_cache is None:
-            use_cache = os.getenv(FRITZ_ENV_USECACHE, None)
-            try:
-                use_cache = use_cache.lower() == 'true'
-            except AttributeError:
-                # in case use_cache is something else than None:
-                use_cache = None
+            use_cache = get_bool_env(FRITZ_ENV_USECACHE)
         if cache_format is None:
             cache_format = os.getenv(
                 FRITZ_ENV_CACHE_FORMAT, FRITZ_CACHE_FORMAT_PICKLE
@@ -239,6 +235,7 @@ class FritzConnection:
             address, port, user, password, timeout=timeout, session=session
         )
         self.device_manager = DeviceManager(timeout=timeout, session=session)
+        breakpoint()
         self._load_router_api(
             use_cache, cache_directory, cache_format, verify_cache
         )

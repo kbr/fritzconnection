@@ -21,6 +21,7 @@ from ..core.fritzconnection import (
     FRITZ_ENV_CACHEDIRECTORY,
     FRITZ_ENV_CACHE_FORMAT,
 )
+from ..core.utils import get_bool_env
 from .. import __version__
 
 
@@ -67,7 +68,7 @@ def get_cli_arguments(scan_additional_arguments=None):
                         nargs='?', default=False, const=True,
                         help='Flag: use secure connection (TLS)')
     parser.add_argument('-x', '--use-cache',
-                        default=os.getenv(FRITZ_ENV_USECACHE, False),
+                        default=get_bool_env(FRITZ_ENV_USECACHE, False),
                         action="store_true",
                         dest='use_cache',
                         help='Flag: use api cache (e[x]cellerate: speed-up subsequent '
