@@ -25,7 +25,7 @@ fritzconnection provides a basic API `call_action()` that takes a service- and a
     fc = FritzConnection(address='192.168.178.1')
     fc.call_action("WANIPConn1", "ForceTermination")
 
-With the `call_action()` method every service/action combination documented by the `AVM support-page (Apps/TR-064) <https://avm.de/service/schnittstellen/>`_ can get executed. If the call to the FritzOS-API provides information `call_action` returns a dictionary with the results.
+With the `call_action()` method every service/action combination documented by the `AVM support-page (Apps/TR-064) <https://avm.de/service/schnittstellen/>`_ can get executed. If the call to the FritzOS-API provides information `call_action()` returns a dictionary with the results.
 
 fritzconnection comes with a library to make some common tasks easier. For a detailed overview refer to :doc:`sources/getting_started` and the documentation of the :doc:`library <sources/library_modules>`.
 
