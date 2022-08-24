@@ -6,8 +6,12 @@ from collections import namedtuple
 from warnings import warn
 
 from .fritzbase import AbstractLibraryBase
-from .fritztools import format_num, format_rate, format_dB
-
+from .fritztools import (
+    ArgumentNamespace,
+    format_dB,
+    format_num,
+    format_rate,
+)
 
 DefaultConnectionService = namedtuple(
     "DefaultConnectionService",
@@ -318,6 +322,19 @@ class FritzStatus(AbstractLibraryBase):
         except KeyError:
             # can happen if "Hosts1" is not known
             return False
+
+    def get_device_info(self):
+        """
+        Returns an ArgumentNamespace with the attributes:
+
+        manufacturer_name, manufacturer_oui, model_name, description,
+        product_class, serial_number, software_version, hardware_version,
+        spec_version, provisioning_code, up_time, device_log
+
+        .. versionadded:: development
+
+        """
+        return ArgumentNamespace(fc.call_action("DeviceInfo1", "GetInfo"))
 
     def get_default_connection_service(self):
         """
