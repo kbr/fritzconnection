@@ -24,6 +24,7 @@ development
   - New property `device_has_mesh_support` (#146)
   - New method `get_default_connection_service` (#146)
   - New method `upnp_enabled()` (#153)
+  - New method `get_device_info()` (#155)
 
 - FritzWLAN:
 
