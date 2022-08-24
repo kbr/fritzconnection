@@ -34,7 +34,7 @@ development
   - requires opencv to check qr-codes
   - covering Python 3.11
 
-- New class `ArgumentNamespace` added in `fritzconnection.core.utils` for convenient handling of dictionaries returned from  `FritzConnection.call_action()` calls.
+- New class `ArgumentNamespace` added in `fritzconnection.lib.fritztools` for convenient handling of dictionaries returned from  `FritzConnection.call_action()` calls.
 - Better error message in case application access is disabled (#142)
 
 

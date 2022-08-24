@@ -117,14 +117,14 @@ class ArgumentNamespace(SimpleNamespace):
 
     If no mapping is given, then `ArgumentNamespace` will consume the
     provided dictionary converting all keys from "MixedCase" style to
-    "snake_case" and removing the leading "new" originating from the
-    AVM "New" prefix for all keys: ::
+    "snake_case" (PEP 8) and removes the leading "new" originating from
+    the AVM "New" prefix for all keys: ::
 
         >>> info = ArgumentNamespace(result)
         >>> info.up_time
         9516949
 
-    Setting the flag `suppress_new` to `False` will keep to prefix: ::
+    Setting the flag `suppress_new` to `False` will keep the prefix: ::
 
         >>> info = ArgumentNamespace(result, suppress_new=False)
         >>> info.new_up_time
@@ -142,13 +142,6 @@ class ArgumentNamespace(SimpleNamespace):
 
     If both arguments `mapping` and `extract` are given, `mapping` has
     precedence and `extract` gets ignored.
-
-    Providing a mapping gives control about converting attribute names
-    to other defined names and the number of attributes of the
-    `ArgumentNamespace` instance. Providing no mapping will convert all
-    attributes to snake_case and providing no mapping but a series of
-    original attribute names (by the argument `extract`) will extract
-    the given subset of attributes, also converted to snake_case.
 
     .. versionadded:: development
 
@@ -177,13 +170,17 @@ class ArgumentNamespace(SimpleNamespace):
     @staticmethod
     def rewrite_argument(name, suppress_new=True):
         """
-        Rewrite `name` from MixedCase to snake_case. So i.e. "MixedCase"
-        gets converted to "mixed_case". AVM standard argument names
-        starting with "New" like "NewMixedCase" will get converted to
-        "new_mixed_case". If `suppress_new` is `True` (the default) the
-        "new"-prefix will get removed, so "NewMixedCased" will get
-        converted to "mixed_case". Consecutive upper-case characters are
-        handled as a group: "ManufacturerOUI" -> "manufacturer_oui".
+        Rewrite `name` from MixedCase to snake_case (PEP 8). So i.e.
+        "MixedCase" gets converted to "mixed_case". AVM standard
+        argument names starting with "New" like "NewMixedCase" will get
+        converted to "new_mixed_case". If `suppress_new` is `True` (the
+        default) the "new"-prefix will get removed, so "NewMixedCased"
+        will get converted to "mixed_case". Consecutive upper-case
+        characters are handled as a group: "ManufacturerOUI" ->
+        "manufacturer_oui".
+
+        .. versionadded:: development
+
         """
         new = "new_"
         result = RE_UPPER_CASE.sub(r"_\1", name).lower()

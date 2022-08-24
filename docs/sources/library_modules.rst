@@ -444,7 +444,7 @@ Library-Tools
 
 Helper classes and functions for library-development.
 
-FritzBase
+fritzbase
 .........
 
 .. automodule:: fritzconnection.lib.fritzbase
@@ -452,7 +452,7 @@ FritzBase
     :members:
 
 
-FritzTools
+fritztools
 ..........
 
 .. automodule:: fritzconnection.lib.fritztools

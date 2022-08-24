@@ -376,10 +376,10 @@ With the argument `cache_directory` the location of the cache files can be speci
 .. note ::
     Default cache-format is `pickle`, which is compact, fast and can be considered safe as it is your own data. However, the `json` format is also supported. With the argument `cache_format` the format can set to `json`.
 
-After loading the api from a cache-file, the data are verified to be still valid for the given router-model and the current installed software version. In case the cache is outdated, the api-data are reloaded from the router and the cache-file gets updated. The verifying step requires a request to the router, which can take some milliseconds. With the argument `verify_cache=False` verifying can turned off.
+After loading the api from a cache-file, the data are verified to be still valid for the given router-model and the current installed software version. In case the cache is outdated, the api-data are reloaded from the router and the cache-file gets updated. The verifying step requires a request to the router, which can take some milliseconds. With the argument `verify_cache=False` verifying can turned off, loading the api even faster.
 
 .. warning ::
-    Deactivate verifying makes loading the api even faster, but the cache data may be outdated if something has changed on the router side (simple solution: delete the cache-file). However, this can happen with a long running process or you just didn't mention it. You be warned!
+    On deactivate verifying the cache data may be outdated if something has changed on the router side. (Simple solution: turn verifying on or delete the cache-file.) However, chances are that one didn't mention it until strange things happen.
 
 
 TLS-Encryption
