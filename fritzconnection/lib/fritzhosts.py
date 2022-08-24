@@ -201,7 +201,7 @@ class FritzHosts(AbstractLibraryBase):
         returned data in a list of dictionaries describing the known
         hosts.
 
-        .. versionadded:: development
+        .. versionadded:: 1.10
         """
         result = self._action("X_AVM-DE_GetHostListPath")
         url = result["NewX_AVM-DE_HostListPath"]

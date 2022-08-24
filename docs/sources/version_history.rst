@@ -4,8 +4,8 @@ Version History
 ===============
 
 
-development
------------
+1.10.0 - 2022-8-24
+------------------
 
 - FritzConnection
 
@@ -21,9 +21,9 @@ development
   - New property `connection_service`
   - New property `has_wan_support` (#162)
   - New property `has_wan_enabled` (#147)
+  - New property `upnp_enabled()` (#153)
   - New property `device_has_mesh_support` (#146)
   - New method `get_default_connection_service` (#146)
-  - New method `upnp_enabled()` (#153)
   - New method `get_device_info()` (#155)
 
 - FritzWLAN:

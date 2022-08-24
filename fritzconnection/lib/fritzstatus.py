@@ -331,7 +331,7 @@ class FritzStatus(AbstractLibraryBase):
         product_class, serial_number, software_version, hardware_version,
         spec_version, provisioning_code, up_time, device_log
 
-        .. versionadded:: development
+        .. versionadded:: 1.10
 
         """
         return ArgumentNamespace(fc.call_action("DeviceInfo1", "GetInfo"))

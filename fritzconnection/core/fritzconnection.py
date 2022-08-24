@@ -127,7 +127,7 @@ class FritzConnection:
     in the environment: FRITZ_USECACHE (True|False), FRITZ_CACHEFORMAT
     (json|pickle) and FRITZ_CACHEDIRECTORY (a path).
 
-    .. versionadded:: development
+    .. versionadded:: 1.10
     """
 
     def __init__(

@@ -143,7 +143,7 @@ class ArgumentNamespace(SimpleNamespace):
     If both arguments `mapping` and `extract` are given, `mapping` has
     precedence and `extract` gets ignored.
 
-    .. versionadded:: development
+    .. versionadded:: 1.10
 
     """
 
@@ -179,7 +179,7 @@ class ArgumentNamespace(SimpleNamespace):
         characters are handled as a group: "ManufacturerOUI" ->
         "manufacturer_oui".
 
-        .. versionadded:: development
+        .. versionadded:: 1.10
 
         """
         new = "new_"

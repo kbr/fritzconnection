@@ -40,7 +40,7 @@ def get_beacon_security(instance, security):
 
     This function is not intended to get called directly.
 
-    .. versionadded:: development
+    .. versionadded:: 1.10
     """
     if not security:
         info = instance.get_info()
@@ -100,7 +100,7 @@ def get_wifi_qr_code(instance, kind='svg',
 
     `scale` defines the size of the produced qr-code. Default value is 4.
 
-    .. versionadded:: development
+    .. versionadded:: 1.10
 
     """
     stream = io.BytesIO()
