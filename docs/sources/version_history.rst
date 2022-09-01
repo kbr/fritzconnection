@@ -4,8 +4,8 @@ Version History
 ===============
 
 
-development
------------
+1.10.1 - 2022-09-01
+-------------------
 
 - bugfix: cli argument forwarding (introduced in 1.10.0) (#164)
 - enhancement: cli flag `-y` to suppress cache-verification now implies `-x` (use cache)
