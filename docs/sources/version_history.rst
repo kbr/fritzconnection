@@ -4,7 +4,13 @@ Version History
 ===============
 
 
-1.10.0 - 2022-8-24
+development
+-----------
+
+- bugfix: cli argument forwarding (introduced in 1.10.0) (#164)
+
+
+1.10.0 - 2022-08-24
 ------------------
 
 - FritzConnection
