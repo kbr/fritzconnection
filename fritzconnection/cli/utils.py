@@ -35,6 +35,9 @@ def print_header(instance):
 
 
 def get_instance(cls, args):
+    # -y implies -x:
+    if not args.verify_cache:
+        args.use_cache = True
     return cls(
         address=args.address,
         port=args.port,
@@ -79,7 +82,7 @@ def get_cli_arguments(scan_additional_arguments=None):
                         action='store_false',
                         default=True,
                         dest='verify_cache',  # needs inverted boolean to suppress.
-                        help='suppress cache verification (at you own risk!)'
+                        help='Flag: suppress cache verification, implies -x'
                         )
     parser.add_argument('--cache-format',
                         nargs='?', default=os.getenv(

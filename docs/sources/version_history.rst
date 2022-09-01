@@ -8,10 +8,11 @@ development
 -----------
 
 - bugfix: cli argument forwarding (introduced in 1.10.0) (#164)
+- enhancement: cli flag `-y` to suppress cache-verification now implies `-x` (use cache)
 
 
 1.10.0 - 2022-08-24
-------------------
+-------------------
 
 - FritzConnection
 
