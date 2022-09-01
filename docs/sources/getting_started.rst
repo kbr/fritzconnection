@@ -22,7 +22,7 @@ To access the router in a local network, fritzconnection uses a default ip-addre
 
     FRITZ_IP_ADDRESS = '169.254.1.1'
 
-This ip-adress is a fallback-address common to every fritzbox-router, regardless of the individual configuration. In case of more than a single router in the local network (i.e. multiple Fritz!Boxes building a Mesh or connected by LAN building multiple WLAN access-points) the command line option :command:`-i` (or the keyword-argument `address` for module usage) is required to provide the device-ip, otherwise it is not defined which device will respond.
+This ip-adress is a fallback-address common to every fritzbox-router, regardless of the individual configuration. If there are multiple devices in the local network, i.e. for building a Mesh, then it is necessary to provide the ip for the requested device, either at the command line with the option :command:`-i` or the keyword-argument `address` for module usage. Otherwise it is not defined which device will respond.
 
 
 Username and password
@@ -59,10 +59,10 @@ Installing fritzconnection by pip will also install the command line tool `fritz
                             Fritzbox authentication password
       -e [ENCRYPT], --encrypt [ENCRYPT]
                             Flag: use secure connection (TLS)
-      -x, --use-cache       Flag: use api cache (e[x]cellerate: speed-up
-                            subsequent instanciations)
+      -x, --use-cache       Flag: use api cache
+                            (speed-up subsequent instanciations)
       -y, --suppress-cache-verification
-                            suppress cache verification (at you own risk!)
+                            Flag: suppress cache verification, implies -x
       --cache-format [CACHE_FORMAT]
                             cache-file format: json|pickle (default: pickle)
       --cache-directory [CACHE_DIRECTORY]
