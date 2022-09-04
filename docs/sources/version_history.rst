@@ -4,7 +4,7 @@ Version History
 ===============
 
 
-1.10.2 - 2002-09-04
+1.10.2 - 2022-09-04
 -------------------
 
 - bugfix: missing `self` in `FritzStatus.get_device_info()` (introduced in 1.10.0) (#165)
