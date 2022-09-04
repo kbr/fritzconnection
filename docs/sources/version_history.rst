@@ -4,6 +4,13 @@ Version History
 ===============
 
 
+1.10.2 - 2002-09-04
+-------------------
+
+- bugfix: missing `self` in `FritzStatus.get_device_info()` (introduced in 1.10.0) (#165)
+- dependencies pinned for `requests` not supporting Python 3.6 since version 2.28.0 and for `segno` (which still works with EOL versions).
+
+
 1.10.1 - 2022-09-01
 -------------------
 
