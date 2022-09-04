@@ -334,7 +334,7 @@ class FritzStatus(AbstractLibraryBase):
         .. versionadded:: 1.10
 
         """
-        return ArgumentNamespace(fc.call_action("DeviceInfo1", "GetInfo"))
+        return ArgumentNamespace(self.fc.call_action("DeviceInfo1", "GetInfo"))
 
     def get_default_connection_service(self):
         """
