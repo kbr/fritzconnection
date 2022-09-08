@@ -4,6 +4,12 @@ Version History
 ===============
 
 
+1.10.3 - 2022-09-08
+-------------------
+
+- upper limit for dependency pinning removed to support installation on more recent environments.
+
+
 1.10.2 - 2022-09-04
 -------------------
 
