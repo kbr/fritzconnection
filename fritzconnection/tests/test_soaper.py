@@ -1,5 +1,4 @@
 import datetime
-from unittest.mock import patch
 from xml.etree import ElementTree as etree
 
 import pytest
@@ -23,7 +22,6 @@ from ..core.exceptions import (
 )
 
 from ..core.soaper import (
-    Soaper,
     boolean_convert,
     encode_boolean,
     get_argument_value,
@@ -236,35 +234,3 @@ def test_get_converted_value(data_type, value, expected_value):
 def test_get_converted_value_fails(data_type, value):
     with pytest.raises(ValueError):
         get_converted_value(data_type, value)
-
-
-box_info_response = """
-<j:BoxInfo xmlns:j="http://jason.avm.de/updatecheck/">
-    <j:Name>FRITZ!Box 7590</j:Name>
-    <j:HW>226</j:HW>
-    <j:Version>100.01.01</j:Version>
-    <j:Revision>10000</j:Revision>
-    <j:Serial>000A0B000000</j:Serial>
-    <j:OEM>avm</j:OEM>
-    <j:Lang>de</j:Lang>
-    <j:Annex>B</j:Annex>
-    <j:Lab></j:Lab>
-    <j:Country>049</j:Country>
-    <j:Flag>mesh_master</j:Flag>
-    <j:UpdateConfig>3</j:UpdateConfig>
-</j:BoxInfo>
-"""
-
-def test_get_response():
-    soap = Soaper("169.254.1.1", 49000, "admin", "pwd")
-    response = Response()
-    response.status_code = 200
-    response.text = box_info_response
-    response.content = box_info_response.encode()
-    with patch("fritzconnection.core.soaper.requests.get", return_value=response) as request_mock:
-        box_info = soap.get_response("jason_boxinfo.xml")
-        assert box_info["Name"] == "FRITZ!Box 7590"
-        assert box_info["Serial"] == "000A0B000000"
-        request_mock.assert_called_once_with(
-            "169.254.1.1/jason_boxinfo.xml", timeout=None, verify=False
-        )
