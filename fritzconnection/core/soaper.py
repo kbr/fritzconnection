@@ -297,3 +297,29 @@ class Soaper:
                 pass
             result[argument_name] = value
         return result
+
+    def get_response(self, path):
+        """
+        Perform a get request to the path endpoint.
+        Parse response as xml and return a dict with child tags.
+        """
+
+        def handle_response(response):
+            fritzlogger.debug(f"response status: {response.status_code}")
+            fritzlogger.debug(response.text)
+            if response.status_code != 200:
+                raise_fritzconnection_error(response)
+            root = etree.fromstring(response.content)
+            return {
+                child.tag.split("}")[-1]: child.text
+                for child in root
+            }
+
+        url = f"{self.address}/{path}"
+        fritzlogger.debug(f"\n{url}")
+        if self.session:
+            with self.session.get(url, timeout=self.timeout) as response:
+                return handle_response(response)
+
+        response = requests.get(url, timeout=self.timeout, verify=False)
+        return handle_response(response)

@@ -389,6 +389,13 @@ class FritzConnection:
         """
         self.call_action("DeviceConfig1", "Reboot")
 
+    def get_box_info(self):
+        """
+        Return dict with BoxInfo. Doesn't required specially permission
+        or authorization.
+        """
+        return self.soaper.get_response("jason_boxinfo.xml")
+
     # -------------------------------------------
     # internal methods to load router-api:
     # -------------------------------------------
