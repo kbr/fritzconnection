@@ -24,7 +24,7 @@ from .exceptions import (
     FritzServiceError,
 )
 from .soaper import Soaper
-from .utils import get_bool_env
+from .utils import get_bool_env, get_xml_root, localname
 
 # disable InsecureRequestWarning from urllib3
 # because of skipping certificate verification:
@@ -38,6 +38,7 @@ FRITZ_IP_ADDRESS = "169.254.1.1"
 FRITZ_TCP_PORT = 49000
 FRITZ_TLS_PORT = 49443
 FRITZ_USERNAME = "dslf-config"  # for Fritz!OS < 7.24
+FRITZ_BOXINFO_FILE = "jason_boxinfo.xml"
 FRITZ_IGD_DESC_FILE = "igddesc.xml"
 FRITZ_TR64_DESC_FILE = "tr64desc.xml"
 FRITZ_DESCRIPTIONS = [FRITZ_IGD_DESC_FILE, FRITZ_TR64_DESC_FILE]
@@ -277,6 +278,19 @@ class FritzConnection:
         version.
         """
         return self.call_action("DeviceInfo1", "GetInfo")["NewDescription"]
+
+    @property
+    def updatecheck(self):
+        """
+        Dictionary with information about the hard- and software version of
+        the device (http://fritz.box/jason_boxinfo.xml).
+        """
+        xml_data = get_xml_root(
+            f"{self.address}/{FRITZ_BOXINFO_FILE}",
+            timeout=self.timeout,
+            session=self.session
+        )
+        return {localname(elem): elem.text for elem in xml_data}
 
     @staticmethod
     def normalize_name(name):
