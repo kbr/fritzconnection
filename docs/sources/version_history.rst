@@ -4,6 +4,15 @@ Version History
 ===============
 
 
+development
+-----------
+
+- FritzConnection
+
+  - New property `updatecheck` allows access to router attributes without permissions (#168)
+  - Faster cache validation.
+
+
 1.10.3 - 2022-09-08
 -------------------
 
