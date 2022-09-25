@@ -18,6 +18,7 @@ from xml.etree import ElementTree as etree
 from .exceptions import (
     FritzConnectionException,
     FRITZ_ERRORS,
+    FritzSecurityError,
 )
 from .logger import fritzlogger
 from .utils import localname
@@ -136,6 +137,11 @@ def raise_fritzconnection_error(response):
     """
     parts = []
     error_code = None
+
+    # raise on authorization error
+    if response.status_code == 401:
+        raise FritzSecurityError(response.text)
+
     try:
         root = etree.fromstring(response.content)
     except etree.ParseError:
