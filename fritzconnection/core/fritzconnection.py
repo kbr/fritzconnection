@@ -12,7 +12,6 @@ import os
 import pickle
 import string
 import xml.etree.ElementTree as ElementTree
-from functools import cached_property
 from pathlib import Path
 
 import requests
@@ -231,6 +230,9 @@ class FritzConnection:
         adapter = requests.adapters.HTTPAdapter(
             pool_connections=pool_connections, pool_maxsize=pool_maxsize)
         session.mount(PROTOCOLS[use_tls], adapter)
+        # cache for updatecheck as @functools.cached_property
+        # needs Python >= 3.8:
+        self._updatecheck = None
         # store as instance attributes for use by library modules
         self.address = address
         self.session = session
@@ -284,18 +286,22 @@ class FritzConnection:
         """
         return self.call_action("DeviceInfo1", "GetInfo")["NewDescription"]
 
-    @cached_property
+    @property
     def updatecheck(self):
         """
         Dictionary with information about the hard- and software version of
         the device according to "http://fritz.box/jason_boxinfo.xml".
         """
-        xml_data = get_xml_root(
-            f"{self.address}/{FRITZ_BOXINFO_FILE}",
-            timeout=self.timeout,
-            session=self.session
-        )
-        return {localname(elem): elem.text for elem in xml_data}
+        if self._updatecheck is None:
+            xml_data = get_xml_root(
+                f"{self.address}/{FRITZ_BOXINFO_FILE}",
+                timeout=self.timeout,
+                session=self.session
+            )
+            self._updatecheck = {
+                localname(elem): elem.text for elem in xml_data
+            }
+        return self._updatecheck
 
     @staticmethod
     def normalize_name(name):
