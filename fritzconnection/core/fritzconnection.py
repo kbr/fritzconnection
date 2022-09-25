@@ -12,6 +12,7 @@ import os
 import pickle
 import string
 import xml.etree.ElementTree as ElementTree
+from functools import cached_property
 from pathlib import Path
 
 import requests
@@ -24,7 +25,11 @@ from .exceptions import (
     FritzServiceError,
 )
 from .soaper import Soaper
-from .utils import get_bool_env, get_xml_root, localname
+from .utils import (
+    get_bool_env,
+    get_xml_root,
+    localname
+)
 
 # disable InsecureRequestWarning from urllib3
 # because of skipping certificate verification:
@@ -279,11 +284,11 @@ class FritzConnection:
         """
         return self.call_action("DeviceInfo1", "GetInfo")["NewDescription"]
 
-    @property
+    @cached_property
     def updatecheck(self):
         """
         Dictionary with information about the hard- and software version of
-        the device (http://fritz.box/jason_boxinfo.xml).
+        the device according to "http://fritz.box/jason_boxinfo.xml".
         """
         xml_data = get_xml_root(
             f"{self.address}/{FRITZ_BOXINFO_FILE}",
