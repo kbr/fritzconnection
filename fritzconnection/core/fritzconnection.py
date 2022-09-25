@@ -467,16 +467,17 @@ class FritzConnection:
             self.device_manager.modelname,
             self.device_manager.system_info[-1]
         )
-        # retrive the same information from an api call. If the result
-        # is the same, the cache-data can considered as valid.
+        # retrive the same information from the updatecheck property.
+        # If the result is the same, the cache-data can considered as valid.
         try:
-            device_info = self.call_action("DeviceInfo:1", "GetInfo")
+            device_info = self.updatecheck
         except FritzConnectionException:
-            # something went wrong, cache data can not be verified.
+            # something went wrong, cache data can not be verified:
+            # should never happen with a connected device.
             return False
         current_id = (
-            device_info['NewModelName'],
-            device_info['NewSoftwareVersion']
+            device_info['Name'],
+            device_info['Version']
         )
         return cached_id == current_id
 
