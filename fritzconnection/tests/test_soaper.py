@@ -4,11 +4,9 @@ from xml.etree import ElementTree as etree
 import pytest
 
 from ..core.exceptions import (
-    FRITZ_ERRORS,
     ActionError,
     FritzAuthorizationError,
     FritzConnectionException,
-    ServiceError,
     FritzActionError,
     FritzArgumentError,
     FritzActionFailedError,
