@@ -16,9 +16,9 @@ from requests.auth import HTTPDigestAuth
 from xml.etree import ElementTree as etree
 
 from .exceptions import (
+    FritzAuthorizationError,
     FritzConnectionException,
     FRITZ_ERRORS,
-    FritzSecurityError,
 )
 from .logger import fritzlogger
 from .utils import localname
@@ -26,6 +26,7 @@ from .utils import localname
 
 SOAP_NS = "http://schemas.xmlsoap.org/soap/envelope/"
 
+STATUS_UNAUTHORIZED = 401
 
 def datetime_convert(value):
     """
@@ -138,10 +139,6 @@ def raise_fritzconnection_error(response):
     parts = []
     error_code = None
 
-    # raise on authorization error
-    if response.status_code == 401:
-        raise FritzSecurityError(response.text)
-
     try:
         root = etree.fromstring(response.content)
     except etree.ParseError:
@@ -153,7 +150,10 @@ def raise_fritzconnection_error(response):
         # Whatever it is, report it here:
         detail = re.sub(r"<.*?>", "", response.text)
         msg = f"Unable to perform operation. {detail}"
+        if response.status_code == STATUS_UNAUTHORIZED:
+            raise FritzAuthorizationError(msg)
         raise FritzConnectionException(msg)
+
     detail = root.find(".//detail")
     children = detail.iter()
     next(children)  # skip detail itself
