@@ -4,9 +4,9 @@ from xml.etree import ElementTree as etree
 import pytest
 
 from ..core.exceptions import (
-    FRITZ_ERRORS,
     ActionError,
-    ServiceError,
+    FritzAuthorizationError,
+    FritzConnectionException,
     FritzActionError,
     FritzArgumentError,
     FritzActionFailedError,
@@ -82,6 +82,19 @@ def test_raise_fritzconnection_error(error_code, exception):
     response.content = content.encode()
     pytest.raises(exception, raise_fritzconnection_error, response)
 
+def test_raise_fritzauthorization_error():
+    """check for exception raising depending on the html status code."""
+    response = Response()
+    response.content = b'<HTML><HEAD><TITLE>401 Unauthorized (ERR_NONE)</TITLE></HEAD><BODY><H1>401 Unauthorized</H1><BR>ERR_NONE<HR><B>Webserver</B> Sat, 01 Oct 2022 09:46:22 GMT</BODY></HTML>'
+    response.text = '<HTML><HEAD><TITLE>401 Unauthorized (ERR_NONE)</TITLE></HEAD><BODY><H1>401 Unauthorized</H1><BR>ERR_NONE<HR><B>Webserver</B> Sat, 01 Oct 2022 09:46:22 GMT</BODY></HTML>'
+    response.status_code = 401
+    pytest.raises(FritzAuthorizationError, raise_fritzconnection_error, response)
+
+    # simulate a http/500
+    response.content = b'<HTML><HEAD><TITLE>500 internal error</TITLE></HEAD><BODY><H1>500 internal error</H1><BR>ERR_NONE<HR><B>Webserver</B> Sat, 01 Oct 2022 09:46:22 GMT</BODY></HTML>'
+    response.text = '<HTML><HEAD><TITLE>500 internal error</TITLE></HEAD><BODY><H1>500 internal error</H1><BR>ERR_NONE<HR><B>Webserver</B> Sat, 01 Oct 2022 09:46:22 GMT</BODY></HTML>'
+    response.status_code = 500
+    pytest.raises(FritzConnectionException, raise_fritzconnection_error, response)
 
 @pytest.mark.parametrize(
     "value, expected_result", [

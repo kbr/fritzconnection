@@ -170,6 +170,11 @@ class FritzArrayIndexError(FritzConnectionException, IndexError):
     So IndexError can also be used for exception handling.
     """
 
+class FritzAuthorizationError(FritzConnectionException):
+    """
+    Authentication error. 
+    Not allowed to access the box at all.
+    """
 
 # Collection of error codes and corresponding exceptions:
 # (the error codes are defined by AVM)
