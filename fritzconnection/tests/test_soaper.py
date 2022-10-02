@@ -83,7 +83,7 @@ def test_raise_fritzconnection_error(error_code, exception):
     pytest.raises(exception, raise_fritzconnection_error, response)
 
 def test_raise_fritzauthorization_error():
-    """check for exception raising depending on the error_code"""
+    """check for exception raising depending on the html status code."""
     response = Response()
     response.content = b'<HTML><HEAD><TITLE>401 Unauthorized (ERR_NONE)</TITLE></HEAD><BODY><H1>401 Unauthorized</H1><BR>ERR_NONE<HR><B>Webserver</B> Sat, 01 Oct 2022 09:46:22 GMT</BODY></HTML>'
     response.text = '<HTML><HEAD><TITLE>401 Unauthorized (ERR_NONE)</TITLE></HEAD><BODY><H1>401 Unauthorized</H1><BR>ERR_NONE<HR><B>Webserver</B> Sat, 01 Oct 2022 09:46:22 GMT</BODY></HTML>'
