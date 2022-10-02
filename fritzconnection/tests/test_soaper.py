@@ -79,7 +79,6 @@ def test_raise_fritzconnection_error(error_code, exception):
     """check for exception raising depending on the error_code"""
     content = content_template.format(error_code=error_code)
     response = Response()
-    response.status_code = 500
     response.content = content.encode()
     pytest.raises(exception, raise_fritzconnection_error, response)
 
@@ -137,7 +136,6 @@ UPnPError </faultstring>
 
 def test_long_error_message():
     response = Response()
-    response.status_code = 500
     response.content = long_error.encode()
     with pytest.raises(ActionError) as exc:
         raise_fritzconnection_error(response)
