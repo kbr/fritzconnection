@@ -14,7 +14,7 @@ development
 
 - Exceptions:
 
-  - New FritzAuthorizationError raised on calling actions without the proper permissions (#170)
+  - New `FritzAuthorizationError` raised on calling actions without the proper permissions (#170)
 
 
 1.10.3 - 2022-09-08
