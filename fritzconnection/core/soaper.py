@@ -143,7 +143,7 @@ def remove_html_tags(text):
     Returns the given string `response_text` with all tags removed.
     """
     tag_free = re.sub(r"<.*?>", " ", text)
-    return re.sub(r" +", " ", tag_free)  # make it nice
+    return re.sub(r" +", " ", tag_free).strip()  # make it nice
 
 
 def raise_fritzconnection_error(response):

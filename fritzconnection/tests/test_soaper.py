@@ -28,7 +28,9 @@ from ..core.soaper import (
     get_argument_value,
     get_converted_value,
     get_html_safe_value,
+    is_html_response,
     raise_fritzconnection_error,
+    remove_html_tags,
 )
 
 
@@ -120,6 +122,35 @@ def test_boolean_convert(value, expected_result):
 def test_boolean_convert_fails(value):
     with pytest.raises(ValueError):
         boolean_convert(value)
+
+
+@pytest.mark.parametrize(
+    "text, expected_result", [
+        ('<html>something</html>', True),
+        ('<?xml version= ...', False),
+    ]
+)
+def test_is_html_response(text, expected_result):
+    result = is_html_response(text)
+    assert result == expected_result
+
+
+@pytest.mark.parametrize(
+    "text, expected_result", [
+        ("funky", "funky"),
+        ("funky funky", "funky funky"),
+        ("funky  funky", "funky funky"),
+        ("<bold>here</bold>", "here"),
+        ("<bold>ham <i>spam</i><hr>and eggs </bold>", "ham spam and eggs"),
+        (
+            "<html><head>failure</head><body>something <b>very</b><hr /><i>strange</i></body></html>",
+            "failure something very strange",
+        )
+    ]
+)
+def test_remove_html_tags(text, expected_result):
+    result = remove_html_tags(text)
+    assert result == expected_result
 
 
 long_error = """
