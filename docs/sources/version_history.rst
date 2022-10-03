@@ -7,10 +7,14 @@ Version History
 development
 -----------
 
-- FritzConnection
+- FritzConnection:
 
   - New property `updatecheck` allows access to router attributes without permissions (#168)
   - Faster cache validation.
+
+- Exceptions:
+
+  - New FritzAuthorizationError raised on calling actions without the proper permissions (#170)
 
 
 1.10.3 - 2022-09-08
@@ -36,7 +40,7 @@ development
 1.10.0 - 2022-08-24
 -------------------
 
-- FritzConnection
+- FritzConnection:
 
   - API cache integration added: for faster start up times the router API can optional get saved in a cache-file. This can save up to several seconds run-time on instanciation.
 
