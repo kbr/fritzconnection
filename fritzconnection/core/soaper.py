@@ -25,8 +25,8 @@ from .utils import localname
 
 
 SOAP_NS = "http://schemas.xmlsoap.org/soap/envelope/"
-
 STATUS_UNAUTHORIZED = 401
+
 
 def datetime_convert(value):
     """
@@ -130,6 +130,22 @@ def get_argument_value(root, argument_name):
     return value
 
 
+def is_html_response(text):
+    """
+    Returns a boolean whether the raw response text starts with an
+    html-tag.
+    """
+    return text.casefold().startswith("<html")
+
+
+def remove_html_tags(text):
+    """
+    Returns the given string `response_text` with all tags removed.
+    """
+    tag_free = re.sub(r"<.*?>", " ", text)
+    return re.sub(r" +", " ", tag_free)  # make it nice
+
+
 def raise_fritzconnection_error(response):
     """
     Handles all responses with status codes other than 200.
@@ -140,11 +156,11 @@ def raise_fritzconnection_error(response):
     parts = []
     error_code = None
 
-    if response.text.casefold().startswith("<html"):
-        # it is a html response, so the error is described in the
+    if is_html_response(response.text):
+        # if it is an html response, the error is described in the
         # body part: remove all tags and provide the result as
         # error-message:
-        detail = re.sub(r"<.*?>", "", response.text)
+        detail = remove_html_tags(response.text)
         msg = f"Unable to perform operation. {detail}"
         if response.status_code == STATUS_UNAUTHORIZED:
             raise FritzAuthorizationError(msg)
