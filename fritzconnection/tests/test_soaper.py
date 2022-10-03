@@ -1,4 +1,5 @@
 import datetime
+import types
 from xml.etree import ElementTree as etree
 
 import pytest
@@ -49,42 +50,47 @@ content_template = """
 """
 
 
-class Response:
-    """Namespace object."""
-
-
 @pytest.mark.parametrize(
-    "error_code, exception", [
-        ('401', FritzActionError),
-        ('402', FritzArgumentError),
-        ('501', FritzActionFailedError),
-        ('600', FritzArgumentValueError),
-        ('603', FritzOutOfMemoryError),
-        ('606', FritzSecurityError),
-        ('713', FritzArrayIndexError),
-        ('714', FritzLookUpError),
-        ('801', FritzArgumentStringToShortError),
-        ('802', FritzArgumentStringToLongError),
-        ('803', FritzArgumentCharacterError),
-        ('820', FritzInternalError),
+    "error_code, status_code, exception", [
+        ('401', 500, FritzActionError),
+        ('402', 500, FritzArgumentError),
+        ('501', 500, FritzActionFailedError),
+        ('600', 500, FritzArgumentValueError),
+        ('603', 500, FritzOutOfMemoryError),
+        ('606', 500, FritzSecurityError),
+        ('713', 500, FritzArrayIndexError),
+        ('714', 500, FritzLookUpError),
+        ('801', 500, FritzArgumentStringToShortError),
+        ('802', 500, FritzArgumentStringToLongError),
+        ('803', 500, FritzArgumentCharacterError),
+        ('820', 500, FritzInternalError),
 
-        ('713', IndexError),
-        ('714', KeyError),
+        ('713', 500, IndexError),
+        ('714', 500, KeyError),
 
-        ('401', ActionError),
+        ('401', 500, ActionError),
+
+        (None, 401, FritzAuthorizationError),
+        (None, 500, FritzConnectionException),
 
     ]
 )
-def test_raise_fritzconnection_error(error_code, exception):
+def test_raise_fritzconnection_error(error_code, status_code, exception):
     """check for exception raising depending on the error_code"""
-    content = content_template.format(error_code=error_code)
-    response = Response()
+    if error_code:
+        content = content_template.format(error_code=error_code)
+    else:
+        content = '<html>some content</html>'
+    response = types.SimpleNamespace()
+    response.text = content
     response.content = content.encode()
+    response.status_code = status_code
     pytest.raises(exception, raise_fritzconnection_error, response)
+
 
 def test_raise_fritzauthorization_error():
     """check for exception raising depending on the html status code."""
-    response = Response()
+    response = types.SimpleNamespace()
     response.content = b'<HTML><HEAD><TITLE>401 Unauthorized (ERR_NONE)</TITLE></HEAD><BODY><H1>401 Unauthorized</H1><BR>ERR_NONE<HR><B>Webserver</B> Sat, 01 Oct 2022 09:46:22 GMT</BODY></HTML>'
     response.text = '<HTML><HEAD><TITLE>401 Unauthorized (ERR_NONE)</TITLE></HEAD><BODY><H1>401 Unauthorized</H1><BR>ERR_NONE<HR><B>Webserver</B> Sat, 01 Oct 2022 09:46:22 GMT</BODY></HTML>'
     response.status_code = 401
@@ -95,6 +101,7 @@ def test_raise_fritzauthorization_error():
     response.text = '<HTML><HEAD><TITLE>500 internal error</TITLE></HEAD><BODY><H1>500 internal error</H1><BR>ERR_NONE<HR><B>Webserver</B> Sat, 01 Oct 2022 09:46:22 GMT</BODY></HTML>'
     response.status_code = 500
     pytest.raises(FritzConnectionException, raise_fritzconnection_error, response)
+
 
 @pytest.mark.parametrize(
     "value, expected_result", [
@@ -135,7 +142,8 @@ UPnPError </faultstring>
 
 
 def test_long_error_message():
-    response = Response()
+    response = types.SimpleNamespace()
+    response.text = long_error
     response.content = long_error.encode()
     with pytest.raises(ActionError) as exc:
         raise_fritzconnection_error(response)

@@ -133,27 +133,32 @@ def get_argument_value(root, argument_name):
 def raise_fritzconnection_error(response):
     """
     Handles all responses with status codes other than 200.
-    Will raise the relevant FritzConnectionException with
-    the error code and description if available
+    Will raise a FritzConnectionException with the error code and
+    description if available. Can also raise a FritzAuthorizationError
+    in case of 401 html-response status code.
     """
     parts = []
     error_code = None
 
-    try:
-        root = etree.fromstring(response.content)
-    except etree.ParseError:
-        # May fail in case it's html instead of xml.
-        # Can happen on wrong authentication.
-        # That means it is not an error reported from executing
-        # some service in the box, but rather not allowed to
-        # access the box at all.
-        # Whatever it is, report it here:
+    if response.text.casefold().startswith("<html"):
+        # it is a html response, so the error is described in the
+        # body part: remove all tags and provide the result as
+        # error-message:
         detail = re.sub(r"<.*?>", "", response.text)
         msg = f"Unable to perform operation. {detail}"
         if response.status_code == STATUS_UNAUTHORIZED:
             raise FritzAuthorizationError(msg)
         raise FritzConnectionException(msg)
 
+    # otherwise the content is xml and the error-description
+    # is part of the structured xml info:
+    try:
+        root = etree.fromstring(response.content)
+    except etree.ParseError as err:
+        # should not happen (at least not observed so far)
+        raise FritzConnectionException(str(err))
+
+    # extract error information from the provided xml data
     detail = root.find(".//detail")
     children = detail.iter()
     next(children)  # skip detail itself
