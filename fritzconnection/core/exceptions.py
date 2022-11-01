@@ -16,6 +16,8 @@ Module defining fritzconnection specific exceptions.
 #                 |--> ActionError --> FritzActionError
 #                 |--> ServiceError --> FritzServiceError
 #                 |
+#                 |--> FritzAuthorizationError
+#                 |
 #                 |--> FritzResourceError
 #                 |
 #                 |--> FritzArgumentError
@@ -56,6 +58,7 @@ __all__ = [
     'FritzArgumentStringToShortError',
     'FritzArgumentValueError',
     'FritzArrayIndexError',
+    'FritzAuthorizationError',
     'FritzInternalError',
     'FritzLookUpError',
     'FritzOutOfMemoryError',
@@ -172,7 +175,7 @@ class FritzArrayIndexError(FritzConnectionException, IndexError):
 
 class FritzAuthorizationError(FritzConnectionException):
     """
-    Authentication error. 
+    Authentication error.
     Not allowed to access the box at all.
     """
 
