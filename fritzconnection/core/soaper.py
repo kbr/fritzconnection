@@ -254,7 +254,7 @@ class Soaper:
             arguments=arguments,
         )
 
-    def execute(self, service, action_name, arguments):
+    def execute(self, service, action_name, arguments, use_public_connection):
         """
         Builds the soap request and returns the response as dictionary.
         Numeric and boolean values are converted from strings to Python
@@ -276,7 +276,10 @@ class Soaper:
         )
         body = self.get_body(service, action_name, arguments)
         envelope = self.envelope.format(body=body).encode("utf-8")
-        url = f"{self.address}:{self.port}{service.controlURL}"
+        additional_folder = ''
+        if use_public_connection:
+            additional_folder = '/tr064'
+        url = f"{self.address}:{self.port}{additional_folder}{service.controlURL}"
         fritzlogger.debug(f"\n{url}")
         fritzlogger.debug(envelope)
         if self.session:

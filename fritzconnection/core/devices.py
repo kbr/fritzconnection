@@ -84,14 +84,14 @@ class DeviceManager:
         for description in self.descriptions:
             self.services.update(description.services)
 
-    def load_service_descriptions(self, address, port):
+    def load_service_descriptions(self, address, port, use_public_connection):
         """
         Triggers the load of the scpd files of the services, so they
         known their actions.
         """
         for service in self.services.values():
             service.load_scpd(
-                address, port, timeout=self.timeout, session=self.session
+                address, port, use_public_connection, timeout=self.timeout, session=self.session
             )
 
     def serialize(self):

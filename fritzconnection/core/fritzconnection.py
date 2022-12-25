@@ -459,7 +459,7 @@ class FritzConnection:
             service = self.device_manager.services[service_name]
         except KeyError:
             raise FritzServiceError(f'unknown service: "{service_name}"')
-        return self.soaper.execute(service, action_name, arguments)
+        return self.soaper.execute(service, action_name, arguments, self.use_public_connection)
 
     def call_http(
         self,
@@ -677,4 +677,4 @@ class FritzConnection:
                         FRITZ_APPLICATION_ACCESS_DISABLED
                     )
         self.device_manager.scan()
-        self.device_manager.load_service_descriptions(self.address, self.port)
+        self.device_manager.load_service_descriptions(self.address, self.port, self.use_public_connection)
