@@ -4,8 +4,8 @@ Version History
 ===============
 
 
-development
------------
+1.11.0 - 2023-01-28
+-------------------
 
 - FritzConnection:
 
