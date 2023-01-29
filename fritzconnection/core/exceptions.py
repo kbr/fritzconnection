@@ -16,6 +16,8 @@ Module defining fritzconnection specific exceptions.
 #                 |--> ActionError --> FritzActionError
 #                 |--> ServiceError --> FritzServiceError
 #                 |
+#                 |--> FritzAHAInterfaceError
+#                 |
 #                 |--> FritzResourceError
 #                 |
 #                 |--> FritzArgumentError
@@ -50,6 +52,7 @@ __all__ = [
     'FritzConnectionException',
     'FritzActionError',
     'FritzActionFailedError',
+    'FritzAHAInterfaceError',
     'FritzArgumentCharacterError',
     'FritzArgumentError',
     'FritzArgumentStringToLongError',
@@ -89,6 +92,13 @@ class FritzServiceError(ServiceError):
 
 class FritzActionError(ActionError):
     """Exception raised by calling non-existing actions."""
+
+
+class FritzAHAInterfaceError(FritzConnectionException):
+    """
+    Exception raised on calling the aha-interface and getting an
+    response with a status-code other than 200.
+    """
 
 
 class FritzResourceError(FritzConnectionException):
@@ -172,7 +182,7 @@ class FritzArrayIndexError(FritzConnectionException, IndexError):
 
 class FritzAuthorizationError(FritzConnectionException):
     """
-    Authentication error. 
+    Authentication error.
     Not allowed to access the box at all.
     """
 
