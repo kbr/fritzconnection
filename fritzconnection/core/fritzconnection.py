@@ -249,7 +249,7 @@ class FritzConnection:
         )
         # set default user for FritzOS >= 7.24:
         self._reset_user(user, password)
-        # provide also the aha-html-interface
+        # provide also the http-interface for more homeautomation tasks
         self.http_interface = FritzHttp(self)
 
     def __repr__(self):
@@ -409,7 +409,12 @@ class FritzConnection:
             raise FritzServiceError(f'unknown service: "{service_name}"')
         return self.soaper.execute(service, action_name, arguments)
 
-    def call_http(self, command, identifier=None, **kwargs):
+    def call_http(
+        self,
+        command,
+        identifier=None,
+        **kwargs
+    ):
         """
         Excecutes the given command by means of the http-interface. This
         can be useful for homeautomation-task currently not provided by
