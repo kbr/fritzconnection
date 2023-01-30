@@ -69,6 +69,11 @@ class FritzHttp:
         response-text as is. On error raises a FritzAuthorizationError
         if the error code was 403 otherwise raises a generic
         FritzConnectionException with the corresponding error-code.
+
+        The `command` is a string like 'getswitchlist' or
+        'getbasicdevicestats' according to the AVM AHA documentation.
+
+        The `identifier` is a string, representing a device-ain.
         """
         payload = {"switchcmd": command, "ain": identifier}
         payload.update(kwargs)
