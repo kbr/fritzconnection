@@ -11,6 +11,7 @@ Access the AVM Fritz!Box AHA-HTTP-Inferface
 
 import hashlib
 from http import HTTPStatus
+from http.client import HTTP_PORT
 
 from fritzconnection.core.exceptions import (
     FritzAHAInterfaceError,
@@ -26,20 +27,48 @@ PBKDF2_CHALLENGE_INDICATOR = "2$"
 class FritzHttp:
     """
     Implementation for the AVM AHA-HTTP-Inferface.
+
+    The current implementation does not handle a blocktime timeout so
+    far. This is because the communication is based on a
+    fritzconnection-session and the proper credentials are already
+    handled there.
+
+    There may be the side-effect that someone else messes up with the
+    login of the human web-interface while this script is running. In
+    this case the aha-interface login will not return a valid sid until
+    blocktime runs out.
     """
     def __init__(self, fc):
-        self.fc = fc  # fc is a fritzconnection instance.
+        self.fc = fc  # the active fritzconnection instance
         self.sid = None
-        self.login_url = f"{self.fc.address}{URL_LOGIN}"
-        self.homeauto_url = f"{self.fc.address}{URL_HOMEAUTOSWITCH}"
+
+    @property
+    def remote_port(self):
+        """
+        Provides the configurable https port for the aha-interface as int.
+        """
+        if self.fc.address.startswith("https"):
+            data = self.fc.call_action("X_AVM-DE_RemoteAccess1", "GetInfo")
+            return int(data["NewPort"])  # provide same type as HTTP_PORT
+        return HTTP_PORT
+
+    @property
+    def login_url(self):
+        """The login-url including protocol and configurable port."""
+        return f"{self.fc.address}:{self.remote_port}{URL_LOGIN}"
+
+    @property
+    def homeauto_url(self):
+        """The homeauto-url including protocol and configurable port."""
+        return f"{self.fc.address}:{self.remote_port}{URL_HOMEAUTOSWITCH}"
 
     def send_http_command(self, command=None, identifier=None, **kwargs):
         """
-        Send the command and the optional identifier to the http-interface
-        and returns the content from the response as is.
-        On error raises a FritzAuthorizationError if the error code was 403
-        otherwise raises a generic FritzConnectionException with the
-        corresponding error-code.
+        Send the command and the optional identifier to the
+        http-interface and returns a tuple with the content-type and the
+        response-text as is. On error raises a FritzAuthorizationError
+        if the error code was 403 otherwise raises a generic
+        FritzConnectionException with the corresponding error-code.
         """
         payload = {"switchcmd": command, "ain": identifier}
         payload.update(kwargs)
@@ -49,12 +78,16 @@ class FritzHttp:
                 self.homeauto_url, params=payload
             ) as response:
                 if response.status_code == HTTPStatus.OK:
-                    return response.text
+                    return response.headers.get('content-type'), response.text
         msg = f"Request failed: http error code '{response.status_code}'"
         if response.status_code == HTTPStatus.FORBIDDEN:
             # can happen if FritzConnection was initialized
             # without a password.
             raise FritzAuthorizationError(msg)
+        # This can be from the 400 or 500 error-family.
+        # Most often these errors are triggered by a malformed payload,
+        # therefore include the payload in the message:
+        msg = f"{msg}, payload: {payload}"
         raise FritzAHAInterfaceError(msg)
 
     def _get_sid(self):
@@ -106,8 +139,9 @@ class FritzHttp:
 
     def _request_sid(self, challenge_hash):
         """
-        Takes the challenge_hash to request and return a new session id
+        Takes the challenge_hash to request and return a new session id.
         """
+        # TODO: handle blocktime
         with self.fc.session.post(
             self.login_url,
             data={"username": self.fc.soaper.user, "response": challenge_hash},
