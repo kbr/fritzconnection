@@ -12,9 +12,10 @@ Access the AVM Fritz!Box AHA-HTTP-Inferface
 import hashlib
 from http import HTTPStatus
 from http.client import HTTP_PORT
+from xml.etree import ElementTree as etree
 
 from fritzconnection.core.exceptions import (
-    FritzAHAInterfaceError,
+    FritzHttpInterfaceError,
     FritzAuthorizationError,
 )
 
@@ -62,7 +63,7 @@ class FritzHttp:
         """The homeauto-url including protocol and configurable port."""
         return f"{self.fc.address}:{self.remote_port}{URL_HOMEAUTOSWITCH}"
 
-    def send_http_command(self, command=None, identifier=None, **kwargs):
+    def execute(self, command=None, identifier=None, **kwargs):
         """
         Send the command and the optional identifier to the
         http-interface and returns a tuple with the content-type and the
@@ -93,7 +94,7 @@ class FritzHttp:
         # Most often these errors are triggered by a malformed payload,
         # therefore include the payload in the message:
         msg = f"{msg}, payload: {payload}"
-        raise FritzAHAInterfaceError(msg)
+        raise FritzHttpInterfaceError(msg)
 
     def _get_sid(self):
         """
@@ -123,7 +124,7 @@ class FritzHttp:
         _, iterations_1, salt_1, iterations_2, salt_2 = challenge.split('$')
         static_hash = hashlib.pbkdf2_hmac(
             "sha256",
-            fc.soaper.password.encode(),
+            self.fc.soaper.password.encode(),
             bytes.fromhex(salt_1),
             int(iterations_1)
         )

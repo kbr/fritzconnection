@@ -23,6 +23,7 @@ from .exceptions import (
     FritzResourceError,
     FritzServiceError,
 )
+from .fritzhttp import FritzHttp
 from .soaper import Soaper
 from .utils import (
     get_bool_env,
@@ -248,6 +249,8 @@ class FritzConnection:
         )
         # set default user for FritzOS >= 7.24:
         self._reset_user(user, password)
+        # provide also the aha-html-interface
+        self.http_interface = FritzHttp(self)
 
     def __repr__(self):
         """Return a readable representation"""
@@ -391,6 +394,10 @@ class FritzConnection:
         "WLANConfiguration:2" converts to "WLANConfiguration2"". Invalid
         service names will raise a ServiceError and invalid action names
         will raise an ActionError.
+
+        The method returns a dictionary with argument-names as keys and
+        the corresponding information as values. Numeric and boolean
+        values are converted from strings to Python datatypes.
         """
         arguments = arguments if arguments else dict()
         if not arguments:
@@ -401,6 +408,31 @@ class FritzConnection:
         except KeyError:
             raise FritzServiceError(f'unknown service: "{service_name}"')
         return self.soaper.execute(service, action_name, arguments)
+
+    def call_http(self, command, identifier=None, **kwargs):
+        """
+        Excecutes the given command by means of the http-interface. This
+        can be useful for homeautomation-task currently not provided by
+        the TR-064 interface. The `identifier` represents the `ain` of a
+        target-device. `kwargs` can hold additional parameters depending
+        on the device.
+
+        The method returns a tuple of strings with three items: the
+        content-type, the encoding and the corresponding result. The
+        content-type is typically "text/plain" or "text/xml", the
+        encoding, typically "utf-8".
+
+        The method will raise a FritzAuthorizationError in case of
+        missing credentials. In case of an unknown command or identifier
+        a FritzHttpInterfaceError will get raised.
+        """
+        header, content = self.http_interface.execute(
+            command,
+            identifier,
+            **kwargs
+        )
+        content_type, encoding = [item.strip() for item in header.split(";")]
+        return content_type, encoding, content
 
     def reconnect(self):
         """
