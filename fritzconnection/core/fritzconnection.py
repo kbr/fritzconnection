@@ -89,6 +89,37 @@ class FritzConnection:
     FRITZ_USERNAME and FRITZ_PASSWORD settings and taken from there, if
     found.
 
+    Basic usage assuming `user` and `password` stored in the environment:
+
+    >>> fc = FritzConnection(address="192.168.178.1")
+    >>> fc.call_action("WANIPConn1", "ForceTermination", arguments={})
+
+    This will reconnect the router with the external network.
+    `arguments` is not necessary here, but in case where arguments must
+    be provided, this is done by `arguments` (see also the documentation
+    for the `call_action()`` method`). The `call_action()` method is
+    used for the TR-064 API and returns a dictionary with the results.
+
+    For accessing the http-interface (aka AHA-HTTP-Interface) of the
+    router, FritzConnection provides the `call_http()` method (added in
+    version 1.12). As arguments this method takes a required command
+    (like `getswitchlist`) and optional parameters as described in the
+    AVM documentation:
+
+    >>> fc.call_http("getswitchlist")
+
+    This method triggers a http response and returns a dictionary with
+    three key-value pairs: the `content-type`, the `encoding` and the
+    `content` itself. The values are all of type string. The
+    content-type is typically "text/plain" or "text/xml", the encoding,
+    typically "utf-8".
+
+    The method will raise a FritzAuthorizationError in case of missing
+    credentials. In case of an unknown command or identifier a
+    FritzHttpInterfaceError will get raised.
+
+    .. versionadded:: 1.12
+
     The optional parameter `timeout` is a floating number in seconds
     limiting the time waiting for a router response. This is a global
     setting for the internal communication with the router. In case of a
@@ -422,14 +453,16 @@ class FritzConnection:
         target-device. `kwargs` can hold additional parameters depending
         on the device.
 
-        The method returns a tuple of strings with three items: the
-        content-type, the encoding and the corresponding result. The
-        content-type is typically "text/plain" or "text/xml", the
-        encoding, typically "utf-8".
+        The method returns a dictionary of strings with three items: the
+        `content-type`, the `encoding` and the corresponding result (the
+        `content`). The content-type is typically "text/plain" or
+        "text/xml", the encoding, typically "utf-8".
 
         The method will raise a FritzAuthorizationError in case of
         missing credentials. In case of an unknown command or identifier
         a FritzHttpInterfaceError will get raised.
+
+        .. versionadded:: 1.12
         """
         header, content = self.http_interface.execute(
             command,
@@ -437,7 +470,11 @@ class FritzConnection:
             **kwargs
         )
         content_type, encoding = [item.strip() for item in header.split(";")]
-        return content_type, encoding, content
+        return {
+            "content-type": content_type,
+            "encoding": encoding,
+            "content": content
+        }
 
     def reconnect(self):
         """
