@@ -4,6 +4,18 @@ Version History
 ===============
 
 
+development
+-----------
+
+- FritzConnection:
+
+  - new method `call_http()` for accessing the (aha-)http-interface.
+
+- FritzHttp:
+
+  - new core module implementing the http-interface access.
+
+
 1.11.0 - 2023-01-28
 -------------------
 
