@@ -85,12 +85,20 @@ class FritzHomeAutomation(AbstractLibraryBase):
     def device_informations(self):
         """
         .. deprecated:: 1.9.0
-           Use :func:`device_information` instead.
+           Use :func:`get_device_information_list` instead.
         """
-        warn('This method is deprecated. Use "device_information" instead.', DeprecationWarning)
-        return self.device_information()
+        warn('This method is deprecated. Use "get_device_information_list" instead.', DeprecationWarning)
+        return self.get_device_information_list()
 
     def device_information(self):
+        """
+        .. deprecated:: 1.12.0
+           Use :func:`get_device_information_list` instead.
+        """
+        warn('This method is deprecated. Use "get_device_information_list" instead.', DeprecationWarning)
+        return self.get_device_information_list()
+
+    def get_device_information_list(self):
         """
         Returns a list of dictionaries for all known homeauto-devices.
         """
@@ -102,6 +110,33 @@ class FritzHomeAutomation(AbstractLibraryBase):
                 break
             info.append(device_information)
         return info
+
+    def get_homeautomation_device(self, identifier=None, index=None):
+        """
+        Returns a HomeAutomationDevice instance. The device can be
+        identified by the `identifier` (ain) or the `index` in the
+        internal router device list. If both arguments are given,
+        `identifier` takes preference. If neither `identifier` nor
+        `index` are given `None` gets returned.
+        """
+        if identifier:
+            information = self.get_device_information_by_identifier(identifier)
+        elif index:
+            information = self.get_device_information_by_index(index)
+        else:
+            return None
+        return HomeAutomationDevice(self, information, identifier)
+
+    def get_homeautomation_devices(self):
+        """
+        Returns a list with HomeAutomationDevice instances of all known
+        home-automation devices. The list is ordered in the way the
+        router provided the data.
+        """
+        return [
+            HomeAutomationDevice(information) for information
+            in self.get_device_information_list()
+        ]
 
     def set_switch(self, identifier, on=True):
         """
@@ -118,84 +153,23 @@ class FritzHomeAutomation(AbstractLibraryBase):
         self._action('SetSwitch', arguments=arguments)
 
 
-class DeviceProperties:
+class HomeAutomationDevice:
     """
-    Provides the properties of a device according to the
-    device-functionbitmask.
-    """
-    def __init__(self, function_bit_mask):
-        self.function_bit_mask = function_bit_mask
+    Represents a device for homeautomation.
 
-    def _bitmap(self, value):
-        value = 2 ** value
-        return (value & self.function_bit_mask) == value
+    `fh` is a FritzHomeAutomation instance. `device_information` is a
+    dictionary like the ones returned from FritzHomeAutomation methods
+    'get_device_information_by_index()',
+    'get_device_information_by_identifier()' or an item from the list of
+    dictionaries returned from 'get_device_information_list()'. This
+    dictionary returned from the
+    'get_device_information_by_identifier()' has no 'NewAIN' entry. In
+    this case the argument `identifier` must be provided with the
+    missing 'ain'. If both `identifier` is provided and
+    `device_information` has a 'NewAIN' entry the latter takes
+    preference.
 
-    @property
-    def is_han_fun_unit(self):
-        return self._bitmap(HAN_FUN_UNIT_1) or self._bitmap(HAN_FUN_UNIT_2)
-
-    @property
-    def is_bulb(self):
-        return self._bitmap(LIGHT_BULB)
-
-    @property
-    def is_alarm_sensor(self):
-        return self._bitmap(ALARM_SENSOR)
-
-    @property
-    def is_avm_button(self):
-        return self._bitmap(AVM_BUTTON)
-
-    @property
-    def is_radiator_control(self):
-        return self._bitmap(RADIATOR_CONTROL)
-
-    @property
-    def is_energy_sensor(self):
-        return self._bitmap(ENERGY_SENSOR)
-
-    @property
-    def is_temperature_sensor(self):
-        return self._bitmap(TEMPERATURE_SENSOR)
-
-    @property
-    def is_pluggable(self):
-        return self._bitmap(PLUGGABLE)
-
-    @property
-    def is_avm_dect_repeater(self):
-        return self._bitmap(AVM_DECT_REPEATER)
-
-    @property
-    def is_microphone(self):
-        return self._bitmap(MICROPHONE)
-
-    @property
-    def is_switchable(self):
-        return self._bitmap(SWITCHABLE)
-
-    @property
-    def is_adjustable(self):
-        return self._bitmap(ADJUSTABLE)
-
-    @property
-    def is_color_bulb(self):
-        return self._bitmap(COLOR_BULB)
-
-    @property
-    def is_blind(self):
-        return self._bitmap(BLIND)
-
-    @property
-    def is_humidity_sensor(self):
-        return self._bitmap(HUMIDITY_SENSOR)
-
-
-class HomeAutomationDevice(DeviceProperties):
-    """
-    Represents a device for homeautomation providing at subset from the DeviceKind attributes.
-
-    Instances will have the folloing additional attributes:
+    Instances will have the folloing dynamic created attributes:
 
         AIN
         DeviceId
@@ -228,34 +202,103 @@ class HomeAutomationDevice(DeviceProperties):
         HkrComfortVentilStatus
         HkrComfortTemperature
 
-    Not all attributes will have a meaning. For that HomeAutomationDevice inherits from DeviceProperties
-    to provide all the `is_` properties based on the FunctionBitMask-flags.
+    Depending on the device not all attributes will have a meaning.
     """
-    def __init__(self, fh, identifier, device_information):
+    def __init__(self, fh, device_information, identifier=None):
         self.fh = fh
-        self.indentifier = identifier  # aka ain
+        self.AIN = identifier
         self._extraxt_device_information_as_attributes(device_information)
-        super().__init__(self.FunctionBitMask)
-
-    @property
-    def identifier(self):
-        return self.AIN
 
     def _extraxt_device_information_as_attributes(self, device_information):
         """
-        Takes the device_information, which is a dcitionary returned from a call like
-        FritzHomeAutomation.get_device_information_by_index() and updates the instance-attributes
-        with the key-value pairs of this dictionary. The key-names are changed by stripping the
-        leading 'New'. All keys updated by this automatoc process are named in MixedCase style,
-        while all other attributes are snake_case.
+        Takes the device_information, which is a dcitionary returned
+        from a call like
+        FritzHomeAutomation.get_device_information_by_index() and
+        updates the instance-attributes with the key-value pairs of this
+        dictionary. The key-names are changed by stripping the leading
+        'New'. All keys updated by this automatoc process are named in
+        MixedCase style, while all other attributes are snake_case.
         """
         offset = len("New")
         for key, value in device_information.items():
             self.__dict__[key[offset:]] = value
 
+    def _bitmatch(self, value):
+        """
+        Returns a boolean whether the `value` bit is set in
+        `self.FunctionBitMask`.
+        """
+        feature_bit = 1 << value
+        return (feature_bit & self.FunctionBitMask) == feature_bit
+
+    @property
+    def identifier(self):
+        return self.AIN
+
+    @property
+    def is_han_fun_unit(self):
+        return self._bitmatch(HAN_FUN_UNIT_1) or self._bitmatch(HAN_FUN_UNIT_2)
+
+    @property
+    def is_bulb(self):
+        return self._bitmatch(LIGHT_BULB)
+
+    @property
+    def is_alarm_sensor(self):
+        return self._bitmatch(ALARM_SENSOR)
+
+    @property
+    def is_avm_button(self):
+        return self._bitmatch(AVM_BUTTON)
+
+    @property
+    def is_radiator_control(self):
+        return self._bitmatch(RADIATOR_CONTROL)
+
+    @property
+    def is_energy_sensor(self):
+        return self._bitmatch(ENERGY_SENSOR)
+
+    @property
+    def is_temperature_sensor(self):
+        return self._bitmatch(TEMPERATURE_SENSOR)
+
+    @property
+    def is_pluggable(self):
+        return self._bitmatch(PLUGGABLE)
+
+    @property
+    def is_avm_dect_repeater(self):
+        return self._bitmatch(AVM_DECT_REPEATER)
+
+    @property
+    def is_microphone(self):
+        return self._bitmatch(MICROPHONE)
+
+    @property
+    def is_switchable(self):
+        return self._bitmatch(SWITCHABLE)
+
+    @property
+    def is_adjustable(self):
+        return self._bitmatch(ADJUSTABLE)
+
+    @property
+    def is_color_bulb(self):
+        return self._bitmatch(COLOR_BULB)
+
+    @property
+    def is_blind(self):
+        return self._bitmatch(BLIND)
+
+    @property
+    def is_humidity_sensor(self):
+        return self._bitmatch(HUMIDITY_SENSOR)
+
     def update_device_information(self):
         """
-
+        Triggers the router to update the device dependent
+        instance-attributes.
         """
         self._extraxt_device_information_as_attributes(
             self.fh.get_device_information_by_identifier(self.identifier)

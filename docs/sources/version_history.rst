@@ -9,11 +9,26 @@ development
 
 - FritzConnection:
 
-  - new method `call_http()` for accessing the (aha-)http-interface.
+  - New method `call_http()` for accessing the (aha-)http-interface.
 
 - FritzHttp:
 
-  - new core module implementing the http-interface access.
+  - New core module implementing the http-interface access.
+
+- FritzHomeAutomation:
+
+  - New method `get_device_information_list()`. Substitutes the `device_information()` method.
+  - New method `get_homeautomation_device()`.
+  - New method `get_homeautomation_devices()`.
+
+- HomeAutomationDevice:
+
+  - New class in the `fritzconnection.lib.fritzhomeauto` module. Represents properties and state of a home-automation device.
+
+- Deprecations:
+
+  - `fritzconnection.lib.fritzhomeauto.FritzHomeAutomation.device_information()`
+
 
 
 1.11.0 - 2023-01-28
