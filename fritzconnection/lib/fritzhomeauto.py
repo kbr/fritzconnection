@@ -21,7 +21,7 @@ SERVICE = 'X_AVM-DE_Homeauto1'
 HAN_FUN_UNIT_1 = 0
 UNKNOWN_1= 1
 LIGHT_BULB = 2
-UNKNOWN = 3
+UNKNOWN_2 = 3
 ALARM_SENSOR = 4
 AVM_BUTTON = 5
 RADIATOR_CONTROL = 6
@@ -30,15 +30,18 @@ TEMPERATURE_SENSOR = 8
 PLUGGABLE = 9
 AVM_DECT_REPEATER = 10
 MICROPHONE = 11
-UNKNOWN_2 = 12
+UNKNOWN_3 = 12
 HAN_FUN_UNIT_2 = 13
-UNKNOWN_3 = 14
+UNKNOWN_4 = 14
 SWITCHABLE = 15
 ADJUSTABLE = 16
 COLOR_BULB = 17
 BLIND = 18
-UNKNOWN_4 = 19
+UNKNOWN_5 = 19
 HUMIDITY_SENSOR = 20
+
+# offset for removing the prefix "New" from the tr-064 avm-keys
+KEY_OFFSET = len("New")
 
 
 class FritzHomeAutomation(AbstractLibraryBase):
@@ -211,17 +214,17 @@ class HomeAutomationDevice:
 
     def _extraxt_device_information_as_attributes(self, device_information):
         """
-        Takes the device_information, which is a dcitionary returned
+        Takes the device_information, which is a dictionary returned
         from a call like
-        FritzHomeAutomation.get_device_information_by_index() and
+        'FritzHomeAutomation.get_device_information_by_index()' and
         updates the instance-attributes with the key-value pairs of this
-        dictionary. The key-names are changed by stripping the leading
-        'New'. All keys updated by this automatoc process are named in
-        MixedCase style, while all other attributes are snake_case.
+        dictionary. The key-names are changed by stripping the prefix
+        'New'. All keys updated by this automatic process are in
+        MixedCase style - as provided from the router - while all other
+        attributes are snake_case.
         """
-        offset = len("New")
         for key, value in device_information.items():
-            self.__dict__[key[offset:]] = value
+            self.__dict__[key[KEY_OFFSET:]] = value
 
     def _bitmatch(self, value):
         """
