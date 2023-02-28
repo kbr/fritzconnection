@@ -1,5 +1,6 @@
 """
-Module to access home-automation devices
+Module to access home-automation devices by the TR-064 and the
+AHA-HTTP-Interface.
 """
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection
