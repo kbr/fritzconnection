@@ -1,4 +1,6 @@
 
+import json
+import pathlib
 import pytest
 
 from ..lib.fritzhomeauto import HomeAutomationDevice
@@ -37,6 +39,9 @@ DEVICE_INFORMATION = {
     'NewHkrComfortVentilStatus': 'CLOSED',
     'NewHkrComfortTemperature': 0
 }
+
+HERE = pathlib.Path(".").resolve()
+GET_BASICDEVICESTATS_RESPONSE_PATH = HERE / "tests" / "xml" / "basicdevicestats_response.txt"
 
 
 def test_homeautomation_device_properties():
@@ -90,3 +95,27 @@ def test_homeautomation_device_properties_without_ain():
     other_ain = '00000 1111111'
     dp = HomeAutomationDevice(None, device_information , identifier=other_ain)
     assert dp.identifier == other_ain
+
+
+def test_extract_basicdevicestats_response():
+    """
+    Inject some data from a real device with an energy sensor.
+    """
+    expected_counts = {
+        "temperature": 96,
+        "voltage": 360,
+        "power": 360,
+        "energy": 12
+    }
+    text = GET_BASICDEVICESTATS_RESPONSE_PATH.read_text(encoding="utf-8")
+    response = {
+        "content-type": "text/xml",
+        "encoding": "charset=utf-8",
+        "content": text.strip()
+    }
+    result = HomeAutomationDevice.extract_basicdevicestats_response(response)
+    for key in ("temperature", "voltage", "power", "energy"):
+        assert key in result
+        count = result[key]['count']
+        assert count == expected_counts[key]
+        assert count == len(result[key]['data'])

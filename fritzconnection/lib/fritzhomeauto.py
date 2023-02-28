@@ -6,9 +6,10 @@ Module to access home-automation devices
 # License: MIT (https://opensource.org/licenses/MIT)
 # Author: Klaus Bremer
 
-
+import datetime
 import itertools
 from warnings import warn
+from xml.etree import ElementTree as etree
 
 from .fritzbase import AbstractLibraryBase
 
@@ -137,7 +138,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         router provided the data.
         """
         return [
-            HomeAutomationDevice(information) for information
+            HomeAutomationDevice(self, information) for information
             in self.get_device_information_list()
         ]
 
@@ -212,6 +213,12 @@ class HomeAutomationDevice:
         self.AIN = identifier
         self._extraxt_device_information_as_attributes(device_information)
 
+    def __repr__(self):
+        """
+        Provide some basic information about the device.
+        """
+        return f"ain: {self.AIN}, {self.Manufacturer} - {self.ProductName}"
+
     def _extraxt_device_information_as_attributes(self, device_information):
         """
         Takes the device_information, which is a dictionary returned
@@ -233,6 +240,16 @@ class HomeAutomationDevice:
         """
         feature_bit = 1 << value
         return (feature_bit & self.FunctionBitMask) == feature_bit
+
+    def call_http(self, command, **kwargs):
+        """
+        Shortcut to access the http-interface of the router.
+
+        Used to send a `command` with the given keyword-arguments to
+        _this_ device. Will fail if the device does not support the
+        command or arguments. It's up to the application to handle this.
+        """
+        return self.fh.fc.call_http(command, self.identifier, **kwargs)
 
     @property
     def identifier(self):
@@ -306,3 +323,62 @@ class HomeAutomationDevice:
         self._extraxt_device_information_as_attributes(
             self.fh.get_device_information_by_identifier(self.identifier)
         )
+
+    def get_basic_device_stats(self):
+        """
+        Returns a dictionary of device statistics. The content depends
+        the actors implemented by a device. The keys can be:
+
+        key:            on actor:
+        temperature     temperature sensor
+        humidity        humidity sensor
+        voltage         energy sensor
+        power           energy sensor
+        energy          energy sensor
+
+        The corresponding values are also dictionaries having a common
+        structure:
+
+        key:        value:
+        count       int: number of data points
+        grid        int: time resolution in seconds
+        datatime    datetime: timestamp of last data update
+        data        list of data points (integers)
+
+        The application can inspect the keys or use the properties like
+        `is_energy_sensor` to check for actors provided by the device.
+        If the usecase is just about the actors and not the data, the
+        properties are much(!) faster.
+        """
+        response = self.call_http("getbasicdevicestats")
+        return self.extract_basicdevicestats_response(response)
+
+    @staticmethod
+    def extract_basicdevicestats_response(response):
+        """
+        Converts the xml `response` and returns a dictionary with a
+        datastructure described in the method `get_basic_device_stats()`
+        """
+        # implemented separately for testing.
+        # 'stats' and 'datatime' are defined in the AVM xml-protocol
+        elements = {}
+        content = response['content']
+        root = etree.fromstring(content)
+        for element in root:
+            content = {}
+            stats = element.find("stats")
+            for key, value in stats.attrib.items():
+                value = int(value)
+                if key == "datatime":
+                    value = datetime.datetime.fromtimestamp(value)
+                content[key] = value
+            content["data"] = list(map(int, stats.text.split(",")))
+            elements[element.tag] = content
+        return elements
+
+    def set_switch(self, on=True):
+        """
+        Set a switchable device to 'on' (True) or 'off' (False).
+        """
+        self.fh.set_switch(self.identifier, on)
+

@@ -462,6 +462,12 @@ class FritzConnection:
         missing credentials. In case of an unknown command or identifier
         a FritzHttpInterfaceError will get raised.
 
+        Note: information and interactions with actors provided by
+        TR-064 and the http-interface partly overlap. If response time
+        is an issue, TR-064 should be preferred because at time of
+        writing a call to `call_action` (the TR-064 interface) is about
+        5 to 6 times faster than the http-interface.
+
         .. versionadded:: 1.12
         """
         header, content = self.http_interface.execute(
@@ -469,7 +475,9 @@ class FritzConnection:
             identifier,
             **kwargs
         )
-        content_type, encoding = [item.strip() for item in header.split(";")]
+        content_type, charset = [item.strip() for item in header.split(";")]
+        # extract the encoding from the charset-information
+        encoding = charset.split("=")[-1].strip()
         return {
             "content-type": content_type,
             "encoding": encoding,
