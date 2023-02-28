@@ -15,6 +15,7 @@ fritzconnection
 
 
 Python-Tool to communicate with the AVM Fritz!Box.
+
 Supports the TR-064 and the (AHA-)HTTP-Interface.
 
 
@@ -39,11 +40,11 @@ Using fritzconnection is as easy as: ::
 
     fc = FritzConnection(address='192.168.178.1')
     fc.reconnect()  # get a new external ip from the provider
-    print(fc)  # print router model informations
+    print(fc)  # print router model information
 
-Here the *fc.reconnect()* is a shortcut.
+Calling the method *fc.reconnect()* is a shortcut for *call_action()*.
 
-FritzConnection provides two basic commands to communicate with the router: *call_action()* for the TR-064 API and *call_http()* for the HTTP-API. Both APIs can be used on a FritzConnection instance side by side.
+FritzConnection provides two basic methods to communicate with the router: *call_action()* for the TR-064 API and *call_http()* for the HTTP-API. Both APIs can be used on a single FritzConnection instance side by side.
 
 TR-064
 ......
@@ -71,17 +72,17 @@ As arguments this method takes a command and an identifier for the device and re
 Username and password
 .....................
 
-Some TR-064 calls are available without a username and password, for using the http-interface both are required. To avoid hardcoding FritzConnection can read user and password from the environment variables FRITZ_USERNAME and FRITZ_PASSWORD.
+Some TR-064 calls are available without a username and password, for using the http-interface both are required. To avoid hardcoding of username and password FritzConnection can read both values from the environment variables FRITZ_USERNAME and FRITZ_PASSWORD.
 
 
 Caching
 .......
 
-Instanciating FritzConnection can take some time. To speed up things use a cache: ::
+Instanciating FritzConnection can take some time. To speed things up use a cache: ::
 
     fc = FritzConnection(..., use_cache=True)
 
-By default this argument is 'False'. After creating the cache FritzConnection will start up much more faster the next time.
+By default this argument is 'False'. After creating the cache, the next time FritzConnection will start up much more faster.
 
 
 Library
