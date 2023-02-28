@@ -16,7 +16,7 @@ fritzconnection
 
 Python-Tool to communicate with the AVM Fritz!Box.
 
-Supports the TR-064 and the (AHA-)HTTP-Interface.
+Supports the TR-064 protocol as well as the (AHA-)HTTP-Interface and also allows Call-Monitoring.
 
 
 Installation:
