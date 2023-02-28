@@ -466,7 +466,8 @@ class FritzConnection:
         TR-064 and the http-interface partly overlap. If response time
         is an issue, TR-064 should be preferred because at time of
         writing a call to `call_action` (the TR-064 interface) is about
-        5 to 6 times faster than the http-interface.
+        5 to 6 times faster than calling `call_http` (the
+        http-interface).
 
         .. versionadded:: 1.12
         """

@@ -18,7 +18,7 @@ from .fritzbase import AbstractLibraryBase
 SERVICE = 'X_AVM-DE_Homeauto1'
 
 # Constants describing the possible capabilities of a device.
-# Values are bit positions.
+# Values are bit positions in the AVM-FunctionBitMask:
 HAN_FUN_UNIT_1 = 0
 UNKNOWN_1= 1
 LIGHT_BULB = 2
@@ -239,15 +239,16 @@ class HomeAutomationDevice:
         `self.FunctionBitMask`.
         """
         feature_bit = 1 << value
-        return (feature_bit & self.FunctionBitMask) == feature_bit
+        return feature_bit & self.FunctionBitMask == feature_bit
 
     def call_http(self, command, **kwargs):
         """
         Shortcut to access the http-interface of the router.
 
         Used to send a `command` with the given keyword-arguments to
-        _this_ device. Will fail if the device does not support the
-        command or arguments. It's up to the application to handle this.
+        _this_ device. Raises a FritzHttpInterfaceError if the device
+        does not support the command or arguments. On missing rights a
+        FritzAuthorizationError is raised.
         """
         return self.fh.fc.call_http(command, self.identifier, **kwargs)
 
@@ -326,8 +327,8 @@ class HomeAutomationDevice:
 
     def get_basic_device_stats(self):
         """
-        Returns a dictionary of device statistics. The content depends
-        the actors implemented by a device. The keys can be:
+        Returns a dictionary of device statistics. The content depends on
+        the actors supported by a device. The keys can be:
 
         key:            on actor:
         temperature     temperature sensor
@@ -375,6 +376,14 @@ class HomeAutomationDevice:
             content["data"] = list(map(int, stats.text.split(",")))
             elements[element.tag] = content
         return elements
+
+    def get_switch_state(self):
+        """
+        Returns a boolean indicating whether a switchable device is set
+        to on (True) or off (False).
+        """
+        self.update_device_information()
+        return self.SwitchState.lower() == 'on'
 
     def set_switch(self, on=True):
         """
