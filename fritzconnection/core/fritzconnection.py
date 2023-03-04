@@ -585,8 +585,11 @@ class FritzConnection:
             raise FritzConnectionException(message)
         filename = f"{address}{FRITZ_CACHE_EXT}.{suffix}"
         if cache_directory:
-            return Path(cache_directory) / filename
-        return Path().home() / FRITZ_CACHE_DIR /filename
+            path = Path(cache_directory)
+        else:
+            path = Path().home() / FRITZ_CACHE_DIR
+        path.mkdir(exist_ok=True)
+        return path / filename
 
     def _write_api_to_cache(self, path, cache_format):
         """
