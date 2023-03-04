@@ -10,6 +10,7 @@ development
 - FritzConnection:
 
   - New method `call_http()` for accessing the (aha-)http-interface.
+  - bugfix: create cache directory if not existing. (#183)
 
 - FritzHttp:
 
