@@ -595,6 +595,9 @@ class FritzConnection:
         binary = "wb"
         text = "wt"
         mode = binary if cache_format == FRITZ_CACHE_FORMAT_PICKLE else text
+        cache_directory = os.path.dirname(path)
+        if not os.path.isdir(cache_directory):
+            os.makedirs(cache_directory)
         with open(path, mode) as fobj:
             if mode == binary:
                 pickle.dump(self.device_manager.descriptions, fobj)
