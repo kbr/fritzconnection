@@ -12,26 +12,29 @@ fritzconnection is a `Python <https://www.python.org/>`_ library to communicate 
 
 .. image:: fritzconnection-360x76.png
 
-The available features are depending on the Fritz!Box model and the according system software. For the **TR-064** API fritzconnection can list and access all available services and actions of a given router. Using fritzconnection is as easy as: ::
+The available features are depending on the Fritz!Box model and the according system software. Using fritzconnection is as easy as: ::
 
     from fritzconnection import FritzConnection
 
-    fc = FritzConnection(address='192.168.178.1')
-    fc.reconnect()  # get a new external ip from the provider
+    fc = FritzConnection(address="192.168.178.1", user="user", password="pw")
     print(fc)  # print router model information
 
-fritzconnection provides a basic method `call_action()` that takes a service- and an action-name with optional arguments to send commands and receive data. In the example above the `reconnect()` method just wraps the `call_action()` method. A reconnection by means of `call_action()` would look like this: ::
-
-    fc = FritzConnection(address='192.168.178.1')
+    # tr-064 interface: reconnect for a new ip
     fc.call_action("WANIPConn1", "ForceTermination")
+    fc.reconnect()  # do the same with a shortcut
 
-Similar to the `call_action()`-method the **HTTP-Interface** can get accessed by the `call_http()`-method, that takes a command and an identifier: ::
-
+    # http interface: get history data from a device with given 'ain'
     fc.call_http("getbasicdevicestats", "12345 7891011")
 
-With the `call_action()` and `call_http()` methods every service/action-combination and command documented by the `AVM support-page (Apps/TR-064, HTTP) <https://avm.de/service/schnittstellen/>`_ can get executed. Both methods return dictionaries with the router-response and both methods can get used with the same FritzConnection-instance.
+FritzConnection provides two basic commands to communicate with the router APIs: *call_action()* for the TR-064-Interface and *call_http()* for the (AHA)-HTTP-Interface. Both APIs can be used on the same FritzConnection instance side by side.
 
-The fritzconnection-package comes with a library to make some common tasks easier. For a detailed overview refer to :doc:`sources/getting_started` and the documentation of the :doc:`library <sources/library_modules>`.
+``call_action()`` expects a **TR-064** service- and an action-name (and optional arguments). In general FritzConnection can execute every service and action provided by the (model-specific) API as documented by AVM. For i.e. this can be network settings, status informations, access to home automation devices and much more. The *call_action()* method returns the response from the router as a dictionary with the values already converted to the matching Python datatypes.
+
+``call_http()`` expects a command for the **http-interface** like "getbasicdevicestats" and, depending on the command, additional arguments like a device "ain" (identifier). A call to the method returns a dictionary with the *content-type*, the *encoding* and the *response* data of the http-response. The content-type of the response-data is typical "text/plain" or "text/xml" and may need further processing.
+
+With the `call_action()` and `call_http()` methods every service/action-combination and command documented by the `AVM support-page (Apps/TR-064, HTTP) <https://avm.de/service/schnittstellen/>`_ can get executed.
+
+The fritzconnection-package comes with a library to make some common tasks easier and can also serve as example code. For a detailed overview refer to :doc:`sources/getting_started` and the documentation of the :doc:`library <sources/library_modules>`.
 
 
 .. note::
