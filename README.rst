@@ -15,7 +15,8 @@ fritzconnection
 
 
 Python-Interface to communicate with the AVM Fritz!Box and connected devices.
-Supports the **TR-064** protocol, the (AHA-)**HTTP-Interface** and also allows call-monitoring.
+
+Supports the TR-064 protocol, the (AHA-)HTTP-Interface and also allows call-monitoring.
 
 
 Installation:
@@ -48,31 +49,29 @@ Using fritzconnection is as easy as: ::
 
 FritzConnection provides two basic commands to communicate with the router APIs: *call_action()* for the TR-064-Interface and *call_http()* for the (AHA)-HTTP-Interface. Both APIs can be used on the same FritzConnection instance side by side.
 
-**call_action()** expects a TR-064 service- and an action-name (and optional arguments). In general FritzConnection can execute every service and action provided by the (model-specific) API as documented by AVM. For i.e. this can be network settings, status informations, access to home automation devices and much more. The *call_action()* method returns the response from the router as a dictionary with the values already converted to the matching Python datatypes.
+**call_action()** expects a **TR-064** service- and an action-name (and optional arguments). In general FritzConnection can execute every service and action provided by the (model-specific) API as documented by AVM. For i.e. this can be network settings, status informations, access to home automation devices and much more. The *call_action()* method returns the response from the router as a dictionary with the values already converted to the matching Python datatypes.
 
-**call_http()** expects a command for the http-interface like "getbasicdevicestats" and, depending on the command, additional arguments like a device "ain" (identifier). A call to the method returns a dictionary with the *content-type*, the *encoding* and the *response* data of the http-response. The content-type of the data is typical "text/plain" or "text/xml" and may need further processing.
+**call_http()** expects a command for the **http-interface** like "getbasicdevicestats" and, depending on the command, additional arguments like a device "ain" (identifier). A call to the method returns a dictionary with the *content-type*, the *encoding* and the *response* data of the http-response. The content-type of the response-data is typical "text/plain" or "text/xml" and may need further processing.
 
 
 Username and password
 .....................
 
-Some TR-064 calls are available without a username and password. For using the http-interface both are required. To avoid hardcoding username and password in applications FritzConnection can read user and password from the environment variables FRITZ_USERNAME and FRITZ_PASSWORD.
+To avoid hardcoding username and password in applications FritzConnection can read both from the environment variables FRITZ_USERNAME and FRITZ_PASSWORD.
 
 
 Caching
 .......
 
-On instanciation FritzConnection has to inspect the model-specific router-API. This causes a lot of network requests and can take some seconds. To speed things up FritzConnection provides a cache that can get activated by the `use_cache` parameter:
+On instanciation FritzConnection has to inspect the model-specific router-API. This causes a lot of network requests and can take some seconds. To avoid this FritzConnection provides a cache that can get activated by the *use_cache* parameter: ::
 
     fc = FritzConnection(..., use_cache=True)
 
-This argument defaults to 'False'. After creating the cache FritzConnection will start up much more faster.
+This argument defaults to *False*. After creating the cache FritzConnection will start up much more faster.
 
 
 Library
 -------
-
-The package comes with some library-modules providing methods to make some API calls easier and also
 
 The package comes with library-modules to make some API calls easier and also demonstrates how to implement applications on top of FritzConnection.
 
