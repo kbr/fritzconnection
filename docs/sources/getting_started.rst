@@ -36,7 +36,7 @@ For Fritz!OS < 7.24 the username was optional. For newer versions an individual 
 Command line inspection
 -----------------------
 
-Installing fritzconnection by pip will also install the command line tool `fritzconnection` to inspect the Fritz!Box-API. With the option :command:`-h` this will show a help menu: ::
+Installing fritzconnection by pip will also install the command line tool `fritzconnection` to inspect the model-specific Fritz!Box TR-064 API. With the option :command:`-h` this will show a help menu: ::
 
     $ fritzconnection -h
 
