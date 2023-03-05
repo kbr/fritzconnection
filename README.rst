@@ -14,8 +14,8 @@ fritzconnection
     :target: https://pypi.org/project/fritzconnection/
 
 
-Python-Tool to communicate with the AVM Fritz!Box.
-Supports the TR-064 and the (AHA-)HTTP-Interface.
+Python-Interface to communicate with the AVM Fritz!Box and connected devices.
+Supports the **TR-064** protocol, the (AHA-)**HTTP-Interface** and also allows call-monitoring.
 
 
 Installation:
@@ -27,7 +27,7 @@ For installation use pip ::
       or
     $ pip install fritzconnection[qr]
 
-The latter will install the dependency to enable QR-code creation for wifi login.
+The latter will install the [segno](https://github.com/heuer/segno)-package to enable QR-code creation for wifi login.
 
 
 Quickstart:
@@ -37,57 +37,44 @@ Using fritzconnection is as easy as: ::
 
     from fritzconnection import FritzConnection
 
-    fc = FritzConnection(address='192.168.178.1')
-    fc.reconnect()  # get a new external ip from the provider
-    print(fc)  # print router model informations
+    fc = FritzConnection(address="192.168.178.1", user="user", password="pw")
+    print(fc)  # print router model information
 
-Here the *fc.reconnect()* is a shortcut.
-
-FritzConnection provides two basic commands to communicate with the router: *call_action()* for the TR-064 API and *call_http()* for the HTTP-API. Both APIs can be used on a FritzConnection instance side by side.
-
-TR-064
-......
-
-The basic method FritzConnection provides to access the FritzOS-API is the *call_action()* method. A reconnection by means of *call_action()* would look like this: ::
-
-    fc = FritzConnection(address='192.168.178.1')
+    # tr-064 interface: reconnect for a new ip
     fc.call_action("WANIPConn1", "ForceTermination")
 
-The method *call_action()* expects a service- and an action-name (and optional arguments). In general FritzConnection can execute every service and action provided by the (model-specific) API as documented by AVM. For i.e. this can be network settings, status informations, access to home automation devices and much more. In case a call to the FritzOS-API provides information the *call_action()* method returns a dictionary with the results.
-
-HTTP
-....
-
-This interface provides access to homeautomation-devices using the *call_http()* method. The command "getbasicdevicestats" is an example to retrieve information not available by the TR-064 API: ::
-
-    fc = FritzConnection(
-        address='192.168.178.1', user="username", password="password"
-    )
+    # http interface: gets history data from a device with given 'ain'
     fc.call_http("getbasicdevicestats", "12345 7891011")
 
-As arguments this method takes a command and an identifier for the device and returns a dictionary with the content-type, the encoding and the response data.
+FritzConnection provides two basic commands to communicate with the router APIs: *call_action()* for the TR-064-Interface and *call_http()* for the (AHA)-HTTP-Interface. Both APIs can be used on the same FritzConnection instance side by side.
+
+**call_action()** expects a TR-064 service- and an action-name (and optional arguments). In general FritzConnection can execute every service and action provided by the (model-specific) API as documented by AVM. For i.e. this can be network settings, status informations, access to home automation devices and much more. The *call_action()* method returns the response from the router as a dictionary with the values already converted to the matching Python datatypes.
+
+**call_http()** expects a command for the http-interface like "getbasicdevicestats" and, depending on the command, additional arguments like a device "ain" (identifier). A call to the method returns a dictionary with the *content-type*, the *encoding* and the *response* data of the http-response. The content-type of the data is typical "text/plain" or "text/xml" and may need further processing.
 
 
 Username and password
 .....................
 
-Some TR-064 calls are available without a username and password, for using the http-interface both are required. To avoid hardcoding FritzConnection can read user and password from the environment variables FRITZ_USERNAME and FRITZ_PASSWORD.
+Some TR-064 calls are available without a username and password. For using the http-interface both are required. To avoid hardcoding username and password in applications FritzConnection can read user and password from the environment variables FRITZ_USERNAME and FRITZ_PASSWORD.
 
 
 Caching
 .......
 
-Instanciating FritzConnection can take some time. To speed up things use a cache: ::
+On instanciation FritzConnection has to inspect the model-specific router-API. This causes a lot of network requests and can take some seconds. To speed things up FritzConnection provides a cache that can get activated by the `use_cache` parameter:
 
     fc = FritzConnection(..., use_cache=True)
 
-By default this argument is 'False'. After creating the cache FritzConnection will start up much more faster the next time.
+This argument defaults to 'False'. After creating the cache FritzConnection will start up much more faster.
 
 
 Library
 -------
 
-The package comes with some library-modules as examples how to implement applications on top of FritzConnection.
+The package comes with some library-modules providing methods to make some API calls easier and also
+
+The package comes with library-modules to make some API calls easier and also demonstrates how to implement applications on top of FritzConnection.
 
 
 Documentation
