@@ -28,7 +28,7 @@ For installation use pip ::
       or
     $ pip install fritzconnection[qr]
 
-The latter will install the (segno)[https://github.com/heuer/segno]-package to enable QR-code creation for wifi login.
+The latter will install the segno-package (https://github.com/heuer/segno) to enable QR-code creation for wifi login.
 
 
 Quickstart:
