@@ -9,6 +9,7 @@ fritzconnection is structured into subpackages: ::
                       |-- core --|-- devices
                       |          |-- exceptions
                       |          |-- fritzconnection
+                      |          |-- fritzhttp
                       |          |-- fritzmonitor
                       |          |-- logger
                       |          |-- processor
@@ -76,12 +77,19 @@ The latter style is often discouraged because of possible namespace-pollution, l
 Internal API
 ------------
 
-The devices-, processor- and soaper-module don't provide a public interface and are used internally.
+The following core-modules don't provide a public interface (at least it makes no sense) and are used internally.
 
 devices
 .......
 
 .. automodule:: fritzconnection.core.devices
+    :members:
+
+
+fritzhttp
+.........
+
+.. automodule:: fritzconnection.core.fritzhttp
     :members:
 
 
@@ -103,5 +111,12 @@ soaper
 ......
 
 .. automodule:: fritzconnection.core.soaper
+    :members:
+
+
+utils
+.....
+
+.. automodule:: fritzconnection.core.utils
     :members:
 

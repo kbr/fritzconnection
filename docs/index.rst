@@ -38,7 +38,7 @@ The fritzconnection-package comes with a library to make some common tasks easie
 
 
 .. note::
-   fritzconnection is neither related nor supported by AVM. Also AVM reserves the right to add, modify or remove features of their products at any time without notice.
+   fritzconnection is neither related nor supported by AVM. Also AVM reserves the right to add, modify or remove features of their products at any time without notice. Furthermore the terms "AVM", "Fritz!Box" and "Fritz!OS" are trademarks of `AVM Computersysteme Vertriebs GmbH <https://avm.de/impressum/>`_.
 
 
 .. toctree::
