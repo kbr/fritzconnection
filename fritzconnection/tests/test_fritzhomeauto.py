@@ -40,8 +40,7 @@ DEVICE_INFORMATION = {
     'NewHkrComfortTemperature': 0
 }
 
-HERE = pathlib.Path(".").resolve()
-GET_BASICDEVICESTATS_RESPONSE_PATH = HERE / "tests" / "xml" / "basicdevicestats_response.txt"
+BASICDEVICESTATS_RESPONSE_FILENAME = "basicdevicestats_response.txt"
 
 
 def test_homeautomation_device_properties():
@@ -97,7 +96,7 @@ def test_homeautomation_device_properties_without_ain():
     assert dp.identifier == other_ain
 
 
-def test_extract_basicdevicestats_response():
+def test_extract_basicdevicestats_response(datadir):
     """
     Inject some data from a real device with an energy sensor.
     """
@@ -107,7 +106,8 @@ def test_extract_basicdevicestats_response():
         "power": 360,
         "energy": 12
     }
-    text = GET_BASICDEVICESTATS_RESPONSE_PATH.read_text(encoding="utf-8")
+    file = datadir / BASICDEVICESTATS_RESPONSE_FILENAME
+    text = file.read_text(encoding="utf-8")
     response = {
         "content-type": "text/xml",
         "encoding": "charset=utf-8",
