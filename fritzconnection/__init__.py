@@ -10,7 +10,7 @@ https://avm.de/service/schnittstellen/
 https://fritzconnection.readthedocs.io/
 """
 
-__version__ = "1.12.development"
+__version__ = "1.12.dev"
 
 # import shortcuts
 from .core.fritzconnection import FritzConnection
