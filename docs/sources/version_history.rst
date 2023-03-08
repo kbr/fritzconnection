@@ -18,15 +18,18 @@ development
 
 - FritzHomeAutomation:
 
-  - New class HomeAutomationDevice. Represents properties and state of a home-automation device.
+  - New class `HomeAutomationDevice`. Represents properties and state of a home-automation device.
   - New method `get_homeautomation_device()`.
   - New method `get_homeautomation_devices()`.
   - New method `get_device_information_list()`. Substitutes the `device_information()` method.
 
+- FritzMonitor:
+
+  - bugfix: create new socket on lost connection. (#179)
+
 - Deprecations:
 
   - `fritzconnection.lib.fritzhomeauto.FritzHomeAutomation.device_information()`
-
 
 
 1.11.0 - 2023-01-28
