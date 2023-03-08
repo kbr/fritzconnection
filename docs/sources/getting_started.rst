@@ -476,13 +476,13 @@ The default setting for `use_tls` is `False`. For the command line tools encrypt
 Environment-Variables
 ---------------------
 
-Some arguments given to `FritzConnection` can be stored in the environment. This has the advantage that arguments like `user` and `password` don't have to be hardcoded and other defaults can be defined.
+Some arguments given to `FritzConnection` can be stored in the environment. This has the advantage that arguments like `user` and `password` don't have to be provided as hardcoded arguments. The following environment variables are checked in case that a corresponding argument is missing:
 
-- ``FRITZ_USERNAME`` provide the username
-- ``FRITZ_PASSWORD`` provide the password
-- ``FRITZ_USECACHE`` set to `True` or `False` (default: `False`)
-- ``FRITZ_CACHEFORMAT`` set to `json` or `pickle` (default: `pickle`)
-- ``FRITZ_CACHEDIRECTORY`` set to path (default: `~.fritzconnection`)
+- ``FRITZ_USERNAME`` – the username
+- ``FRITZ_PASSWORD`` – the password
+- ``FRITZ_USECACHE`` – `True` or `False` (default: `False`)
+- ``FRITZ_CACHEFORMAT`` – `json` or `pickle` (default: `pickle`)
+- ``FRITZ_CACHEDIRECTORY`` – the cache-directory path (default: `~.fritzconnection`)
 
 The default-values are used if neither an argument is given to `fritzconnection()` nor an environment-variable is defined.
 
