@@ -5,7 +5,7 @@ phone-call events.
 To run fritzmonitor, the CallMonitor service of the box has to be activated.
 This can be done with any registered Phone by typing the following codes:
 activate: #96*5*
-deactivate: #96*4* 
+deactivate: #96*4*
 """
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection
@@ -49,7 +49,7 @@ def delayer(
 class EventReporter:
     """
     Takes a Queue and implements a buffer for line-separated data.
-    If at least one line is in the buffer, the line gets put into the 
+    If at least one line is in the buffer, the line gets put into the
     Queue for further processing elsewhere (by a routine reading the queue).
     """
 
@@ -99,6 +99,7 @@ class FritzMonitor:
         self.stop_flag = threading.Event()
         self.monitor_thread = None
         self.encoding = encoding
+        self.mock_socket = None  # for testing
 
     def __enter__(self):
         return self
@@ -131,23 +132,26 @@ class FritzMonitor:
         sock=None,
     ):
         """
-        Start the monitor thread and return a Queue instance with the given size
-        to report the call_monitor events. Events are of type string. Raises an
-        `OSError` if the socket can not get connected in a given timeout. Raises
-        a `RuntimeError` if start() get called a second time without calling
-        stop() first. `queue_size` is the number of events the queue can store.
-        If `block_on_filled_queue` is False the event will get discarded in case
-        of no free block (default). On True the EventReporter will block until a
-        slot is available. `reconnect_delay` defines the maximum time interval in
-        seconds between reconnection tries, in case that a socket-connection
-        gets lost. `reconnect_tries` defines the number of consecutive to
-        reconnect a socket before giving up.
+        Start the monitor thread and return a Queue instance with the
+        given size to report the call_monitor events. Events are of type
+        string. Raises an `OSError` if the socket can not get connected
+        in a given timeout. Raises a `RuntimeError` if start() get
+        called a second time without calling stop() first. `queue_size`
+        is the number of events the queue can store. If
+        `block_on_filled_queue` is False the event will get discarded in
+        case of no free block (default). On True the EventReporter will
+        block until a slot is available. `reconnect_delay` defines the
+        maximum time interval in seconds between reconnection tries, in
+        case that a socket-connection gets lost. `reconnect_tries`
+        defines the number of consecutive to reconnect a socket before
+        giving up. `sock` is used for testing to inject a mock-socket.
         """
         if self.monitor_thread:
             # It's an error to create a second thread for monitoring
             raise RuntimeError("A FritzMonitor thread is already running")
+        self.mock_socket = sock
         # get socket or raise OSError in main thread:
-        sock = self._get_connected_socket(sock=sock)
+        sock = self._get_connected_socket()
         monitor_queue = queue.Queue(maxsize=queue_size)
         kwargs = {
             "monitor_queue": monitor_queue,
@@ -172,13 +176,15 @@ class FritzMonitor:
                 self.monitor_thread.join()  # wait for termination without timeout
             self.monitor_thread = None
 
-    def _get_connected_socket(self, sock=None):
+    def _get_connected_socket(self):
         """
         Takes the given socket and builds a connection to address and port defined
         at instantiation. If no socket is given a new one gets created.
         Returns the socket.
         """
-        if sock is None:
+        if self.mock_socket:
+            sock = self.mock_socket
+        else:
             sock = socket.socket()
             # these options should work on all platforms:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
@@ -196,7 +202,6 @@ class FritzMonitor:
 
     def _reconnect_socket(
         self,
-        sock,
         max_reconnect_delay=MAX_RECONNECT_DELAY,
         reconnect_tries=RECONNECT_TRIES,
     ):
@@ -208,7 +213,7 @@ class FritzMonitor:
         while reconnect_tries > 0:
             next(reconnect_delay)
             try:
-                self._get_connected_socket(sock)
+                self._get_connected_socket()
             except OSError:
                 reconnect_tries -= 1
             else:
@@ -243,7 +248,6 @@ class FritzMonitor:
                 # empty response indicates a lost connection.
                 # try to reconnect.
                 success = self._reconnect_socket(
-                    sock,
                     max_reconnect_delay=reconnect_delay,
                     reconnect_tries=reconnect_tries,
                 )
