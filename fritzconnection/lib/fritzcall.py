@@ -128,6 +128,12 @@ class FritzCall(AbstractLibraryBase):
         """
         arg = {'NewX_AVM-DE_PhoneNumber': number}
         self.fc.call_action('X_VoIP1', 'X_AVM-DE_DialNumber', arguments=arg)
+        
+    def hangup(self):
+        """
+        Terminates the dialling process initiated by the dial function.
+        """
+        self.fc.call_action('X_VoIP1', 'X_AVM-DE_DialHangup')
 
 
 class AttributeConverter:
