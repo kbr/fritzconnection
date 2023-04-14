@@ -3,6 +3,13 @@
 Version History
 ===============
 
+development
+-----------
+
+- FritzCall:
+
+  - New method `hangup()`. (#184)
+
 
 1.12.0 - 2023-03-08
 -------------------
