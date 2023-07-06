@@ -204,6 +204,7 @@ class FritzHosts(AbstractLibraryBase):
         .. versionadded:: 1.10
         """
         result = self._action("X_AVM-DE_GetHostListPath")
-        url = result["NewX_AVM-DE_HostListPath"]
-        storage = HostStorage(get_xml_root(url, self.fc.session))
+        path = result["NewX_AVM-DE_HostListPath"]
+        url = f"{self.fc.address}:{self.fc.port}{path}"
+        storage = HostStorage(get_xml_root(source=url, session=self.fc.session))
         return storage.hosts_attributes
