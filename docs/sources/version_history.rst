@@ -10,6 +10,10 @@ development
 
   - New method `hangup()`. (#184)
 
+- FritzHosts:
+
+  - bugfix: removed issues preventing the method `get_hosts_attributes()` to return a list of dictionaries representing the host-attributes. (#190)
+
 
 1.12.0 - 2023-03-08
 -------------------
