@@ -24,6 +24,7 @@ setup(
     packages=find_packages(exclude=["*.tests"]),
     license="MIT",
     description="Communicate with the AVM FRITZ!Box",
+    long_description_content_type="text/markdown",
     long_description=get_long_description(),
     author="Klaus Bremer",
     author_email="bremer@bremer-media.com",

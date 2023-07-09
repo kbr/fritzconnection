@@ -4,6 +4,12 @@ Version History
 ===============
 
 
+1.12.2 - 2023-07-09
+-------------------
+
+- bugfix in 'setup.py`: add `long_description_content_type="text/markdown"`, because it is not used as default.
+
+
 1.12.1 - 2023-07-09
 -------------------
 
