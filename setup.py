@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 
 def get_long_description():
-    with open("README.rst") as file:
+    with open("README.md") as file:
         return file.read()
 
 
