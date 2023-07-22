@@ -44,6 +44,8 @@ def get_beacon_security(instance, security):
     """
     if not security:
         info = instance.get_info()
+        if "NewX_AVM-DE_PossibleBeaconTypes" not in info:
+            reurn NO_PASS
         beacontypes = set(info["NewX_AVM-DE_PossibleBeaconTypes"].split(","))
         beacontypes -= set(('None', 'OWETrans'))
         beacontype = info["NewBeaconType"]
