@@ -29,6 +29,8 @@ DEFAULT_PASSWORD_LENGTH = 12
 WPA_SECURITY = 'WPA'
 NO_PASS = 'nopass'
 
+POSSIBLE_BEACON_TYPES_KEY = "NewX_AVM-DE_PossibleBeaconTypes"
+
 
 def get_beacon_security(instance, security):
     """
@@ -44,15 +46,14 @@ def get_beacon_security(instance, security):
     """
     if not security:
         info = instance.get_info()
-        if "NewX_AVM-DE_PossibleBeaconTypes" not in info:
-            reurn NO_PASS
-        beacontypes = set(info["NewX_AVM-DE_PossibleBeaconTypes"].split(","))
-        beacontypes -= set(('None', 'OWETrans'))
-        beacontype = info["NewBeaconType"]
-        if beacontype in beacontypes:
-            security = WPA_SECURITY
-        else:
-            security = NO_PASS
+        # check for the POSSIBLE_BEACON_TYPES_KEY argument
+        # as older models may not provide it:
+        if POSSIBLE_BEACON_TYPES_KEY in info:
+            beacontypes = set(info[POSSIBLE_BEACON_TYPES_KEY].split(","))
+            beacontypes -= set(('None', 'OWETrans'))
+            beacontype = info["NewBeaconType"]
+            if beacontype in beacontypes:
+                security = WPA_SECURITY
     return security
 
 
