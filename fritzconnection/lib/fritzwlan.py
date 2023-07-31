@@ -6,11 +6,11 @@ Module to get information about WLAN devices.
 # License: MIT (https://opensource.org/licenses/MIT)
 # Author: Bernd Strebel, Klaus Bremer
 
+from enum import Enum
 import io
 import itertools
 import random
 import string
-
 from warnings import warn
 
 from ..core.exceptions import FritzServiceError
@@ -24,17 +24,51 @@ else:
     SEGNO_INSTALLED = True
 
 # important: don't set an extension number here:
-SERVICE = 'WLANConfiguration'
+SERVICE = "WLANConfiguration"
 DEFAULT_PASSWORD_LENGTH = 12
-WPA_SECURITY = 'WPA'
-NO_PASS = 'nopass'
+
+
+class Security(Enum):
+    """Enum representing different security types for WLAN networks.
+
+    The Security enum class defines constants for various
+    security types used in WLAN networks.
+    Each constant represents a specific security configuration.
+
+    Constants:
+        WPA_TKIP_SECURITY: Security type using WPA with TKIP encryption.
+        WPA2_CCMP_SECURITY: Security type using WPA2 with CCMP/AES encryption.
+        WPA_WPA2_SECURITY: Security type using both WPA and WPA2 (mixed mode).
+        WPA_SECURITY: Deprecated constant for WPA security.
+        NO_PASS: Security type for open networks with no password (no passphrase).
+        NONE_SECURITY (NoneType): Represents no specific security.
+
+    Note:
+        - The WPA_SECURITY constant is duplicated and deprecated.
+          It has the same value as WPA_TKIP_SECURITY.
+        - The NO_PASS constant is used for open networks with no password required.
+        - The NONE_SECURITY constant represents the absence of a specific security configuration.
+
+    Example:
+        >>> network_security = Security.WPA2_CCMP_SECURITY
+        >>> print(network_security)
+        Security.WPA2_CCMP_SECURITY
+
+    """
+
+    WPA_TKIP_SECURITY = "WPA"
+    WPA2_CCMP_SECURITY = "11i"
+    WPA_WPA2_SECURITY = "WPAand11i"
+    WPA_SECURITY = "WPA"
+    NO_PASS_SECURITY = "nopass"
+    NONE_SECURITY = None
+
 
 POSSIBLE_BEACON_TYPES_KEY = "NewX_AVM-DE_PossibleBeaconTypes"
 
 
 def get_beacon_security(instance, security):
-    """
-    Returns the beacon-security as a string based on the security
+    """Returns the beacon-security as a string based on the security
     argument. Possible return values are 'nopass' and 'WPA'. If the
     security is None or an empty string, the function tries to find the
     proper security setting ('nopass'|'WPA'). If security is neither
@@ -48,18 +82,26 @@ def get_beacon_security(instance, security):
         info = instance.get_info()
         # check for the POSSIBLE_BEACON_TYPES_KEY argument
         # as older models may not provide it:
+        beacontype = info["NewBeaconType"]
         if POSSIBLE_BEACON_TYPES_KEY in info:
             beacontypes = set(info[POSSIBLE_BEACON_TYPES_KEY].split(","))
-            beacontypes -= set(('None', 'OWETrans'))
-            beacontype = info["NewBeaconType"]
+            beacontypes -= set(("None", "OWETrans"))
             if beacontype in beacontypes:
-                security = WPA_SECURITY
-    return security
+                security = Security.WPA_SECURITY
+        elif beacontype in {security.value for security in Security}:
+            if beacontype == Security.NO_PASS_SECURITY.value:
+                security = Security.NO_PASS_SECURITY.value
+            elif beacontype in [
+                Security.WPA2_CCMP_SECURITY.value,
+                Security.WPA_WPA2_SECURITY.value,
+            ]:
+                security = f"{Security.WPA_SECURITY.value}2"
+            else:
+                security = Security.WPA_SECURITY.value
+    return Security.WPA_SECURITY.value
 
 
-def get_wifi_qr_code(instance, kind='svg',
-                     security=None, hidden=False,
-                     scale=4):
+def get_wifi_qr_code(instance, kind="svg", security=None, hidden=False, scale=4):
     """
     Returns a file-like object providing a bytestring representing a
     qr-code for wlan access. `instance` is a FritzWLAN or FritzGuestWLAN
@@ -112,7 +154,7 @@ def get_wifi_qr_code(instance, kind='svg',
         ssid=instance.ssid,
         password=instance.get_password(),
         security=security,
-        hidden=hidden
+        hidden=hidden,
     )
     qr_code.save(out=stream, kind=kind, scale=scale)
     stream.seek(0)
@@ -139,12 +181,13 @@ class FritzWLAN(AbstractLibraryBase):
     for 2.4 GHz, 2 for 5 GHz and 3 for a guest network. This can vary
     depending on the router model and change with future standards.
     """
+
     def __init__(self, *args, service=1, **kwargs):
         super().__init__(*args, **kwargs)
         self.service = service
 
     def _action(self, actionname, **kwargs):
-        service = f'{SERVICE}{self.service}'
+        service = f"{SERVICE}{self.service}"
         return self.fc.call_action(service, actionname, **kwargs)
 
     @property
@@ -153,8 +196,8 @@ class FritzWLAN(AbstractLibraryBase):
         Number of registered wlan devices for the active
         WLANConfiguration.
         """
-        result = self._action('GetTotalAssociations')
-        return result['NewTotalAssociations']
+        result = self._action("GetTotalAssociations")
+        return result["NewTotalAssociations"]
 
     @property
     def total_host_number(self):
@@ -176,12 +219,12 @@ class FritzWLAN(AbstractLibraryBase):
     @property
     def ssid(self):
         """The WLAN SSID"""
-        result = self._action('GetSSID')
-        return result['NewSSID']
+        result = self._action("GetSSID")
+        return result["NewSSID"]
 
     @ssid.setter
     def ssid(self, value):
-        self._action('SetSSID', NewSSID=value)
+        self._action("SetSSID", NewSSID=value)
 
     @property
     def beacontype(self):
@@ -192,17 +235,22 @@ class FritzWLAN(AbstractLibraryBase):
         settings and `None, 11i, 11iandWPA3, OWETrans` for the guest
         network.
         """
-        return self.get_info()['NewBeaconType']
+        return self.get_info()["NewBeaconType"]
 
     @property
     def channel(self):
         """The WLAN channel in use"""
-        return self.channel_info()['NewChannel']
+        return self.channel_info()["NewChannel"]
 
     @property
     def alternative_channels(self):
-        """Alternative channels (as string)"""
-        return self.channel_info()['NewPossibleChannels']
+        """Alternative channels (as string)."""
+        return self.channel_info()["NewPossibleChannels"]
+
+    @property
+    def get_wifi_qr_code(self, kind):
+        """Returns a file-like object providing a bytestring representing a qr-code for WLAN access."""
+        return get_wifi_qr_code(self, kind)
 
     def channel_infos(self):
         """
@@ -218,24 +266,21 @@ class FritzWLAN(AbstractLibraryBase):
         *NewPossibleChannels* indicating the active channel and
         alternative ones.
         """
-        return self._action('GetChannelInfo')
+        return self._action("GetChannelInfo")
 
     def set_channel(self, number):
         """
         Set a new channel. *number* must be a valid channel number for
         the active WLAN. (Valid numbers are listed by *alternative_channels*.)
         """
-        self._action('SetChannel', NewChannel=number)
+        self._action("SetChannel", NewChannel=number)
 
     def get_generic_host_entry(self, index):
         """
         Return a dictionary with information about the device
         internally stored at the position 'index'.
         """
-        result = self._action(
-            'GetGenericAssociatedDeviceInfo',
-            NewAssociatedDeviceIndex=index
-        )
+        result = self._action("GetGenericAssociatedDeviceInfo", NewAssociatedDeviceIndex=index)
         return result
 
     def get_specific_host_entry(self, mac_address):
@@ -243,10 +288,7 @@ class FritzWLAN(AbstractLibraryBase):
         Return a dictionary with information about the device
         with the given 'mac_address'.
         """
-        result = self._action(
-            'GetSpecificAssociatedDeviceInfo',
-            NewAssociatedDeviceMACAddress=mac_address
-        )
+        result = self._action("GetSpecificAssociatedDeviceInfo", NewAssociatedDeviceMACAddress=mac_address)
         return result
 
     def get_hosts_info(self):
@@ -261,15 +303,17 @@ class FritzWLAN(AbstractLibraryBase):
                 host = self.get_generic_host_entry(index)
             except IndexError:
                 break
-            information.append({
-                'service': self.service,
-                'index': index,
-                'status': host['NewAssociatedDeviceAuthState'],
-                'mac': host['NewAssociatedDeviceMACAddress'],
-                'ip': host['NewAssociatedDeviceIPAddress'],
-                'signal': host['NewX_AVM-DE_SignalStrength'],
-                'speed': host['NewX_AVM-DE_Speed']
-            })
+            information.append(
+                {
+                    "service": self.service,
+                    "index": index,
+                    "status": host["NewAssociatedDeviceAuthState"],
+                    "mac": host["NewAssociatedDeviceMACAddress"],
+                    "ip": host["NewAssociatedDeviceIPAddress"],
+                    "signal": host["NewX_AVM-DE_SignalStrength"],
+                    "speed": host["NewX_AVM-DE_Speed"],
+                }
+            )
         return information
 
     def get_info(self):
@@ -357,6 +401,7 @@ class FritzGuestWLAN(FritzWLAN):
     number in seconds, `use_tls` a boolean indicating to use TLS
     (default False).
     """
+
     def __init__(self, *args, **kwargs):
         """
         Initialize the guest wlan instance. All parameters are
