@@ -39,12 +39,9 @@ def print_status(fs):
 
 def main():
     args = get_cli_arguments()
-    if not args.password:
-        print("Exit: password required.")
-    else:
-        fs = get_instance(FritzStatus, args)
-        print_header(fs)
-        print_status(fs)
+    fs = get_instance(FritzStatus, args)
+    print_header(fs)
+    print_status(fs)
 
 
 if __name__ == "__main__":
