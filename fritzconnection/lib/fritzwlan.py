@@ -6,7 +6,6 @@ Module to get information about WLAN devices.
 # License: MIT (https://opensource.org/licenses/MIT)
 # Author: Bernd Strebel, Klaus Bremer
 
-from enum import Enum
 import io
 import itertools
 import random
