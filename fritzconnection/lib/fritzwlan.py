@@ -10,7 +10,6 @@ import io
 import itertools
 import random
 import string
-
 from warnings import warn
 
 from ..core.exceptions import FritzServiceError
@@ -29,6 +28,8 @@ DEFAULT_PASSWORD_LENGTH = 12
 WPA_SECURITY = 'WPA'
 NO_PASS = 'nopass'
 
+POSSIBLE_BEACON_TYPES_KEY = "NewX_AVM-DE_PossibleBeaconTypes"
+
 
 def get_beacon_security(instance, security):
     """
@@ -43,14 +44,22 @@ def get_beacon_security(instance, security):
     .. versionadded:: 1.10
     """
     if not security:
+        security = NO_PASS
         info = instance.get_info()
-        beacontypes = set(info["NewX_AVM-DE_PossibleBeaconTypes"].split(","))
-        beacontypes -= set(('None', 'OWETrans'))
         beacontype = info["NewBeaconType"]
-        if beacontype in beacontypes:
-            security = WPA_SECURITY
+        # check for the POSSIBLE_BEACON_TYPES_KEY argument
+        # as older models may not provide it:
+        if POSSIBLE_BEACON_TYPES_KEY in info:
+            beacontypes = set(info[POSSIBLE_BEACON_TYPES_KEY].split(","))
+            beacontypes -= set(('None', 'OWETrans'))
+            if beacontype in beacontypes:
+                security = WPA_SECURITY
         else:
-            security = NO_PASS
+            # dealing with an older model
+            # assuming at least providing WPA security
+            # (unable to test for WEP because of missing hardware)
+            if beacontype != "None":
+                security = WPA_SECURITY
     return security
 
 
