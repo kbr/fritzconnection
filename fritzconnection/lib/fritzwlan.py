@@ -44,17 +44,21 @@ def get_beacon_security(instance, security):
     .. versionadded:: 1.10
     """
     if not security:
+        security = NO_PASS
         info = instance.get_info()
         beacontype = info["NewBeaconType"]
+        # check for the POSSIBLE_BEACON_TYPES_KEY argument
+        # as older models may not provide it:
         if POSSIBLE_BEACON_TYPES_KEY in info:
             beacontypes = set(info[POSSIBLE_BEACON_TYPES_KEY].split(","))
             beacontypes -= set(('None', 'OWETrans'))
             if beacontype in beacontypes:
                 security = WPA_SECURITY
-        elif beacontype:
-            if beacontype == NO_PASS:
-                security = NO_PASS
-            else:
+        else:
+            # dealing with an older model
+            # assuming at least providing WPA security
+            # (unable to test for WEP because of missing hardware)
+            if beacontype != "None":
                 security = WPA_SECURITY
     return security
 
