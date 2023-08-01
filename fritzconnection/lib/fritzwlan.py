@@ -206,11 +206,6 @@ class FritzWLAN(AbstractLibraryBase):
         """Alternative channels (as string)"""
         return self.channel_info()['NewPossibleChannels']
 
-    @property
-    def get_wifi_qr_code(self, kind):
-        """Returns a file-like object providing a bytestring representing a qr-code for WLAN access."""
-        return get_wifi_qr_code(self, kind)
-
     def channel_infos(self):
         """
         .. deprecated:: 1.9.0
