@@ -4,6 +4,13 @@ Version History
 ===============
 
 
+development
+-----------
+
+- bugfix: unneeded password request removed. (#192)
+
+
+
 1.12.2 - 2023-07-09
 -------------------
 
