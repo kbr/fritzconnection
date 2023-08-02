@@ -1,10 +1,13 @@
 
-.coverage
-.coveralls.yml
 .DS_Store
+.coverage
+.coveragec
+.coveralls.yml
 .pytest*
 .Python
 .tox
+.nox
+.pytest_cache
 .vscode/*
 *.ipynb*
 *.pyc

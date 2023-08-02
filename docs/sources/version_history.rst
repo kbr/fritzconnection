@@ -7,8 +7,16 @@ Version History
 development
 -----------
 
-- bugfix: make `fritzwlan.get_beacon_security` work with older router models not supporting the `NewX_AVM-DE_PossibleBeaconTypes` argument. (#191)
+
+- command line interfaces: check for a given password removed and substituted by a meaningfull error message in case of authorization failure. Not every service is password-protected and passwords can optionally stored in the environment. Therefore no need to require a password at cli level. (Changes triggered by #192)
+
 - bugfix: unneeded password request removed from the fritzstatus command line interface. (#192)
+
+- bugfix: make `fritzwlan.get_beacon_security` work with older router models not supporting the `NewX_AVM-DE_PossibleBeaconTypes` argument. (#191)
+
+- Internal changes:
+
+  - tests extended for Python 3.12 (excluding opencv)
 
 
 1.12.2 - 2023-07-09
