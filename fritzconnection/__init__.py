@@ -2,15 +2,15 @@
 fritzconnection
 
 library to communicate with the AVM Fritz!Box
-via Soap and TR-064.
-provides also interface for realtime call-monitoring.
+by the TR-064 protocoll and allowes access via the http-interface.
+Provides also an interface for realtime call-monitoring.
 
 for documentation refer:
 https://avm.de/service/schnittstellen/
 https://fritzconnection.readthedocs.io/
 """
 
-__version__ = "1.12.2"
+__version__ = "1.13.dev"
 
 # import shortcuts
 from .core.fritzconnection import FritzConnection

@@ -4,9 +4,7 @@
 ![](https://img.shields.io/pypi/pyversions/fritzconnection.svg)
 ![](https://img.shields.io/pypi/l/fritzconnection.svg)
 
-Python-Interface to communicate with the AVM Fritz!Box and connected devices.
-
-Supports the TR-064 protocol, the (AHA-)HTTP-Interface and also allows call-monitoring.
+Python-Interface to communicate with the AVM Fritz!Box. Supports the TR-064 protocol, the (AHA-)HTTP-Interface and also allows call-monitoring.
 
 
 ## Installation
@@ -50,7 +48,7 @@ FritzConnection provides two basic commands to communicate with the router APIs:
 
 ### Username and password
 
-To avoid hardcoding the arguments `user` and `password`  in applications FritzConnection can read both from the environment variables `FRITZ_USERNAME` and `FRITZ_PASSWORD`.
+To avoid hardcoding the arguments `user` and `password` in applications FritzConnection can read both from the environment variables `FRITZ_USERNAME` and `FRITZ_PASSWORD`.
 
 
 ### Caching
