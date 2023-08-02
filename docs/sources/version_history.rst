@@ -7,8 +7,8 @@ Version History
 development
 -----------
 
-- bugfix: unneeded password request removed. (#192)
-
+- bugfix: make `fritzwlan.get_beacon_security` work with older router models not supporting the `NewX_AVM-DE_PossibleBeaconTypes` argument. (#191)
+- bugfix: unneeded password request removed from the fritzstatus command line interface. (#192)
 
 
 1.12.2 - 2023-07-09

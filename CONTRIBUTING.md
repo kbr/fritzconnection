@@ -6,7 +6,7 @@ The project is not large enough to need a lot of rules, but here are some guidel
 
 ## Issues
 
-In case you think that something is not working as expected or you have a new idea, feel free to create an issue. Especially if you want to provide a pull-request, it is a good idea to create an issue first. Please also keep in mind that issues are not for support. For support try 'discussions' or a public python-forum.
+In case you think that something is not working as expected or you have a new idea, feel free to create an issue. Especially if you want to provide a pull-request, it is a good idea to create an issue first. Please also keep in mind that issues are not for support. For support try 'discussions' (but please keep in mind that this is not a commercial product, so you may get support or not).
 
 
 ## Pull requests
@@ -15,22 +15,24 @@ In general pull requests are welcome. But please create an issue first before pu
 
 For pull requests there is a golden rule: the smaller the better. Smaller pull requests are easier to review and easier to merge – especially in cases when not every part of a larger changeset should get merged.
 
-Please try to avoid to just change some formatting, or also change some formatting. The result is most often just git-diff pollution hiding the important changes.
+Please avoid to just change the formatting. The result is most often nothing else than git-diff pollution. This is especially true for `black` – this project startet before `black` (or `blue`). It is ok to use `black` for modified code snippets, but not for a module, because this can lead to the mentioned diff-pollution.
 
 
 ## Status of core and lib
 
-fritzconnection is mainly the code in the core-directory. This code is pretty stable so far.
+fritzconnection is mainly the code in the core-directory. This code is pretty mature and stable so far.
 
 Most changes are in the library (the lib-directory). The library started mainly as a collection of examples how to use the core. Because it's easier to use an existing function instead of reading the AVM TR-064 documentation, the library modules have grown over time.
 
-But every action supported by AVM can get executed without the library. So best enhancements should be not too trivial.
+But every action supported by AVM can get executed without the library. So best enhancements should not be to trivial.
 
 
 ## Style guide
 
 - In general the style guide is PEP 8.
 - Recommended maximum line length is 80 something.
+- Use proper names: i.e. an atrribute for `attributes` or `properties`, a verb for `callables`.
+- Try to avoid `black` (see "Pull requests")
 
 
 ## Comments
