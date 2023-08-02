@@ -34,6 +34,16 @@ def print_header(instance):
     print()
 
 
+def print_common_exception_message(error_object):
+        print(error_object)
+        print(
+            "\nSeems you forgot to provide the user and/or the password."
+            "\nYou can provide these with the flag -u and -p or store them"
+            "\nin the environment as FRITZ_USERNAME and FRITZ_PASSWORD."
+            "\n(Environment changes will get recognized by new processes.)\n"
+        )
+
+
 def get_instance(cls, args):
     # -y implies -x:
     if not args.verify_cache:

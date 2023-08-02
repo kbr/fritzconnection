@@ -12,9 +12,14 @@ Author: Klaus Bremer
 
 import itertools
 
-from ..core.exceptions import FritzServiceError
+from ..core.exceptions import FritzServiceError, FritzAuthorizationError
 from ..lib.fritzwlan import FritzWLAN, SERVICE
-from . utils import get_cli_arguments, get_instance, print_header
+from . utils import (
+    get_cli_arguments,
+    get_instance,
+    print_header,
+    print_common_exception_message
+)
 
 
 def get_header():
@@ -66,14 +71,18 @@ def add_arguments(parser):
                         help='WLANConfiguration service number')
 
 
+def execute():
+    arguments = get_cli_arguments(add_arguments)
+    fritz_wlan = get_instance(FritzWLAN, arguments)
+    print_header(fritz_wlan)
+    report_devices(fritz_wlan, arguments)
+
+
 def main():
-    args = get_cli_arguments(add_arguments)
-    if not args.password:
-        print('Exit: password required.')
-    else:
-        fw = get_instance(FritzWLAN, args)
-        print_header(fw)
-        report_devices(fw, args)
+    try:
+        execute()
+    except FritzAuthorizationError as err:
+        print_common_exception_message(err)
 
 
 if __name__ == '__main__':

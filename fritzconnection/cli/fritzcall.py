@@ -10,8 +10,14 @@ License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
 
+from ..core.exceptions import FritzAuthorizationError
 from ..lib.fritzcall import FritzCall
-from . utils import get_cli_arguments, get_instance, print_header
+from . utils import (
+    get_cli_arguments,
+    get_instance,
+    print_header,
+    print_common_exception_message
+)
 
 
 def report_calls(fc, arguments):
@@ -59,17 +65,21 @@ def add_arguments(parser):
                         help='phone number to call')
 
 
-def main():
-    arguments = get_cli_arguments(add_arguments)
-    if not arguments.password:
-        print('Exit: password required.')
-        return
+def execute(arguments):
     fc = get_instance(FritzCall, arguments)
     if arguments.call:
         dial_number(fc, arguments.call)
     else:
         print_header(fc)
         report_calls(fc, arguments)
+
+
+def main():
+    arguments = get_cli_arguments(add_arguments)
+    try:
+        execute(arguments)
+    except FritzAuthorizationError as err:
+        print_common_exception_message(err)
 
 
 if __name__ == '__main__':

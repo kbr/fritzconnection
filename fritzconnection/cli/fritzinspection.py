@@ -11,8 +11,14 @@ Author: Klaus Bremer
 
 import datetime
 
+from ..core.exceptions import FritzAuthorizationError
 from ..core.fritzconnection import FritzConnection
-from . utils import get_cli_arguments, get_instance, print_header
+from .utils import (
+    get_cli_arguments,
+    get_instance,
+    print_header,
+    print_common_exception_message
+)
 
 
 class FritzInspection:
@@ -147,12 +153,18 @@ def run_inspector(inspector, args):
     print()
 
 
-def main():
-    """CLI entry point."""
+def execute():
     args = get_cli_arguments(add_arguments)
     fc = get_instance(FritzConnection, args)
     inspector = FritzInspection(fc=fc)
     run_inspector(inspector, args)
+
+
+def main():
+    try:
+        execute()
+    except FritzAuthorizationError as err:
+        print_common_exception_message(err)
 
 
 if __name__ == '__main__':

@@ -10,8 +10,14 @@ License: MIT (https://opensource.org/licenses/MIT)
 Authors: Klaus Bremer, David M. Straub
 """
 
+from ..core.exceptions import FritzAuthorizationError
 from ..lib.fritzphonebook import FritzPhonebook
-from . utils import get_cli_arguments, get_instance, print_header
+from .utils import (
+    get_cli_arguments,
+    get_instance,
+    print_header,
+    print_common_exception_message
+)
 
 
 def print_phonebooks(fpb):
@@ -58,21 +64,26 @@ def add_arguments(parser):
                         help='Number for name search')
 
 
-def main():
-    args = get_cli_arguments(add_arguments)
-    if not args.password:
-        print('Exit: password required.')
-        return
-    fpb = get_instance(FritzPhonebook, args)
+def execute():
+    arguments = get_cli_arguments(add_arguments)
+    fpb = get_instance(FritzPhonebook, arguments)
     print_header(fpb)
     print('FritzPhonebook:\n')
-    if args.all:
+    if arguments.all:
         print_phonebooks(fpb)
-    elif args.name:
-        print_search_name(fpb, args)
-    elif args.number:
-        print_search_number(fpb, args)
+    elif arguments.name:
+        print_search_name(fpb, arguments)
+    elif arguments.number:
+        print_search_number(fpb, arguments)
     print()  # blank line for better readability
+
+
+def main():
+    try:
+        execute()
+    except FritzAuthorizationError as err:
+        # should not happen for this service
+        print_common_exception_message(err)
 
 
 if __name__ == '__main__':

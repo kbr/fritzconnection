@@ -10,9 +10,18 @@ License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
 
-from ..core.exceptions import FritzServiceError, FritzActionError
+from ..core.exceptions import (
+    FritzServiceError,
+    FritzActionError,
+    FritzAuthorizationError
+)
 from ..lib.fritzstatus import FritzStatus
-from .utils import get_cli_arguments, get_instance, print_header
+from .utils import (
+    get_cli_arguments,
+    get_instance,
+    print_header,
+    print_common_exception_message
+)
 
 
 def print_status(fs):
@@ -37,11 +46,19 @@ def print_status(fs):
     print()
 
 
-def main():
-    args = get_cli_arguments()
-    fs = get_instance(FritzStatus, args)
+def execute():
+    arguments = get_cli_arguments()
+    fs = get_instance(FritzStatus, arguments)
     print_header(fs)
     print_status(fs)
+
+
+def main():
+    try:
+        execute()
+    except FritzAuthorizationError as err:
+        # should not happen for this service
+        print_common_exception_message(err)
 
 
 if __name__ == "__main__":
