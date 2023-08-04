@@ -19,6 +19,11 @@ development
   - tests extended for Python 3.12
   - tests removed for Python 3.6
 
+- Deprecations:
+
+  - `fritzconnection.lib.fritzphonebook..list_phonebooks()`
+
+
 
 1.12.2 - 2023-07-09
 -------------------
