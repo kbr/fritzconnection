@@ -18,6 +18,14 @@ from ..core.processor import HostStorage
 from ..core.utils import get_xml_root
 from .fritzbase import AbstractLibraryBase
 
+# make mypy happy:
+try:
+    from typing import Generator, Mapping, Sequence
+except ImportError:
+    # deprecated in newer python versions where
+    # collections.abc.Generator is subscriptable
+    from collections.abc import Generator, Mapping, Sequence
+from typing import Union  # for python < 3.10
 
 SERVICE = "Hosts1"
 
@@ -36,12 +44,12 @@ class FritzHosts(AbstractLibraryBase):
         return self.fc.call_action(SERVICE, actionname, arguments=arguments, **kwargs)
 
     @property
-    def host_numbers(self):
+    def host_numbers(self) -> int:
         """The number of known hosts."""
         result = self._action("GetHostNumberOfEntries")
         return result["NewHostNumberOfEntries"]
 
-    def get_generic_host_entry(self, index):
+    def get_generic_host_entry(self, index: int) -> Mapping:
         """
         Returns a dictionary with information about a device internally
         registered by the position *index*. Index-positions are
@@ -49,7 +57,7 @@ class FritzHosts(AbstractLibraryBase):
         """
         return self._action("GetGenericHostEntry", NewIndex=index)
 
-    def get_generic_host_entries(self):
+    def get_generic_host_entries(self) -> Generator[Mapping, None, None]:
         """
         Generator returning a dictionary for every host as provided by
         `get_generic_host_entry()`. (See also `get_hosts_info()` that
@@ -61,14 +69,14 @@ class FritzHosts(AbstractLibraryBase):
             except IndexError:
                 break
 
-    def get_specific_host_entry(self, mac_address):
+    def get_specific_host_entry(self, mac_address: str) -> Mapping:
         """
         Returns a dictionary with information about a device addressed
         by the MAC-address.
         """
         return self._action("GetSpecificHostEntry", NewMACAddress=mac_address)
 
-    def get_specific_host_entry_by_ip(self, ip):
+    def get_specific_host_entry_by_ip(self, ip: str) -> Mapping:
         """
         Returns a dictionary with information about a device addressed
         by the ip-address. Provides additional information about
@@ -76,7 +84,7 @@ class FritzHosts(AbstractLibraryBase):
         """
         return self._action("X_AVM-DE_GetSpecificHostEntryByIP", NewIPAddress=ip)
 
-    def get_host_status(self, mac_address):
+    def get_host_status(self, mac_address: str) -> Union[bool, None]:
         """
         Provides status information about the device with the given
         `mac_address`. Returns `True` if the device is active or `False`
@@ -89,7 +97,7 @@ class FritzHosts(AbstractLibraryBase):
             return None
         return result["NewActive"]
 
-    def get_active_hosts(self):
+    def get_active_hosts(self) -> Sequence[Mapping]:
         """
         Returns a list of dicts with information about the active
         devices. The dict-keys are: 'ip', 'name', 'mac', 'status',
@@ -97,7 +105,7 @@ class FritzHosts(AbstractLibraryBase):
         """
         return [host for host in self.get_hosts_info() if host["status"]]
 
-    def get_hosts_info(self):
+    def get_hosts_info(self) -> Sequence[Mapping]:
         """
         Returns a list of dicts with information about the known hosts.
         The dict-keys are: 'ip', 'name', 'mac', 'status',
@@ -123,7 +131,7 @@ class FritzHosts(AbstractLibraryBase):
             )
         return result
 
-    def get_mesh_topology(self, raw=False):
+    def get_mesh_topology(self, raw=False) -> Mapping:
         """
         Returns information about the mesh network topology. If `raw` is
         `False` the topology gets returned as a dictionary with a list
@@ -139,7 +147,7 @@ class FritzHosts(AbstractLibraryBase):
                 raise FritzActionError(message)
             return response.text if raw else response.json()
 
-    def get_wakeonlan_status(self, mac_address):
+    def get_wakeonlan_status(self, mac_address: str) -> bool:
         """
         Returns a boolean whether wake on LAN signal gets send to the
         device with the given `mac_address` in case of a remote access.
@@ -149,7 +157,7 @@ class FritzHosts(AbstractLibraryBase):
         )
         return info["NewAutoWOLEnabled"]
 
-    def set_wakeonlan_status(self, mac_address, status=False):
+    def set_wakeonlan_status(self, mac_address: str, status: bool = False) -> None:
         """
         Sets whether a wake on LAN signal should get send send to the
         device with the given `mac_address` in case of a remote access.
@@ -162,7 +170,7 @@ class FritzHosts(AbstractLibraryBase):
         }
         self._action("X_AVM-DE_SetAutoWakeOnLANByMACAddress", arguments=args)
 
-    def set_host_name(self, mac_address, name):
+    def set_host_name(self, mac_address: str, name: str) -> None:
         """
         Sets the hostname of the device with the given `mac_address` to
         the new `name`.
@@ -173,14 +181,14 @@ class FritzHosts(AbstractLibraryBase):
         }
         self._action("X_AVM-DE_SetHostNameByMACAddress", arguments=args)
 
-    def get_host_name(self, mac_address):
+    def get_host_name(self, mac_address: str) -> str:
         """
         Returns a String with the host_name of the device with the given
         mac_address
         """
         return self.get_specific_host_entry(mac_address)["NewHostName"]
 
-    def run_host_update(self, mac_address):
+    def run_host_update(self, mac_address: str) -> None:
         """
         Triggers the host with the given `mac_address` to run a system
         update. The method returns immediately, but for the device it
@@ -190,7 +198,7 @@ class FritzHosts(AbstractLibraryBase):
         """
         self._action("X_AVM-DE_HostDoUpdate", NewMACAddress=mac_address)
 
-    def get_hosts_attributes(self):
+    def get_hosts_attributes(self) -> Sequence[Mapping[str, Union[bool, int, str]]]:
         """
         Returns a list of dictionaries with information about all hosts.
 
