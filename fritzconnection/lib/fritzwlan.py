@@ -292,7 +292,7 @@ class FritzWLAN(AbstractLibraryBase):
 
     @property
     def is_enabled(self) -> bool:
-        """Returns whether the guest network is enabled."""
+        """Returns whether the network is enabled."""
         return self.get_info()["NewEnable"]
 
     def enable(self) -> None:
