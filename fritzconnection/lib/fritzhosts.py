@@ -22,8 +22,6 @@ from .fritzbase import AbstractLibraryBase
 try:
     from typing import Generator, Mapping, Sequence
 except ImportError:
-    # deprecated in newer python versions where
-    # collections.abc.Generator is subscriptable
     from collections.abc import Generator, Mapping, Sequence
 from typing import Union  # for python < 3.10
 

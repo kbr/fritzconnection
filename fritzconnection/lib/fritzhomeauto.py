@@ -18,6 +18,13 @@ from xml.etree import ElementTree as etree
 
 from .fritzbase import AbstractLibraryBase
 
+# make mypy happy:
+try:
+    from typing import Mapping, Sequence
+except ImportError:
+    from collections.abc import Mapping, Sequence
+from typing import Union  # for python < 3.10
+
 
 # tr-064 homeautomation service
 SERVICE = 'X_AVM-DE_Homeauto1'
@@ -66,7 +73,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         return self.fc.call_action(SERVICE, actionname, arguments=arguments)
 
     @property
-    def get_info(self) -> dict:
+    def get_info(self) -> Mapping[str, Union[str, int]]:
         """
         Return a dictionary with a single key-value pair:
         'NewAllowedCharsAIN': string with all allowed chars for state
@@ -74,7 +81,10 @@ class FritzHomeAutomation(AbstractLibraryBase):
         """
         return self._action('GetInfo')
 
-    def get_device_information_by_index(self, index: int) -> dict:
+    def get_device_information_by_index(
+        self,
+        index: int
+    ) -> Mapping[str, Union[bool, int, str]]:
         """
         Return a dictionary with all device arguments according to the
         AVM documentation (x_homeauto) at the given internal index.
@@ -83,7 +93,10 @@ class FritzHomeAutomation(AbstractLibraryBase):
         """
         return self._action('GetGenericDeviceInfos', NewIndex=index)
 
-    def get_device_information_by_identifier(self, identifier: str) -> dict:
+    def get_device_information_by_identifier(
+        self,
+        identifier: str
+    ) -> Mapping[str, Union[bool, int, str]]:
         """
         Returns a dictionary with all device arguments according to the
         AVM documentation (x_homeauto) with the given identifier (AIN).
@@ -91,7 +104,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         """
         return self._action('GetSpecificDeviceInfos', NewAIN=identifier)
 
-    def device_informations(self) -> list:
+    def device_informations(self) -> Sequence[Mapping[str, Union[bool, int, str]]]:
         """
         .. deprecated:: 1.9.0
            Use :func:`get_device_information_list` instead.
@@ -99,7 +112,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         warn('This method is deprecated. Use "get_device_information_list" instead.', DeprecationWarning)
         return self.get_device_information_list()
 
-    def device_information(self) -> list:
+    def device_information(self) -> Sequence[Mapping[str, Union[bool, int, str]]]:
         """
         .. deprecated:: 1.12.0
            Use :func:`get_device_information_list` instead.
@@ -107,7 +120,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         warn('This method is deprecated. Use "get_device_information_list" instead.', DeprecationWarning)
         return self.get_device_information_list()
 
-    def get_device_information_list(self) -> list:
+    def get_device_information_list(self) -> Sequence[Mapping[str, Union[bool, int, str]]]:
         """
         Returns a list of dictionaries for all known homeauto-devices.
         """
@@ -140,7 +153,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
             return None
         return HomeAutomationDevice(self, information, identifier)
 
-    def get_homeautomation_devices(self) -> list:
+    def get_homeautomation_devices(self) -> Sequence[HomeAutomationDevice]:
         """
         Returns a list with HomeAutomationDevice instances of all known
         home-automation devices. The list is ordered in the way the
@@ -220,7 +233,7 @@ class HomeAutomationDevice:
     def __init__(
         self,
         fh: FritzHomeAutomation,
-        device_information: dict,
+        device_information: Mapping[str, Union[bool, int, str]],
         identifier: Optional[str] = None
     ):
         self.fh = fh
@@ -255,7 +268,7 @@ class HomeAutomationDevice:
         feature_bit = 1 << value
         return feature_bit & self.FunctionBitMask == feature_bit  # type: ignore
 
-    def call_http(self, command: str, **kwargs) -> dict:
+    def call_http(self, command: str, **kwargs) -> Mapping[str, str]:
         """
         Shortcut to access the http-interface of the router.
 
@@ -339,7 +352,7 @@ class HomeAutomationDevice:
             self.fh.get_device_information_by_identifier(self.identifier)
         )
 
-    def get_basic_device_stats(self) -> dict:
+    def get_basic_device_stats(self) -> Mapping:
         """
         Returns a dictionary of device statistics. The content depends on
         the actors supported by a device. The keys can be:
@@ -369,7 +382,7 @@ class HomeAutomationDevice:
         return self.extract_basicdevicestats_response(response)
 
     @staticmethod
-    def extract_basicdevicestats_response(response) -> dict:
+    def extract_basicdevicestats_response(response: Mapping) -> Mapping:
         """
         Converts the xml `response` and returns a dictionary with a
         datastructure described in the method `get_basic_device_stats()`

@@ -26,6 +26,16 @@ def lint(session):
     session.run("pylint", "fritzconnection")
 
 
+@nox.session
+def mypy(session):
+    session.install("-e", ".")
+    session.install("mypy==1.4.1", "types-requests", "segno")
+    session.run("mypy", "fritzconnection/core/fritzconnection.py")
+    session.run("mypy", "fritzconnection/core/fritzmonitor.py")
+    session.run("mypy", "fritzconnection/lib")
+
+
+
 # @nox.session(python=PYTHON_DEVELOPMENT_VERSION)
 # def build(session):
 #     session.install("-e", ".")
