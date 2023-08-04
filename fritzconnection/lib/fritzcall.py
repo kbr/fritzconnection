@@ -9,6 +9,7 @@ missed ones.
 
 
 import datetime
+from typing import Optional
 
 from ..core.processor import (
     processor,
@@ -59,7 +60,7 @@ class FritzCall(AbstractLibraryBase):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.calls = None
+        self.calls = None  # Instance of CallCollection to store Call-instances
 
     def _update_calls(self, num=None, days=None):
         result = self.fc.call_action(SERVICE, 'GetCallList')
@@ -71,8 +72,13 @@ class FritzCall(AbstractLibraryBase):
         root = get_xml_root(url, session=self.fc.session)
         self.calls = CallCollection(root)
 
-    def get_calls(self, calltype=ALL_CALL_TYPES, update=True,
-                        num=None, days=None):
+    def get_calls(
+        self,
+        calltype: int = ALL_CALL_TYPES,
+        update: bool = True,
+        num: Optional[int] = None,
+        days: Optional[int] = None
+    ) -> list:  # for python >= 3.9: -> list[Call]
         """
         Return a list of Call instances of type calltypes. If calltype
         is 0 all calls are listed. If *update* is True, all calls are
@@ -88,17 +94,27 @@ class FritzCall(AbstractLibraryBase):
             return self.calls.calls
         return [call for call in self.calls if call.type == calltype]
 
-    def get_received_calls(self, update=True, num=None, days=None):
+    def get_received_calls(
+        self,
+        update: bool = True,
+        num: Optional[int] = None,
+        days: Optional[int] = None
+    ) -> list:  # for python >= 3.9: -> list[Call]
         """
         Return a list of Call instances of received calls. If *update*
-        is True, all calls are reread from the router. *num* maximum
-        number of entries in call list. *days* number of days to look
+        is True, all calls are reread from the router. *num*: maximum
+        number of entries in call list. *days*: number of days to look
         back for calls e.g. 1: calls from today and yesterday, 7: calls
         from the complete last week.
         """
         return self.get_calls(RECEIVED_CALL_TYPE, update, num, days)
 
-    def get_missed_calls(self, update=True, num=None, days=None):
+    def get_missed_calls(
+        self,
+        update: bool = True,
+        num: Optional[int] = None,
+        days: Optional[int] = None
+    ) -> list:  # for python >= 3.9: -> list[Call]
         """
         Return a list of Call instances of missed calls. If *update* is
         True, all calls are reread from the router. *num* maximum number
@@ -108,7 +124,12 @@ class FritzCall(AbstractLibraryBase):
         """
         return self.get_calls(MISSED_CALL_TYPE, update, num, days)
 
-    def get_out_calls(self, update=True, num=None, days=None):
+    def get_out_calls(
+        self,
+        update: bool = True,
+        num: Optional[int] = None,
+        days: Optional[int] = None
+    ) -> list:  # for python >= 3.9: -> list[Call]
         """
         Return a list of Call instances of outgoing calls. If *update*
         is True, all calls are reread from the router. *num* maximum
@@ -118,7 +139,7 @@ class FritzCall(AbstractLibraryBase):
         """
         return self.get_calls(OUT_CALL_TYPE, update, num, days)
 
-    def dial(self, number):
+    def dial(self, number: str) -> None:
         """
         Dials the given *number* (number must be a string, as phone
         numbers are allowed to start with leading zeros). This method
@@ -128,8 +149,8 @@ class FritzCall(AbstractLibraryBase):
         """
         arg = {'NewX_AVM-DE_PhoneNumber': number}
         self.fc.call_action('X_VoIP1', 'X_AVM-DE_DialNumber', arguments=arg)
-        
-    def hangup(self):
+
+    def hangup(self) -> None:
         """
         Terminates the dialling process initiated by the dial function.
         """
