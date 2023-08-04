@@ -13,6 +13,8 @@ import pickle
 import string
 import xml.etree.ElementTree as ElementTree
 from pathlib import Path
+from typing import Any, Optional
+from typing import Union  # for python < 3.10
 
 import requests
 from requests.auth import HTTPDigestAuth
@@ -24,6 +26,7 @@ from .exceptions import (
     FritzServiceError,
 )
 from .fritzhttp import FritzHttp
+from .processor import Service  # import for typ-hint
 from .soaper import Soaper
 from .utils import (
     get_bool_env,
@@ -169,18 +172,18 @@ class FritzConnection:
 
     def __init__(
         self,
-        address=None,
-        port=None,
-        user=None,
-        password=None,
-        timeout=None,
-        use_tls=False,
-        use_cache=False,
-        verify_cache=True,
-        cache_directory=None,
-        cache_format=None,
-        pool_connections=DEFAULT_POOL_CONNECTIONS,
-        pool_maxsize=DEFAULT_POOL_MAXSIZE,
+        address: Optional[str] = None,
+        port: Optional[int] = None,
+        user: Optional[str] = None,
+        password: Optional[str] = None,
+        timeout: Optional[float] = None,
+        use_tls: bool = False,
+        use_cache: bool = False,
+        verify_cache: bool = True,
+        cache_directory: Optional[Union[str, Path]] = None,
+        cache_format: Optional[str] = None,
+        pool_connections: int = DEFAULT_POOL_CONNECTIONS,
+        pool_maxsize: int = DEFAULT_POOL_MAXSIZE,
     ):
         """
         Initialisation of FritzConnection: reads all data from the box
@@ -262,9 +265,11 @@ class FritzConnection:
         adapter = requests.adapters.HTTPAdapter(
             pool_connections=pool_connections, pool_maxsize=pool_maxsize)
         session.mount(PROTOCOLS[use_tls], adapter)
-        # cache for updatecheck as @functools.cached_property
-        # needs Python >= 3.8:
-        self._updatecheck = None
+
+        # TODO: remove 'self._updatecheck' when 3.7 is no longer supported.
+        # this is a dictionary-based cache
+        self._updatecheck: Optional[dict] = None
+
         # store as instance attributes for use by library modules
         self.address = address
         self.session = session
@@ -290,29 +295,31 @@ class FritzConnection:
             f"FRITZ!OS: {self.system_version}"
         )
 
+    # TODO: change type-hint to -> dict[str, Service]
+    #  when Python 3.8 is no longer supported
     @property
-    def services(self):
+    def services(self) -> dict:  # dict[str, Service] for >= 3.9
         """
         Dictionary of service instances. Keys are the service names.
         """
         return self.device_manager.services
 
     @property
-    def modelname(self):
+    def modelname(self) -> str:
         """
         Returns the modelname of the router.
         """
         return self.device_manager.modelname
 
     @property
-    def system_version(self):
+    def system_version(self) -> str:
         """
         Returns system version if known, otherwise None.
         """
         return self.device_manager.system_version
 
     @property
-    def device_description(self):
+    def device_description(self) -> str:
         """
         Returns a string with the device description. This is a
         combination of the device model name and the installed software
@@ -320,8 +327,11 @@ class FritzConnection:
         """
         return self.call_action("DeviceInfo1", "GetInfo")["NewDescription"]
 
+    # TODO: change to @functools.cached_property
+    # when stopping support for Python 3.7
+    # in this case the self._updatecheck instance attribute is no longer needed.
     @property
-    def updatecheck(self):
+    def updatecheck(self) -> dict:
         """
         Dictionary with information about the hard- and software version of
         the device according to "http://fritz.box/jason_boxinfo.xml".
@@ -338,7 +348,7 @@ class FritzConnection:
         return self._updatecheck
 
     @staticmethod
-    def normalize_name(name):
+    def normalize_name(name: str) -> str:
         """
         Returns the normalized service name. E.g. `WLANConfiguration` and
         `WLANConfiguration:1` will get converted to `WLANConfiguration1`.
@@ -351,7 +361,7 @@ class FritzConnection:
         return name
 
     @staticmethod
-    def set_protocol(url, use_tls):
+    def set_protocol(url: str, use_tls: bool) -> str:
         """
         Sets the protocol of the `url` according to the `use_tls`-flag
         and returns the modified `url`. Does not check whether the `url`
@@ -399,14 +409,17 @@ class FritzConnection:
     # public api:
     # -------------------------------------------
 
+    # TODO: type-hint for arguments could be
+    # `arguments: Optional[dict[str, Union[str, int, bool]]] = None`
+    # for Python >= 3.9
     def call_action(
         self,
-        service_name,
-        action_name,
+        service_name: str,
+        action_name: str,
         *,
-        arguments=None,
+        arguments: Optional[dict] = None,
         **kwargs
-    ):
+    ) -> dict:  # TODO: change to -> dict[str, Any] for Python >= 3.9
         """
         Executes the given action of the given service. Both parameters
         are required. Arguments are optional and can be provided as a
@@ -442,10 +455,10 @@ class FritzConnection:
 
     def call_http(
         self,
-        command,
-        identifier=None,
+        command: str,
+        identifier: Optional[str] = None,
         **kwargs
-    ):
+    ) -> dict:  # TODO: change to -> dict[str, str] for Python >= 3.9
         """
         Excecutes the given command by means of the http-interface. This
         can be useful for homeautomation-task currently not provided by
@@ -485,13 +498,13 @@ class FritzConnection:
             "content": content
         }
 
-    def reconnect(self):
+    def reconnect(self) -> None:
         """
         Terminate the connection and reconnects with a new ip.
         """
         self.call_action("WANIPConn1", "ForceTermination")
 
-    def reboot(self):
+    def reboot(self) -> None:
         """
         Reboot the system.
         """
