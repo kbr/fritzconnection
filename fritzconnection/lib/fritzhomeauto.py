@@ -7,8 +7,12 @@ AHA-HTTP-Interface.
 # License: MIT (https://opensource.org/licenses/MIT)
 # Author: Klaus Bremer
 
+from __future__ import annotations
+
 import datetime
 import itertools
+from typing import Optional
+from typing import Union  # for python < 3.10
 from warnings import warn
 from xml.etree import ElementTree as etree
 
@@ -62,7 +66,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         return self.fc.call_action(SERVICE, actionname, arguments=arguments)
 
     @property
-    def get_info(self):
+    def get_info(self) -> dict:
         """
         Return a dictionary with a single key-value pair:
         'NewAllowedCharsAIN': string with all allowed chars for state
@@ -70,7 +74,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         """
         return self._action('GetInfo')
 
-    def get_device_information_by_index(self, index):
+    def get_device_information_by_index(self, index: int) -> dict:
         """
         Return a dictionary with all device arguments according to the
         AVM documentation (x_homeauto) at the given internal index.
@@ -79,7 +83,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         """
         return self._action('GetGenericDeviceInfos', NewIndex=index)
 
-    def get_device_information_by_identifier(self, identifier):
+    def get_device_information_by_identifier(self, identifier: str) -> dict:
         """
         Returns a dictionary with all device arguments according to the
         AVM documentation (x_homeauto) with the given identifier (AIN).
@@ -87,7 +91,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         """
         return self._action('GetSpecificDeviceInfos', NewAIN=identifier)
 
-    def device_informations(self):
+    def device_informations(self) -> list:
         """
         .. deprecated:: 1.9.0
            Use :func:`get_device_information_list` instead.
@@ -95,7 +99,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         warn('This method is deprecated. Use "get_device_information_list" instead.', DeprecationWarning)
         return self.get_device_information_list()
 
-    def device_information(self):
+    def device_information(self) -> list:
         """
         .. deprecated:: 1.12.0
            Use :func:`get_device_information_list` instead.
@@ -103,7 +107,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         warn('This method is deprecated. Use "get_device_information_list" instead.', DeprecationWarning)
         return self.get_device_information_list()
 
-    def get_device_information_list(self):
+    def get_device_information_list(self) -> list:
         """
         Returns a list of dictionaries for all known homeauto-devices.
         """
@@ -116,7 +120,11 @@ class FritzHomeAutomation(AbstractLibraryBase):
             info.append(device_information)
         return info
 
-    def get_homeautomation_device(self, identifier=None, index=None):
+    def get_homeautomation_device(
+        self,
+        identifier: Optional[str] = None,
+        index: Optional[int] = None
+    ) -> Union[HomeAutomationDevice, None]:
         """
         Returns a HomeAutomationDevice instance. The device can be
         identified by the `identifier` (ain) or the `index` in the
@@ -132,7 +140,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
             return None
         return HomeAutomationDevice(self, information, identifier)
 
-    def get_homeautomation_devices(self):
+    def get_homeautomation_devices(self) -> list:
         """
         Returns a list with HomeAutomationDevice instances of all known
         home-automation devices. The list is ordered in the way the
@@ -143,7 +151,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
             in self.get_device_information_list()
         ]
 
-    def set_switch(self, identifier, on=True):
+    def set_switch(self, identifier: str, on: bool = True) -> None:
         """
         Sets a switch state on devices providing a switch state.
         'identifier' must be the AIN of the device. 'on' is a boolean
@@ -209,7 +217,12 @@ class HomeAutomationDevice:
 
     Depending on the device not all attributes will have a meaning.
     """
-    def __init__(self, fh, device_information, identifier=None):
+    def __init__(
+        self,
+        fh: FritzHomeAutomation,
+        device_information: dict,
+        identifier: Optional[str] = None
+    ):
         self.fh = fh
         self.AIN = identifier
         self._extraxt_device_information_as_attributes(device_information)
@@ -234,15 +247,15 @@ class HomeAutomationDevice:
         for key, value in device_information.items():
             self.__dict__[key[KEY_OFFSET:]] = value
 
-    def _bitmatch(self, value):
+    def _bitmatch(self, value: int) -> bool:
         """
         Returns a boolean whether the `value` bit is set in
         `self.FunctionBitMask`.
         """
         feature_bit = 1 << value
-        return feature_bit & self.FunctionBitMask == feature_bit
+        return feature_bit & self.FunctionBitMask == feature_bit  # type: ignore
 
-    def call_http(self, command, **kwargs):
+    def call_http(self, command: str, **kwargs) -> dict:
         """
         Shortcut to access the http-interface of the router.
 
@@ -254,70 +267,70 @@ class HomeAutomationDevice:
         return self.fh.fc.call_http(command, self.identifier, **kwargs)
 
     @property
-    def identifier(self):
-        return self.AIN
+    def identifier(self) -> str:
+        return self.AIN  # type: ignore
 
     @property
-    def is_han_fun_unit(self):
+    def is_han_fun_unit(self) -> bool:
         return self._bitmatch(HAN_FUN_UNIT_1) or self._bitmatch(HAN_FUN_UNIT_2)
 
     @property
-    def is_bulb(self):
+    def is_bulb(self) -> bool:
         return self._bitmatch(LIGHT_BULB)
 
     @property
-    def is_alarm_sensor(self):
+    def is_alarm_sensor(self) -> bool:
         return self._bitmatch(ALARM_SENSOR)
 
     @property
-    def is_avm_button(self):
+    def is_avm_button(self) -> bool:
         return self._bitmatch(AVM_BUTTON)
 
     @property
-    def is_radiator_control(self):
+    def is_radiator_control(self) -> bool:
         return self._bitmatch(RADIATOR_CONTROL)
 
     @property
-    def is_energy_sensor(self):
+    def is_energy_sensor(self) -> bool:
         return self._bitmatch(ENERGY_SENSOR)
 
     @property
-    def is_temperature_sensor(self):
+    def is_temperature_sensor(self) -> bool:
         return self._bitmatch(TEMPERATURE_SENSOR)
 
     @property
-    def is_pluggable(self):
+    def is_pluggable(self) -> bool:
         return self._bitmatch(PLUGGABLE)
 
     @property
-    def is_avm_dect_repeater(self):
+    def is_avm_dect_repeater(self) -> bool:
         return self._bitmatch(AVM_DECT_REPEATER)
 
     @property
-    def is_microphone(self):
+    def is_microphone(self) -> bool:
         return self._bitmatch(MICROPHONE)
 
     @property
-    def is_switchable(self):
+    def is_switchable(self) -> bool:
         return self._bitmatch(SWITCHABLE)
 
     @property
-    def is_adjustable(self):
+    def is_adjustable(self) -> bool:
         return self._bitmatch(ADJUSTABLE)
 
     @property
-    def is_color_bulb(self):
+    def is_color_bulb(self) -> bool:
         return self._bitmatch(COLOR_BULB)
 
     @property
-    def is_blind(self):
+    def is_blind(self) -> bool:
         return self._bitmatch(BLIND)
 
     @property
-    def is_humidity_sensor(self):
+    def is_humidity_sensor(self) -> bool:
         return self._bitmatch(HUMIDITY_SENSOR)
 
-    def update_device_information(self):
+    def update_device_information(self) -> None:
         """
         Triggers the router to update the device dependent
         instance-attributes.
@@ -326,7 +339,7 @@ class HomeAutomationDevice:
             self.fh.get_device_information_by_identifier(self.identifier)
         )
 
-    def get_basic_device_stats(self):
+    def get_basic_device_stats(self) -> dict:
         """
         Returns a dictionary of device statistics. The content depends on
         the actors supported by a device. The keys can be:
@@ -356,37 +369,40 @@ class HomeAutomationDevice:
         return self.extract_basicdevicestats_response(response)
 
     @staticmethod
-    def extract_basicdevicestats_response(response):
+    def extract_basicdevicestats_response(response) -> dict:
         """
         Converts the xml `response` and returns a dictionary with a
         datastructure described in the method `get_basic_device_stats()`
         """
         # implemented separately for testing.
         # 'stats' and 'datatime' are defined in the AVM xml-protocol
+        # some types are dynamic therefore some 'type: ignore'.
         elements = {}
         content = response['content']
         root = etree.fromstring(content)
         for element in root:
             content = {}
-            stats = element.find("stats")
+            stats: Union[etree.Element, None] = element.find("stats")
+            if stats is None:
+                continue
             for key, value in stats.attrib.items():
-                value = int(value)
+                value = int(value)  # type: ignore
                 if key == "datatime":
-                    value = datetime.datetime.fromtimestamp(value)
+                    value = datetime.datetime.fromtimestamp(value)  # type: ignore
                 content[key] = value
-            content["data"] = list(map(int, stats.text.split(",")))
+            content["data"] = list(map(int, stats.text.split(",")))  # type: ignore
             elements[element.tag] = content
         return elements
 
-    def get_switch_state(self):
+    def get_switch_state(self) -> bool:
         """
         Returns a boolean indicating whether a switchable device is set
         to on (True) or off (False).
         """
         self.update_device_information()
-        return self.SwitchState.lower() == 'on'
+        return self.SwitchState.lower() == 'on'  # type: ignore
 
-    def set_switch(self, on=True):
+    def set_switch(self, on: bool = True) -> None:
         """
         Set a switchable device to 'on' (True) or 'off' (False).
         """
