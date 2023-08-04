@@ -6,6 +6,8 @@ Module for read-only access to the contents of the Fritz!Box phonebooks.
 # License: MIT (https://opensource.org/licenses/MIT)
 # Authors: Klaus Bremer, David M. Straub
 
+from warnings import warn
+
 try:
     from typing import Mapping, Sequence
 except ImportError:
@@ -67,7 +69,7 @@ class FritzPhonebook(AbstractLibraryBase):
            Use :func:`phonebook_ids` instead.
         """
         warn('This method is deprecated. Use "phonebook_ids" instead.', DeprecationWarning)
-        return self.phonebook_ids()
+        return self.phonebook_ids
 
     def phonebook_info(self, id: int) -> Mapping[str, str]:
         """
