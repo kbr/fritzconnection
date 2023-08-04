@@ -12,6 +12,8 @@ base class for library classes providing a common initialisation.
 # Author: Klaus Bremer
 
 
+from typing import Optional
+
 from ..core.fritzconnection import FritzConnection
 
 
@@ -25,13 +27,18 @@ class AbstractLibraryBase:
     meaning as for `FritzConnection.__init__()`. Using positional
     arguments is strongly discouraged. Use keyword arguments instead.
     """
-    def __init__(self, fc=None, *args, **kwargs):
+    def __init__(
+        self,
+        fc: Optional[FritzConnection] = None,
+        *args,
+        **kwargs
+    ):
         if fc is None:
             fc = FritzConnection(*args, **kwargs)
         self.fc = fc
 
     @property
-    def modelname(self):
+    def modelname(self) -> str:
         """
         The device modelname. Every library module derived from
         `AbstractLibraryBase` inherits this property.
