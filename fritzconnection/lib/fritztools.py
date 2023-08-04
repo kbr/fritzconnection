@@ -168,7 +168,7 @@ class ArgumentNamespace(SimpleNamespace):
         return len(self.__dict__)
 
     @staticmethod
-    def rewrite_argument(name, suppress_new=True):
+    def rewrite_argument(name: str, suppress_new: bool = True) -> str:
         """
         Rewrite `name` from MixedCase to snake_case (PEP 8). So i.e.
         "MixedCase" gets converted to "mixed_case". AVM standard

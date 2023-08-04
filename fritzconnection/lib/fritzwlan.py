@@ -10,6 +10,11 @@ import io
 import itertools
 import random
 import string
+try:
+    from typing import Mapping, Sequence
+except ImportError:
+    from collections.abc import Mapping, Sequence
+from typing import Optional
 from warnings import warn
 
 from ..core.exceptions import FritzServiceError
@@ -154,7 +159,7 @@ class FritzWLAN(AbstractLibraryBase):
         return self.fc.call_action(service, actionname, **kwargs)
 
     @property
-    def host_number(self):
+    def host_number(self) -> int:
         """
         Number of registered wlan devices for the active
         WLANConfiguration.
@@ -163,7 +168,7 @@ class FritzWLAN(AbstractLibraryBase):
         return result['NewTotalAssociations']
 
     @property
-    def total_host_number(self):
+    def total_host_number(self) -> int:
         """
         Total NewAssociatedDeviceIndexNumber of registered wlan devices
         for all WLANConfigurations.
@@ -180,17 +185,17 @@ class FritzWLAN(AbstractLibraryBase):
         return total
 
     @property
-    def ssid(self):
+    def ssid(self) -> str:
         """The WLAN SSID"""
         result = self._action('GetSSID')
         return result['NewSSID']
 
     @ssid.setter
-    def ssid(self, value):
+    def ssid(self, value: str) -> None:
         self._action('SetSSID', NewSSID=value)
 
     @property
-    def beacontype(self):
+    def beacontype(self) -> str:
         """
         Represents the beacontype for the network as string.
         At time of writing (OS 7.29) possible values are:
@@ -201,16 +206,16 @@ class FritzWLAN(AbstractLibraryBase):
         return self.get_info()['NewBeaconType']
 
     @property
-    def channel(self):
+    def channel(self) -> int:
         """The WLAN channel in use"""
         return self.channel_info()['NewChannel']
 
     @property
-    def alternative_channels(self):
+    def alternative_channels(self) -> str:
         """Alternative channels (as string)"""
         return self.channel_info()['NewPossibleChannels']
 
-    def channel_infos(self):
+    def channel_infos(self) -> Mapping:
         """
         .. deprecated:: 1.9.0
            Use :func:`channel_info` instead.
@@ -218,7 +223,7 @@ class FritzWLAN(AbstractLibraryBase):
         warn('This method is deprecated. Use "channel_info" instead.', DeprecationWarning)
         return self.channel_info()
 
-    def channel_info(self):
+    def channel_info(self) -> Mapping:
         """
         Return a dictionary with the keys *NewChannel* and
         *NewPossibleChannels* indicating the active channel and
@@ -226,14 +231,14 @@ class FritzWLAN(AbstractLibraryBase):
         """
         return self._action('GetChannelInfo')
 
-    def set_channel(self, number):
+    def set_channel(self, number: int) -> None:
         """
         Set a new channel. *number* must be a valid channel number for
         the active WLAN. (Valid numbers are listed by *alternative_channels*.)
         """
         self._action('SetChannel', NewChannel=number)
 
-    def get_generic_host_entry(self, index):
+    def get_generic_host_entry(self, index: int) -> Mapping:
         """
         Return a dictionary with information about the device
         internally stored at the position 'index'.
@@ -244,7 +249,7 @@ class FritzWLAN(AbstractLibraryBase):
         )
         return result
 
-    def get_specific_host_entry(self, mac_address):
+    def get_specific_host_entry(self, mac_address: str) -> Mapping:
         """
         Return a dictionary with information about the device
         with the given 'mac_address'.
@@ -255,7 +260,7 @@ class FritzWLAN(AbstractLibraryBase):
         )
         return result
 
-    def get_hosts_info(self):
+    def get_hosts_info(self) -> Sequence[Mapping]:
         """
         Returns a list of dictionaries with information about the known
         hosts. The dict-keys are: 'service', 'index', 'status', 'mac',
@@ -278,7 +283,7 @@ class FritzWLAN(AbstractLibraryBase):
             })
         return information
 
-    def get_info(self):
+    def get_info(self) -> Mapping:
         """
         Returns a dictionary with general internal information about
         the current wlan network according to the AVM documentation.
@@ -286,15 +291,15 @@ class FritzWLAN(AbstractLibraryBase):
         return self._action("GetInfo")
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         """Returns whether the guest network is enabled."""
         return self.get_info()["NewEnable"]
 
-    def enable(self):
+    def enable(self) -> None:
         """Enables the associated network."""
         self._set_enable(True)
 
-    def disable(self):
+    def disable(self) -> None:
         """Disables the associated network."""
         self._set_enable(False)
 
@@ -302,11 +307,15 @@ class FritzWLAN(AbstractLibraryBase):
         """Helper function for enable|disable."""
         self._action("SetEnable", arguments={"NewEnable": status})
 
-    def get_password(self):
+    def get_password(self) -> str:
         """Returns the current password of the associated wlan."""
         return self._action("GetSecurityKeys")["NewKeyPassphrase"]
 
-    def set_password(self, password=None, length=DEFAULT_PASSWORD_LENGTH):
+    def set_password(
+        self,
+        password: Optional[str] = None,
+        length: int = DEFAULT_PASSWORD_LENGTH
+    ) -> None:
         """
         Sets a new password for the associated wlan.
         If no password is given a new one is created with the given
