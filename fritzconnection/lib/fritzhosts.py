@@ -9,6 +9,12 @@ Module to access and control the known hosts.
 
 import itertools
 
+try:
+    from typing import Generator, Mapping, Sequence
+except ImportError:
+    from collections.abc import Generator, Mapping, Sequence
+from typing import Union  # for python < 3.10
+
 from ..core.exceptions import (
     FritzActionError,
     FritzArgumentError,
@@ -18,12 +24,6 @@ from ..core.processor import HostStorage
 from ..core.utils import get_xml_root
 from .fritzbase import AbstractLibraryBase
 
-# make mypy happy:
-try:
-    from typing import Generator, Mapping, Sequence
-except ImportError:
-    from collections.abc import Generator, Mapping, Sequence
-from typing import Union  # for python < 3.10
 
 SERVICE = "Hosts1"
 

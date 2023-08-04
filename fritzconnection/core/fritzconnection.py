@@ -13,7 +13,7 @@ import pickle
 import string
 import xml.etree.ElementTree as ElementTree
 from pathlib import Path
-# make mypy happy:
+
 try:
     from typing import Mapping
 except ImportError:

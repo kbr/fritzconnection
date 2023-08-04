@@ -11,19 +11,18 @@ from __future__ import annotations
 
 import datetime
 import itertools
-from typing import Optional
-from typing import Union  # for python < 3.10
 from warnings import warn
 from xml.etree import ElementTree as etree
 
-from .fritzbase import AbstractLibraryBase
-
-# make mypy happy:
 try:
     from typing import Mapping, Sequence
 except ImportError:
     from collections.abc import Mapping, Sequence
+from typing import Optional
 from typing import Union  # for python < 3.10
+
+from .fritzbase import AbstractLibraryBase
+
 
 
 # tr-064 homeautomation service

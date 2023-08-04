@@ -12,6 +12,13 @@ from __future__ import annotations
 
 import datetime
 
+try:
+    from typing import Sequence
+except ImportError:
+    from collections.abc import Sequence
+from typing import Optional
+from typing import Union  # for python < 3.10
+
 from ..core.processor import (
     processor,
     process_node,
@@ -21,13 +28,6 @@ from ..core.processor import (
 from ..core.utils import get_xml_root
 from .fritzbase import AbstractLibraryBase
 
-# make mypy happy:
-try:
-    from typing import Sequence
-except ImportError:
-    from collections.abc import Sequence
-from typing import Optional
-from typing import Union  # for python < 3.10
 
 
 __all__ = ['FritzCall', 'Call']
