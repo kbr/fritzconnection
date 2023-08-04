@@ -16,6 +16,7 @@ development
 - Internal changes:
 
   - command line support for tests changed from tox to nox.
+  - type-hints added to the public APIs.
   - tests extended for Python 3.12
   - tests removed for Python 3.6
 
