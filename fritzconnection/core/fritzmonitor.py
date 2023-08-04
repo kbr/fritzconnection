@@ -18,6 +18,8 @@ import socket
 import threading
 import time
 
+from typing import Optional
+
 
 FRITZ_IP_ADDRESS = "169.254.1.1"
 FRITZ_MONITOR_PORT = 1012
@@ -31,21 +33,6 @@ RECONNECT_DELAY_FACTOR = 10  # factor to increase delays between reconnection tr
 RECONNECT_TRIES = 10  # number of tries to reconnect before giving up
 
 
-def delayer(
-    min_delay=MIN_RECONNECT_DELAY,
-    max_delay=MAX_RECONNECT_DELAY,
-    multiplier=RECONNECT_DELAY_FACTOR,
-):
-    """
-    delay generator with increasing sleep-times.
-    """
-    delay = min(min_delay, max_delay)
-    while True:
-        time.sleep(delay)
-        yield
-        delay = min(delay * multiplier, max_delay)
-
-
 class EventReporter:
     """
     Takes a Queue and implements a buffer for line-separated data.
@@ -53,7 +40,11 @@ class EventReporter:
     Queue for further processing elsewhere (by a routine reading the queue).
     """
 
-    def __init__(self, monitor_queue, block_on_filled_queue=False):
+    def __init__(
+        self,
+        monitor_queue: queue.Queue,
+        block_on_filled_queue: bool = False
+    ):
         """
         Takes the monitor queue (of type queue.Queue) and a boolean
         'block_on_filled_queue'. If 'block_on_filled_queue' is True the thread
@@ -64,7 +55,7 @@ class EventReporter:
         self.monitor_queue = monitor_queue
         self.block_on_filled_queue = block_on_filled_queue
 
-    def add(self, data):
+    def add(self, data: str) -> None:
         """
         Adds the given 'data' to the buffer. If the buffer holds at least one
         line (separated by newline-character), the line (or lines) are put into the
@@ -88,17 +79,17 @@ class FritzMonitor:
 
     def __init__(
         self,
-        address=FRITZ_IP_ADDRESS,
-        port=FRITZ_MONITOR_PORT,
-        timeout=FRITZ_MONITOR_SOCKET_TIMEOUT,
-        encoding="utf-8",
+        address: str = FRITZ_IP_ADDRESS,
+        port: int = FRITZ_MONITOR_PORT,
+        timeout: int = FRITZ_MONITOR_SOCKET_TIMEOUT,
+        encoding: str = "utf-8",
     ):
         self.address = address
         self.port = port
         self.timeout = timeout
-        self.stop_flag = threading.Event()
-        self.monitor_thread = None
         self.encoding = encoding
+        self.stop_flag = threading.Event()
+        self.monitor_thread: Optional[threading.Thread] = None
         self.mock_socket = None  # for testing
 
     def __enter__(self):
@@ -108,7 +99,7 @@ class FritzMonitor:
         self.stop()
 
     @property
-    def has_monitor_thread(self):
+    def has_monitor_thread(self) -> bool:
         """
         Returns True if a monitor-thread has been created.
         That should be the case after calling start() and before calling stop().
@@ -116,21 +107,21 @@ class FritzMonitor:
         return bool(self.monitor_thread)
 
     @property
-    def is_alive(self):
+    def is_alive(self) -> bool:
         """
         Returns True if there is a monitor-thread and the thread is running.
         Returns False otherwise.
         """
-        return self.has_monitor_thread and self.monitor_thread.is_alive()
+        return self.has_monitor_thread and self.monitor_thread.is_alive()  # type: ignore
 
     def start(
         self,
-        queue_size=FRITZ_MONITOR_QUEUE_SIZE,
-        block_on_filled_queue=False,
-        reconnect_delay=MAX_RECONNECT_DELAY,
-        reconnect_tries=RECONNECT_TRIES,
+        queue_size: int = FRITZ_MONITOR_QUEUE_SIZE,
+        block_on_filled_queue: bool = False,
+        reconnect_delay: float = MAX_RECONNECT_DELAY,
+        reconnect_tries: float = RECONNECT_TRIES,
         sock=None,
-    ):
+    ) -> queue.Queue:
         """
         Start the monitor thread and return a Queue instance with the
         given size to report the call_monitor events. Events are of type
@@ -152,7 +143,7 @@ class FritzMonitor:
         self.mock_socket = sock
         # get socket or raise OSError in main thread:
         sock = self._get_connected_socket()
-        monitor_queue = queue.Queue(maxsize=queue_size)
+        monitor_queue = queue.Queue(maxsize=queue_size)  # type: ignore
         kwargs = {
             "monitor_queue": monitor_queue,
             "sock": sock,
@@ -166,7 +157,7 @@ class FritzMonitor:
         self.monitor_thread.start()
         return monitor_queue
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Stop the current running monitor_thread.
         """
@@ -209,7 +200,7 @@ class FritzMonitor:
         Try to reconnect a lost connection on the given socket.
         Returns True on success and False otherwise.
         """
-        reconnect_delay = delayer(max_delay=max_reconnect_delay)
+        reconnect_delay = self._delayer(max_delay=max_reconnect_delay)
         while reconnect_tries > 0:
             next(reconnect_delay)
             try:
@@ -265,3 +256,20 @@ class FritzMonitor:
             pass
         # reset monitor_thread to be able to restart
         self.monitor_thread = None
+
+    @staticmethod
+    def _delayer(
+        min_delay=MIN_RECONNECT_DELAY,
+        max_delay=MAX_RECONNECT_DELAY,
+        multiplier=RECONNECT_DELAY_FACTOR,
+    ):
+        """
+        delay generator with increasing sleep-times.
+        """
+        delay = min(min_delay, max_delay)
+        while True:
+            time.sleep(delay)
+            yield
+            delay = min(delay * multiplier, max_delay)
+
+
