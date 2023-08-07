@@ -7,18 +7,20 @@ Version History
 development
 -----------
 
-- command line interfaces: check for a given password removed and substituted by a meaningfull error message in case of authorization failure. Not every service is password-protected and passwords can optional provided by the environment. Therefore there is no need to require a password at cli level. (Motivated by #192)
-
-- bugfix: unneeded password request removed from the fritzstatus command line interface. (#192)
-
-- bugfix: make `fritzwlan.get_beacon_security` work with older router models not supporting the `NewX_AVM-DE_PossibleBeaconTypes` argument. (#191)
-
 - Internal changes:
 
   - command line support for tests changed from tox to nox.
-  - type-hints added to the public APIs.
-  - tests extended for Python 3.12
-  - tests removed for Python 3.6
+  - type-hints added to the public API.
+  - tests added for Python 3.12
+  - support for Python 3.6 removed
+
+- unneeded password request removed from the fritzstatus command line interface. (#192)
+
+- command line interfaces: check for a given password removed and substituted by a meaningfull error message in case of authorization failure. Not every service is password-protected and passwords can optional provided by the environment. Therefore there is no need to require a password at cli level. (Motivated by #192)
+
+
+- bugfix: make `fritzwlan.get_beacon_security` work with older router models not supporting the `NewX_AVM-DE_PossibleBeaconTypes` argument. (#191)
+
 
 - Deprecations:
 
