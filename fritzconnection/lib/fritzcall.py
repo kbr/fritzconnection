@@ -87,7 +87,7 @@ class FritzCall(AbstractLibraryBase):
         update: bool = True,
         num: Optional[int] = None,
         days: Optional[int] = None
-    ) -> Sequence[Call]:  # for python >= 3.9: -> list[Call]
+    ) -> Sequence[Call]:
         """
         Return a list of Call instances of type calltypes. If calltype
         is 0 all calls are listed. If *update* is True, all calls are
