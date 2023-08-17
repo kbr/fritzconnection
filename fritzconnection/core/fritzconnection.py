@@ -7,17 +7,14 @@ Module to communicate with the AVM Fritz!Box.
 # Author: Klaus Bremer
 
 
+from __future__ import annotations
+
 import json
 import os
 import pickle
 import string
 import xml.etree.ElementTree as ElementTree
 from pathlib import Path
-
-try:
-    from typing import Mapping
-except ImportError:
-    from collections.abc import Mapping
 from typing import Any, Optional
 from typing import Union  # for python < 3.10
 
@@ -303,7 +300,7 @@ class FritzConnection:
     # TODO: change type-hint to -> dict[str, Service]
     #  when Python 3.8 is no longer supported
     @property
-    def services(self) -> Mapping[str, Service]:
+    def services(self) -> dict[str, Service]:
         """
         Dictionary of service instances. Keys are the service names.
         """
@@ -336,7 +333,7 @@ class FritzConnection:
     # when stopping support for Python 3.7
     # in this case the self._updatecheck instance attribute is no longer needed.
     @property
-    def updatecheck(self) -> Mapping:
+    def updatecheck(self) -> dict:
         """
         Dictionary with information about the hard- and software version of
         the device according to "http://fritz.box/jason_boxinfo.xml".
@@ -424,7 +421,7 @@ class FritzConnection:
         *,
         arguments: Optional[dict] = None,
         **kwargs
-    ) -> Mapping[str, Any]:
+    ) -> dict[str, Any]:
         """
         Executes the given action of the given service. Both parameters
         are required. Arguments are optional and can be provided as a
@@ -463,7 +460,7 @@ class FritzConnection:
         command: str,
         identifier: Optional[str] = None,
         **kwargs
-    ) -> Mapping[str, str]:
+    ) -> dict[str, str]:
         """
         Excecutes the given command by means of the http-interface. This
         can be useful for homeautomation-task currently not provided by

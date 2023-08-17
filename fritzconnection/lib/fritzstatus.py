@@ -2,13 +2,11 @@
 Module to read status-information from an AVM FritzBox.
 """
 
+
+from __future__ import annotations
+
 from collections import namedtuple
 from warnings import warn
-
-try:
-    from typing import Mapping, Sequence
-except ImportError:
-    from collections.abc import Mapping, Sequence
 from typing import Any
 from typing import Union  # for python < 3.10
 
@@ -78,7 +76,7 @@ class FritzStatus(AbstractLibraryBase):
         return self.external_ipv6_info["NewExternalIPv6Address"]
 
     @property
-    def external_ipv6_info(self) -> Mapping:
+    def external_ipv6_info(self) -> dict:
         """
         Returns the ipv6 external address information as a dictionary with the keys:
         NewExternalIPv6Address                   out ->     string
@@ -94,7 +92,7 @@ class FritzStatus(AbstractLibraryBase):
         return self.ipv6_prefix_info["NewIPv6Prefix"]
 
     @property
-    def ipv6_prefix_info(self) -> Mapping:
+    def ipv6_prefix_info(self) -> dict:
         """
         Returns the ipv6 prefix information as a dictionary with the keys:
         NewIPv6Prefix                            out ->     string
@@ -167,7 +165,7 @@ class FritzStatus(AbstractLibraryBase):
         return _integer_or_original(value)
 
     @property
-    def transmission_rate(self) -> Sequence[int]:
+    def transmission_rate(self) -> tuple[int, int]:
         """
         The upstream and downstream values as a tuple in bytes per
         second. Use this for periodical calling.
@@ -178,16 +176,16 @@ class FritzStatus(AbstractLibraryBase):
         return upstream, downstream
 
     @property
-    def str_transmission_rate(self) -> Sequence[str]:
+    def str_transmission_rate(self) -> tuple[str, str]:
         """
         Tuple of human-readable transmission rate in bytes. First item
         is upstream, second item downstream.
         """
         upstream, downstream = self.transmission_rate
-        return (format_num(upstream), format_num(downstream))
+        return format_num(upstream), format_num(downstream)
 
     @property
-    def max_linked_bit_rate(self) -> Sequence[int]:
+    def max_linked_bit_rate(self) -> tuple[int, int]:
         """
         Tuple with the maximum upstream- and downstream-rate
         of the physical link. The rate is given in bits/sec.
@@ -195,14 +193,14 @@ class FritzStatus(AbstractLibraryBase):
         return self._get_max_bit_rate("WANCommonInterfaceConfig")
 
     @property
-    def max_bit_rate(self) -> Sequence[int]:
+    def max_bit_rate(self) -> tuple[int, int]:
         """
         Tuple with the maximum upstream- and downstream-rate
         of the given connection. The rate is given in bits/sec.
         """
         return self._get_max_bit_rate("WANCommonIFC")
 
-    def _get_max_bit_rate(self, servicename):
+    def _get_max_bit_rate(self, servicename: str) -> tuple[int, int]:
         """
         internal method to get the upstream and downstream-rates for
         different services of the WANCommonInterfaceConfig1 ServiceType.
@@ -213,7 +211,7 @@ class FritzStatus(AbstractLibraryBase):
         return upstream, downstream
 
     @property
-    def max_byte_rate(self) -> Sequence[float]:
+    def max_byte_rate(self) -> tuple[float, float]:
         """
         Same as max_bit_rate but rate is given in bytes/sec.
         """
@@ -221,7 +219,7 @@ class FritzStatus(AbstractLibraryBase):
         return upstream / 8.0, downstream / 8.0
 
     @property
-    def str_max_linked_bit_rate(self) -> Sequence[str]:
+    def str_max_linked_bit_rate(self) -> tuple[str, str]:
         """
         Human-readable maximum of the physical upstream- and
         downstream-rate in bits/sec. Value is a tuple, first item is
@@ -234,7 +232,7 @@ class FritzStatus(AbstractLibraryBase):
         )
 
     @property
-    def str_max_bit_rate(self) -> Sequence[str]:
+    def str_max_bit_rate(self) -> tuple[str, str]:
         """
         Human-readable maximum of the upstream- and downstream-rate in
         bits/sec, as given by the provider. Value is a tuple, first item
@@ -246,7 +244,7 @@ class FritzStatus(AbstractLibraryBase):
             format_rate(downstream, unit="bits"),
         )
 
-    def get_monitor_data(self, sync_group_index=0) -> Mapping[str, Any]:
+    def get_monitor_data(self, sync_group_index=0) -> dict[str, Any]:
         """
         Returns a dictionary with realtime data about the current up-
         and downstream rates.
@@ -272,7 +270,7 @@ class FritzStatus(AbstractLibraryBase):
         self.fc.reconnect()
 
     @property
-    def noise_margin(self) -> Sequence[int]:
+    def noise_margin(self) -> tuple[int, int]:
         """
         Tuple of noise margin. First item
         is upstream, second item downstream.
@@ -283,16 +281,16 @@ class FritzStatus(AbstractLibraryBase):
         return upstream, downstream
 
     @property
-    def str_noise_margin(self) -> Sequence[str]:
+    def str_noise_margin(self) -> tuple[str, str]:
         """
         Human-readable noise margin in dB. Value is a tuple, first item
         is upstream, second item downstream.
         """
         upstream, downstream = self.noise_margin
-        return (format_dB(upstream), format_dB(downstream))
+        return format_dB(upstream), format_dB(downstream)
 
     @property
-    def attenuation(self) -> Sequence[int]:
+    def attenuation(self) -> tuple[int, int]:
         """
         Tuple of attenuation. First item
         is upstream, second item downstream.
@@ -303,13 +301,13 @@ class FritzStatus(AbstractLibraryBase):
         return upstream, downstream
 
     @property
-    def str_attenuation(self) -> Sequence[str]:
+    def str_attenuation(self) -> tuple[str, str]:
         """
         Human-readable attenuation in dB. Value is a tuple, first item
         is upstream, second item downstream.
         """
         upstream, downstream = self.attenuation
-        return (format_dB(upstream), format_dB(downstream))
+        return format_dB(upstream), format_dB(downstream)
 
     @property
     def upnp_enabled(self) -> bool:

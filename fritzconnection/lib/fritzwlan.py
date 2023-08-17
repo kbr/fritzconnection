@@ -6,14 +6,13 @@ Module to get information about WLAN devices.
 # License: MIT (https://opensource.org/licenses/MIT)
 # Author: Bernd Strebel, Klaus Bremer
 
+
+from __future__ import annotations
+
 import io
 import itertools
 import random
 import string
-try:
-    from typing import Mapping, Sequence
-except ImportError:
-    from collections.abc import Mapping, Sequence
 from typing import Optional
 from warnings import warn
 
@@ -215,7 +214,7 @@ class FritzWLAN(AbstractLibraryBase):
         """Alternative channels (as string)"""
         return self.channel_info()['NewPossibleChannels']
 
-    def channel_infos(self) -> Mapping:
+    def channel_infos(self) -> dict:
         """
         .. deprecated:: 1.9.0
            Use :func:`channel_info` instead.
@@ -223,7 +222,7 @@ class FritzWLAN(AbstractLibraryBase):
         warn('This method is deprecated. Use "channel_info" instead.', DeprecationWarning)
         return self.channel_info()
 
-    def channel_info(self) -> Mapping:
+    def channel_info(self) -> dict:
         """
         Return a dictionary with the keys *NewChannel* and
         *NewPossibleChannels* indicating the active channel and
@@ -238,7 +237,7 @@ class FritzWLAN(AbstractLibraryBase):
         """
         self._action('SetChannel', NewChannel=number)
 
-    def get_generic_host_entry(self, index: int) -> Mapping:
+    def get_generic_host_entry(self, index: int) -> dict:
         """
         Return a dictionary with information about the device
         internally stored at the position 'index'.
@@ -249,7 +248,7 @@ class FritzWLAN(AbstractLibraryBase):
         )
         return result
 
-    def get_specific_host_entry(self, mac_address: str) -> Mapping:
+    def get_specific_host_entry(self, mac_address: str) -> dict:
         """
         Return a dictionary with information about the device
         with the given 'mac_address'.
@@ -260,7 +259,7 @@ class FritzWLAN(AbstractLibraryBase):
         )
         return result
 
-    def get_hosts_info(self) -> Sequence[Mapping]:
+    def get_hosts_info(self) -> list[dict]:
         """
         Returns a list of dictionaries with information about the known
         hosts. The dict-keys are: 'service', 'index', 'status', 'mac',
@@ -283,7 +282,7 @@ class FritzWLAN(AbstractLibraryBase):
             })
         return information
 
-    def get_info(self) -> Mapping:
+    def get_info(self) -> dict:
         """
         Returns a dictionary with general internal information about
         the current wlan network according to the AVM documentation.

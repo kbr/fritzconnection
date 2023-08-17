@@ -11,11 +11,6 @@ missed ones.
 from __future__ import annotations
 
 import datetime
-
-try:
-    from typing import Sequence
-except ImportError:
-    from collections.abc import Sequence
 from typing import Optional
 from typing import Union  # for python < 3.10
 
@@ -87,7 +82,7 @@ class FritzCall(AbstractLibraryBase):
         update: bool = True,
         num: Optional[int] = None,
         days: Optional[int] = None
-    ) -> Sequence[Call]:
+    ) -> list[Call]:
         """
         Return a list of Call instances of type calltypes. If calltype
         is 0 all calls are listed. If *update* is True, all calls are
@@ -108,7 +103,7 @@ class FritzCall(AbstractLibraryBase):
         update: bool = True,
         num: Optional[int] = None,
         days: Optional[int] = None
-    ) -> Sequence[Call]:
+    ) -> list[Call]:
         """
         Return a list of Call instances of received calls. If *update*
         is True, all calls are reread from the router. *num*: maximum
@@ -123,7 +118,7 @@ class FritzCall(AbstractLibraryBase):
         update: bool = True,
         num: Optional[int] = None,
         days: Optional[int] = None
-    ) -> Sequence[Call]:
+    ) -> list[Call]:
         """
         Return a list of Call instances of missed calls. If *update* is
         True, all calls are reread from the router. *num* maximum number
@@ -138,7 +133,7 @@ class FritzCall(AbstractLibraryBase):
         update: bool = True,
         num: Optional[int] = None,
         days: Optional[int] = None
-    ) -> Sequence[Call]:
+    ) -> list[Call]:
         """
         Return a list of Call instances of outgoing calls. If *update*
         is True, all calls are reread from the router. *num* maximum

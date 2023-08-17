@@ -6,12 +6,10 @@ Module for read-only access to the contents of the Fritz!Box phonebooks.
 # License: MIT (https://opensource.org/licenses/MIT)
 # Authors: Klaus Bremer, David M. Straub
 
-from warnings import warn
 
-try:
-    from typing import Mapping, Sequence
-except ImportError:
-    from collections.abc import Mapping, Sequence
+from __future__ import annotations
+
+from warnings import warn
 
 from ..core.processor import (
     processor,
@@ -47,7 +45,7 @@ class FritzPhonebook(AbstractLibraryBase):
         return self.fc.call_action(SERVICE, actionname, **kwargs)
 
     @property
-    def phonebook_ids(self) -> Sequence[int]:
+    def phonebook_ids(self) -> list[int]:
         """
         List of integers identifying the phonebooks. This property is
         defined as `phonebook_ids` and as `list_phonebooks` for backward
@@ -63,7 +61,7 @@ class FritzPhonebook(AbstractLibraryBase):
         return res
 
     # legathy api name for backward compatibility
-    def list_phonebooks(self) -> Sequence[int]:
+    def list_phonebooks(self) -> list[int]:
         """
         .. deprecated:: 1.13.0
            Use :func:`phonebook_ids` instead.
@@ -71,7 +69,7 @@ class FritzPhonebook(AbstractLibraryBase):
         warn('This method is deprecated. Use "phonebook_ids" instead.', DeprecationWarning)
         return self.phonebook_ids
 
-    def phonebook_info(self, id: int) -> Mapping[str, str]:
+    def phonebook_info(self, id: int) -> dict[str, str]:
         """
         Get the `name`, `url` and an optional `extra id` of the
         phonebook with integer `id`. Returns a dictionary with the keys
@@ -84,7 +82,7 @@ class FritzPhonebook(AbstractLibraryBase):
             'xid': result.get('NewPhonebookExtraID')
         }
 
-    def get_all_name_numbers(self, id: int) -> Sequence[tuple]:
+    def get_all_name_numbers(self, id: int) -> list[tuple]:
         """
         Returns all entries from the phonebook with the given id as a
         list of tuples. The first item of every tuple is the contact
@@ -98,7 +96,7 @@ class FritzPhonebook(AbstractLibraryBase):
             for contact in self.phonebook.contacts
         ]
 
-    def get_all_names(self, id: int) -> Mapping:
+    def get_all_names(self, id: int) -> dict:
         """
         Get a dictionary with all names and their phone numbers for the
         phonebook with `id`. If a name is given more than once in a
@@ -110,7 +108,7 @@ class FritzPhonebook(AbstractLibraryBase):
         """
         return {name: number for name, number in self.get_all_name_numbers(id)}
 
-    def get_all_numbers(self, id: int) -> Mapping[str, str]:
+    def get_all_numbers(self, id: int) -> dict[str, str]:
         """
         Get a dictionary with all phone numbers and the according names
         for the phonebook with `id`. This method is based on the method
@@ -122,7 +120,7 @@ class FritzPhonebook(AbstractLibraryBase):
                 reverse_contacts[number] = name
         return reverse_contacts
 
-    def lookup_numbers(self, id: int, name: str) -> Sequence[str]:
+    def lookup_numbers(self, id: int, name: str) -> list[str]:
         """
         Look up the phone numbers of contact `name` in the phonebook
         with `id`. Returns a list of numbers. Will raise a KeyError if

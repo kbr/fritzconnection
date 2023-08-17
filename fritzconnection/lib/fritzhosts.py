@@ -7,12 +7,14 @@ Module to access and control the known hosts.
 # Author: Klaus Bremer
 
 
+from __future__ import annotations
+
 import itertools
 
 try:
-    from typing import Generator, Mapping, Sequence
+    from typing import Generator
 except ImportError:
-    from collections.abc import Generator, Mapping, Sequence
+    from collections.abc import Generator
 from typing import Union  # for python < 3.10
 
 from ..core.exceptions import (
@@ -47,7 +49,7 @@ class FritzHosts(AbstractLibraryBase):
         result = self._action("GetHostNumberOfEntries")
         return result["NewHostNumberOfEntries"]
 
-    def get_generic_host_entry(self, index: int) -> Mapping:
+    def get_generic_host_entry(self, index: int) -> dict:
         """
         Returns a dictionary with information about a device internally
         registered by the position *index*. Index-positions are
@@ -55,7 +57,7 @@ class FritzHosts(AbstractLibraryBase):
         """
         return self._action("GetGenericHostEntry", NewIndex=index)
 
-    def get_generic_host_entries(self) -> Generator[Mapping, None, None]:
+    def get_generic_host_entries(self) -> Generator[dict, None, None]:
         """
         Generator returning a dictionary for every host as provided by
         `get_generic_host_entry()`. (See also `get_hosts_info()` that
@@ -67,14 +69,14 @@ class FritzHosts(AbstractLibraryBase):
             except IndexError:
                 break
 
-    def get_specific_host_entry(self, mac_address: str) -> Mapping:
+    def get_specific_host_entry(self, mac_address: str) -> dict:
         """
         Returns a dictionary with information about a device addressed
         by the MAC-address.
         """
         return self._action("GetSpecificHostEntry", NewMACAddress=mac_address)
 
-    def get_specific_host_entry_by_ip(self, ip: str) -> Mapping:
+    def get_specific_host_entry_by_ip(self, ip: str) -> dict:
         """
         Returns a dictionary with information about a device addressed
         by the ip-address. Provides additional information about
@@ -95,7 +97,7 @@ class FritzHosts(AbstractLibraryBase):
             return None
         return result["NewActive"]
 
-    def get_active_hosts(self) -> Sequence[Mapping]:
+    def get_active_hosts(self) -> list[dict]:
         """
         Returns a list of dicts with information about the active
         devices. The dict-keys are: 'ip', 'name', 'mac', 'status',
@@ -103,7 +105,7 @@ class FritzHosts(AbstractLibraryBase):
         """
         return [host for host in self.get_hosts_info() if host["status"]]
 
-    def get_hosts_info(self) -> Sequence[Mapping]:
+    def get_hosts_info(self) -> list[dict]:
         """
         Returns a list of dicts with information about the known hosts.
         The dict-keys are: 'ip', 'name', 'mac', 'status',
@@ -129,7 +131,7 @@ class FritzHosts(AbstractLibraryBase):
             )
         return result
 
-    def get_mesh_topology(self, raw=False) -> Mapping:
+    def get_mesh_topology(self, raw=False) -> dict:
         """
         Returns information about the mesh network topology. If `raw` is
         `False` the topology gets returned as a dictionary with a list
@@ -196,7 +198,7 @@ class FritzHosts(AbstractLibraryBase):
         """
         self._action("X_AVM-DE_HostDoUpdate", NewMACAddress=mac_address)
 
-    def get_hosts_attributes(self) -> Sequence[Mapping[str, Union[bool, int, str]]]:
+    def get_hosts_attributes(self) -> list[dict[str, Union[bool, int, str]]]:
         """
         Returns a list of dictionaries with information about all hosts.
 
