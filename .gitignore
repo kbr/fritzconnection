@@ -21,3 +21,4 @@ include
 lib_
 .idea
 x_*
+docs_out

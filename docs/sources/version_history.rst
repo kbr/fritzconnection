@@ -9,19 +9,20 @@ development
 
 - Internal Changes:
 
+  - type-hints added for the public API.
+  - introducing nox for testing.
   - support removed for Python 3.6
   - support added for Python 3.12
-  - introducing nox for testing.
-  - type-hints added for the public API.
+  - documentation structure adapted according to changed requirements from readthedocs.
 
 - Command line interface:
 
-  - unneeded password request removed from the fritzstatus command line interface. (#192)
+  - unneeded required password removed from the `fritzstatus` command line interface. (#192)
   - the check for a given password has been removed and substituted by a meaningfull error message in case of authorization failure. Not every service is password-protected and passwords can optional provided by the environment. Therefore there is no need to require a password at cli level. (Motivated by #192)
 
 - FritzWlan:
 
-  - bugfix: make `fritzwlan.get_beacon_security` work with older router models not supporting the `NewX_AVM-DE_PossibleBeaconTypes` argument. (#191)
+  - bugfix: make `fritzwlan.get_beacon_security()` work with older router models not supporting the `NewX_AVM-DE_PossibleBeaconTypes` argument. (#191)
 
 - Deprecations:
 
