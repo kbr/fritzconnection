@@ -4,8 +4,8 @@ Version History
 ===============
 
 
-development
------------
+1.13.0 - 2023-08-19
+-------------------
 
 - Internal Changes:
 
