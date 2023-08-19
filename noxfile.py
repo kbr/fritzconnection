@@ -9,14 +9,21 @@ PYTHON_DEVELOPMENT_VERSION = "3.11"
 def test(session):
     session.install("-e", ".")
     session.install("requests", "pytest")
-    session.run("pytest")
+    session.run("pytest", "-m", "not routertest")
 
 
 @nox.session(python=PYTHON_TEST_VERSIONS)
-def test_include_router(session):
+def test_router(session):
     session.install("-e", ".")
     session.install("requests", "pytest")
-    session.run("pytest", "--include-router")
+    session.run("pytest", "-m", "routertest")
+
+
+@nox.session(python=PYTHON_TEST_VERSIONS)
+def test_all(session):
+    session.install("-e", ".")
+    session.install("requests", "pytest")
+    session.run("pytest")
 
 
 @nox.session
@@ -44,15 +51,14 @@ def sphinx(session):
     session.run("sphinx-build", "docs", "docs_out")
 
 
+@nox.session(python=PYTHON_DEVELOPMENT_VERSION)
+def build(session):
+    session.install("-e", ".")
+    session.run("python", "setup.py", "sdist", "bdist_wheel")
 
-# @nox.session(python=PYTHON_DEVELOPMENT_VERSION)
-# def build(session):
-#     session.install("-e", ".")
-#     session.run("python", "setup.py", "sdist", "bdist_wheel")
 
-
-# @nox.session(name="upload-to-pypi", python=PYTHON_DEVELOPMENT_VERSION)
-# def uppload_to_pypi(session):
-#     session.install("-e", ".")
-#     session.install("twine")
-#     session.run("twine", "upload", "dist/*")
+@nox.session(name="upload-to-pypi", python=PYTHON_DEVELOPMENT_VERSION)
+def uppload_to_pypi(session):
+    session.install("-e", ".")
+    session.install("twine")
+    session.run("twine", "upload", "dist/*")
