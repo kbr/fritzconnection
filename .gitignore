@@ -12,6 +12,7 @@
 *.ipynb*
 *.pyc
 __pycache__/*
+_jupyter
 bin
 build/*
 dist/*
