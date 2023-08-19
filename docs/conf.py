@@ -14,21 +14,35 @@
 #
 # import os
 # import sys
-# sys.path.insert(0, os.path.abspath('.'))
+# sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
 
-import fritzconnection
+# import fritzconnection
+import re
 from datetime import date
+from pathlib import Path
+
+
+def get_version():
+    path = Path("..") / "fritzconnection" / "__init__.py"
+    path = path.resolve()  # make it absolute
+    with open(path) as file:
+        content = file.read()
+    mo = re.search(r'\n\s*__version__\s*=\s*[\'"]([^\'"]*)[\'"]', content)
+    if mo:
+        return mo.group(1)
+    raise RuntimeError(f"Unable to find version string in {path}")
+
 
 project = 'fritzconnection'
 copyright = '2013 - {}, Klaus Bremer'.format(date.today().year)
 author = 'Klaus Bremer'
 
 # The short X.Y version
-#version = '0.7.0'
-version = fritzconnection.__version__
+version = get_version()
+# version = fritzconnection.__version__
 # The full version, including alpha/beta/rc tags
 release = '.'.join(version.split('.')[:-1])
 
