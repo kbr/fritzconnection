@@ -16,6 +16,8 @@ docutils==0.18.1
     # via
     #   sphinx
     #   sphinx-rtd-theme
+fritzconnection==1.13.0
+    # via -r docs/requirements.in
 idna==3.4
     # via requests
 imagesize==1.4.1
@@ -29,7 +31,9 @@ packaging==23.1
 pygments==2.16.1
     # via sphinx
 requests==2.31.0
-    # via sphinx
+    # via
+    #   fritzconnection
+    #   sphinx
 snowballstemmer==2.2.0
     # via sphinx
 sphinx==5.1.1
