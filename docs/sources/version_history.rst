@@ -4,8 +4,8 @@ Version History
 ===============
 
 
-development
------------
+1.13.1 - 2023-08-20
+-------------------
 
 - bugfix: added a missing import to the `/docs/requirements.in` file to generate the API-documentation on readthedocs.org (introduced in version 1.13.0).
 
