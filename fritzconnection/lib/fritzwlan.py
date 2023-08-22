@@ -34,7 +34,7 @@ NO_PASS = 'nopass'
 POSSIBLE_BEACON_TYPES_KEY = "NewX_AVM-DE_PossibleBeaconTypes"
 
 
-def get_beacon_security(instance, security):
+def _get_beacon_security(instance, security):
     """
     Returns the beacon-security as a string based on the security
     argument. Possible return values are 'nopass' and 'WPA'. If the
@@ -66,7 +66,7 @@ def get_beacon_security(instance, security):
     return security
 
 
-def get_wifi_qr_code(instance, kind='svg',
+def _get_wifi_qr_code(instance, kind='svg',
                      security=None, hidden=False,
                      scale=4):
     """
@@ -116,7 +116,7 @@ def get_wifi_qr_code(instance, kind='svg',
 
     """
     stream = io.BytesIO()
-    security = get_beacon_security(instance, security)
+    security = _get_beacon_security(instance, security)
     qr_code = segno.helpers.make_wifi(
         ssid=instance.ssid,
         password=instance.get_password(),
@@ -131,7 +131,7 @@ def get_wifi_qr_code(instance, kind='svg',
 def _qr_code_enabler(cls):
     """Classdecorator to inject qr-capabilities at import time."""
     if SEGNO_INSTALLED:
-        cls.get_wifi_qr_code = get_wifi_qr_code
+        cls.get_wifi_qr_code = _get_wifi_qr_code
     return cls
 
 

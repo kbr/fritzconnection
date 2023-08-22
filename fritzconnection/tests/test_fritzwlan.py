@@ -16,10 +16,8 @@ except ImportError:
 else:
     OPENCV_NOT_AVAILABLE = False
 
-from fritzconnection.lib.fritzwlan import (
-    get_beacon_security,
-    get_wifi_qr_code,
-)
+from fritzconnection.lib.fritzwlan import _get_beacon_security as get_beacon_security
+from fritzconnection.lib.fritzwlan import _get_wifi_qr_code as get_wifi_qr_code
 
 
 @pytest.mark.skipif(OPENCV_NOT_AVAILABLE, reason="requires opencv")
