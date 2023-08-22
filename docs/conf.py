@@ -44,7 +44,7 @@ author = 'Klaus Bremer'
 # version: The short X.Y major project version
 release = get_version()
 version = '.'.join(release.split('.')[:-1])
-
+html_title = f"{project}<br />{release}"
 
 
 # -- General configuration ---------------------------------------------------
