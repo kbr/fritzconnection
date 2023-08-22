@@ -40,11 +40,10 @@ project = 'fritzconnection'
 copyright = '2013 - {}, Klaus Bremer'.format(date.today().year)
 author = 'Klaus Bremer'
 
-# The short X.Y version
-version = get_version()
-# version = fritzconnection.__version__
-# The full version, including alpha/beta/rc tags
-release = '.'.join(version.split('.')[:-1])
+# release: the fritzconnection.__version__ as is, including alpha/beta/rc tags
+# version: The short X.Y major project version
+release = get_version()
+version = '.'.join(release.split('.')[:-1])
 
 
 
@@ -102,6 +101,7 @@ html_theme = 'furo'
 #
 html_theme_options = {
     "light_css_variables": {
+        "admonition-font-size": "0.9375em",
         "color-link": "#005493",
         "color-link-underline": "#005493",
         "color-link--hover": "#941100",
