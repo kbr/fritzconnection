@@ -353,7 +353,7 @@ The modules in the fritzconnection library (modules in the lib-folder) can be us
 The HTTP API
 ------------
 
-This interface (also known as AHA-HTTP-Interface) allows to interact with smart-home devices. The functionality partly overlap with the TR-064 interface, which provides a better performance. The interface works by sending a ``command`` with optional arguments like an ``identifier`` (aka ``ain``) as http-request and returns an http-response.
+This interface (also known as AHA-HTTP-Interface) allows to interact with smart-home devices connected to the router. The functionality partly overlap with the TR-064 interface, which provides a better performance. The interface works by sending a ``command`` with optional arguments like an ``identifier`` (aka ``ain``) as http-request and returns an http-response.
 
 Commands are send by the method ``call_http()``. The http-response from this request is converted to a dictionary with the keys `content-type`, `encoding` and `content`. The values are typical "text/plain" or "text/xml" as `content-type`, "utf-8" as `encoding` and a string as `content` that may need further processing. This dictionary gets returned from the `call_http()` method.
 

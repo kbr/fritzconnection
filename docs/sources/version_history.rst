@@ -4,6 +4,12 @@ Version History
 ===============
 
 
+development
+-----------
+
+- documentation: Style change to "Furo" and minor content improvements.
+
+
 1.13.1 - 2023-08-20
 -------------------
 
