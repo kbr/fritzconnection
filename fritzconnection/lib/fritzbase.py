@@ -12,7 +12,7 @@ base class for library classes providing a common initialisation.
 # Author: Klaus Bremer
 
 
-from typing import Optional
+from __future__ import annotations
 
 from ..core.fritzconnection import FritzConnection
 
@@ -29,7 +29,7 @@ class AbstractLibraryBase:
     """
     def __init__(
         self,
-        fc: Optional[FritzConnection] = None,
+        fc: FritzConnection | None = None,
         *args,
         **kwargs
     ):

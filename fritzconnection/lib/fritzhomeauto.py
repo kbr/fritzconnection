@@ -12,8 +12,6 @@ from __future__ import annotations
 
 import datetime
 import itertools
-from typing import Optional
-from typing import Union  # for python < 3.10
 from warnings import warn
 from xml.etree import ElementTree as etree
 
@@ -67,7 +65,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         return self.fc.call_action(SERVICE, actionname, arguments=arguments)
 
     @property
-    def get_info(self) -> dict[str, Union[str, int]]:
+    def get_info(self) -> dict:
         """
         Return a dictionary with a single key-value pair:
         'NewAllowedCharsAIN': string with all allowed chars for state
@@ -78,7 +76,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
     def get_device_information_by_index(
         self,
         index: int
-    ) -> dict[str, Union[bool, int, str]]:
+    ) -> dict:
         """
         Return a dictionary with all device arguments according to the
         AVM documentation (x_homeauto) at the given internal index.
@@ -90,7 +88,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
     def get_device_information_by_identifier(
         self,
         identifier: str
-    ) -> dict[str, Union[bool, int, str]]:
+    ) -> dict:
         """
         Returns a dictionary with all device arguments according to the
         AVM documentation (x_homeauto) with the given identifier (AIN).
@@ -98,7 +96,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         """
         return self._action('GetSpecificDeviceInfos', NewAIN=identifier)
 
-    def device_informations(self) -> list[dict[str, Union[bool, int, str]]]:
+    def device_informations(self) -> list[dict]:
         """
         .. deprecated:: 1.9.0
            Use :func:`get_device_information_list` instead.
@@ -106,7 +104,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         warn('This method is deprecated. Use "get_device_information_list" instead.', DeprecationWarning)
         return self.get_device_information_list()
 
-    def device_information(self) -> list[dict[str, Union[bool, int, str]]]:
+    def device_information(self) -> list[dict]:
         """
         .. deprecated:: 1.12.0
            Use :func:`get_device_information_list` instead.
@@ -114,7 +112,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         warn('This method is deprecated. Use "get_device_information_list" instead.', DeprecationWarning)
         return self.get_device_information_list()
 
-    def get_device_information_list(self) -> list[dict[str, Union[bool, int, str]]]:
+    def get_device_information_list(self) -> list[dict]:
         """
         Returns a list of dictionaries for all known homeauto-devices.
         """
@@ -129,9 +127,9 @@ class FritzHomeAutomation(AbstractLibraryBase):
 
     def get_homeautomation_device(
         self,
-        identifier: Optional[str] = None,
-        index: Optional[int] = None
-    ) -> Union[HomeAutomationDevice, None]:
+        identifier: str | None = None,
+        index: int | None = None
+    ) -> HomeAutomationDevice | None:
         """
         Returns a HomeAutomationDevice instance. The device can be
         identified by the `identifier` (ain) or the `index` in the
@@ -227,8 +225,8 @@ class HomeAutomationDevice:
     def __init__(
         self,
         fh: FritzHomeAutomation,
-        device_information: dict[str, Union[bool, int, str]],
-        identifier: Optional[str] = None
+        device_information: dict,
+        identifier: str | None = None
     ):
         self.fh = fh
         self.AIN = identifier
@@ -389,7 +387,7 @@ class HomeAutomationDevice:
         root = etree.fromstring(content)
         for element in root:
             content = {}
-            stats: Union[etree.Element, None] = element.find("stats")
+            stats: etree.Element | None = element.find("stats")
             if stats is None:
                 continue
             for key, value in stats.attrib.items():

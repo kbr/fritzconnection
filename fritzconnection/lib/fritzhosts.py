@@ -15,7 +15,6 @@ try:
     from typing import Generator
 except ImportError:
     from collections.abc import Generator
-from typing import Union  # for python < 3.10
 
 from ..core.exceptions import (
     FritzActionError,
@@ -84,7 +83,7 @@ class FritzHosts(AbstractLibraryBase):
         """
         return self._action("X_AVM-DE_GetSpecificHostEntryByIP", NewIPAddress=ip)
 
-    def get_host_status(self, mac_address: str) -> Union[bool, None]:
+    def get_host_status(self, mac_address: str) -> bool | None:
         """
         Provides status information about the device with the given
         `mac_address`. Returns `True` if the device is active or `False`
@@ -198,7 +197,7 @@ class FritzHosts(AbstractLibraryBase):
         """
         self._action("X_AVM-DE_HostDoUpdate", NewMACAddress=mac_address)
 
-    def get_hosts_attributes(self) -> list[dict[str, Union[bool, int, str]]]:
+    def get_hosts_attributes(self) -> list[dict]:
         """
         Returns a list of dictionaries with information about all hosts.
 

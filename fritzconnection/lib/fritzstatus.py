@@ -7,8 +7,6 @@ from __future__ import annotations
 
 from collections import namedtuple
 from warnings import warn
-from typing import Any
-from typing import Union  # for python < 3.10
 
 from .fritzbase import AbstractLibraryBase
 from .fritztools import (
@@ -131,7 +129,7 @@ class FritzStatus(AbstractLibraryBase):
         return "%02d:%02d:%02d" % (hours, mins, secs)
 
     @property
-    def bytes_sent(self) -> Union[int, str]:
+    def bytes_sent(self) -> int | str:
         """
         Total number of sent bytes. Returns an integer or, in case of
         failure, the original value which would be a string.
@@ -148,7 +146,7 @@ class FritzStatus(AbstractLibraryBase):
         return _integer_or_original(value)
 
     @property
-    def bytes_received(self) -> Union[int, str]:
+    def bytes_received(self) -> int | str:
         """
         Total number of received bytes. Returns an integer or, in case of
         failure, the original value which would be a string.
@@ -244,7 +242,7 @@ class FritzStatus(AbstractLibraryBase):
             format_rate(downstream, unit="bits"),
         )
 
-    def get_monitor_data(self, sync_group_index=0) -> dict[str, Any]:
+    def get_monitor_data(self, sync_group_index=0) -> dict:
         """
         Returns a dictionary with realtime data about the current up-
         and downstream rates.

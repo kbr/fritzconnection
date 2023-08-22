@@ -69,7 +69,7 @@ class FritzPhonebook(AbstractLibraryBase):
         warn('This method is deprecated. Use "phonebook_ids" instead.', DeprecationWarning)
         return self.phonebook_ids
 
-    def phonebook_info(self, id: int) -> dict[str, str]:
+    def phonebook_info(self, id: int) -> dict:
         """
         Get the `name`, `url` and an optional `extra id` of the
         phonebook with integer `id`. Returns a dictionary with the keys
@@ -108,7 +108,7 @@ class FritzPhonebook(AbstractLibraryBase):
         """
         return {name: number for name, number in self.get_all_name_numbers(id)}
 
-    def get_all_numbers(self, id: int) -> dict[str, str]:
+    def get_all_numbers(self, id: int) -> dict:
         """
         Get a dictionary with all phone numbers and the according names
         for the phonebook with `id`. This method is based on the method

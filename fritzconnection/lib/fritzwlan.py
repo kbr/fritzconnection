@@ -312,7 +312,7 @@ class FritzWLAN(AbstractLibraryBase):
 
     def set_password(
         self,
-        password: Optional[str] = None,
+        password: str | None = None,
         length: int = DEFAULT_PASSWORD_LENGTH
     ) -> None:
         """

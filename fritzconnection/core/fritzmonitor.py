@@ -18,8 +18,6 @@ import socket
 import threading
 import time
 
-from typing import Optional
-
 
 FRITZ_IP_ADDRESS = "169.254.1.1"
 FRITZ_MONITOR_PORT = 1012
@@ -89,7 +87,7 @@ class FritzMonitor:
         self.timeout = timeout
         self.encoding = encoding
         self.stop_flag = threading.Event()
-        self.monitor_thread: Optional[threading.Thread] = None
+        self.monitor_thread: threading.Thread | None = None
         self.mock_socket = None  # for testing
 
     def __enter__(self):

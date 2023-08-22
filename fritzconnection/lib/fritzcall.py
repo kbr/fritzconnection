@@ -11,8 +11,6 @@ missed ones.
 from __future__ import annotations
 
 import datetime
-from typing import Optional
-from typing import Union  # for python < 3.10
 
 from ..core.processor import (
     processor,
@@ -80,8 +78,8 @@ class FritzCall(AbstractLibraryBase):
         self,
         calltype: int = ALL_CALL_TYPES,
         update: bool = True,
-        num: Optional[int] = None,
-        days: Optional[int] = None
+        num: int | None = None,
+        days: int | None = None
     ) -> list[Call]:
         """
         Return a list of Call instances of type calltypes. If calltype
@@ -101,8 +99,8 @@ class FritzCall(AbstractLibraryBase):
     def get_received_calls(
         self,
         update: bool = True,
-        num: Optional[int] = None,
-        days: Optional[int] = None
+        num: int | None = None,
+        days: int | None = None
     ) -> list[Call]:
         """
         Return a list of Call instances of received calls. If *update*
@@ -116,8 +114,8 @@ class FritzCall(AbstractLibraryBase):
     def get_missed_calls(
         self,
         update: bool = True,
-        num: Optional[int] = None,
-        days: Optional[int] = None
+        num: int | None = None,
+        days: int | None = None
     ) -> list[Call]:
         """
         Return a list of Call instances of missed calls. If *update* is
@@ -131,8 +129,8 @@ class FritzCall(AbstractLibraryBase):
     def get_out_calls(
         self,
         update: bool = True,
-        num: Optional[int] = None,
-        days: Optional[int] = None
+        num: int | None = None,
+        days: int | None = None
     ) -> list[Call]:
         """
         Return a list of Call instances of outgoing calls. If *update*

@@ -15,8 +15,8 @@ import pickle
 import string
 import xml.etree.ElementTree as ElementTree
 from pathlib import Path
-from typing import Any, Optional
-from typing import Union  # for python < 3.10
+from typing import Any
+# from typing import Union  # for python < 3.10
 
 import requests
 from requests.auth import HTTPDigestAuth
@@ -174,16 +174,16 @@ class FritzConnection:
 
     def __init__(
         self,
-        address: Optional[str] = None,
-        port: Optional[int] = None,
-        user: Optional[str] = None,
-        password: Optional[str] = None,
-        timeout: Optional[float] = None,
+        address: str | None = None,
+        port: int | None = None,
+        user: str | None = None,
+        password: str | None = None,
+        timeout: float | None = None,
         use_tls: bool = False,
         use_cache: bool = False,
         verify_cache: bool = True,
-        cache_directory: Optional[Union[str, Path]] = None,
-        cache_format: Optional[str] = None,
+        cache_directory: str | Path | None = None,
+        cache_format: str | None = None,
         pool_connections: int = DEFAULT_POOL_CONNECTIONS,
         pool_maxsize: int = DEFAULT_POOL_MAXSIZE,
     ):
@@ -270,7 +270,7 @@ class FritzConnection:
 
         # TODO: remove 'self._updatecheck' when 3.7 is no longer supported.
         # this is a dictionary-based cache
-        self._updatecheck: Optional[dict] = None
+        self._updatecheck: dict | None = None
 
         # store as instance attributes for use by library modules
         self.address = address
@@ -419,7 +419,7 @@ class FritzConnection:
         service_name: str,
         action_name: str,
         *,
-        arguments: Optional[dict] = None,
+        arguments: dict | None = None,
         **kwargs
     ) -> dict[str, Any]:
         """
@@ -458,7 +458,7 @@ class FritzConnection:
     def call_http(
         self,
         command: str,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
         **kwargs
     ) -> dict[str, str]:
         """
