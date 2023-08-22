@@ -13,7 +13,6 @@ import io
 import itertools
 import random
 import string
-from typing import Optional
 from warnings import warn
 
 from ..core.exceptions import FritzServiceError
