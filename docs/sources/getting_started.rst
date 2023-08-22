@@ -156,7 +156,7 @@ Every ``service`` has a set of corresponding ``actions``. The actions are listed
 Arguments
 .........
 
-``Action`` can have optional ``Arguments``. A list of all available actions with their corresponding arguments is reported by the flag :command:`-a` with the servicename as parameter: ::
+An ``Action`` can have optional ``Arguments``. A list of all available actions with their corresponding arguments is reported by the flag :command:`-a` with the servicename as parameter: ::
 
     $ fritzconnection -i 192.168.178.1 -a WANIPConnection1
 
@@ -215,7 +215,9 @@ FritzConnection works by calling actions on services and can send and receive ar
 At first an instance of `FritzConnection` must be created. There can be a short delay doing this, because fritzconnection has to do a lot of communication with the router to get the router-specific API.
 
 .. note ::
-    A FritzConnection instance can be **reused** for all further `call_action` calls **without side-effects**. For a single device an application needs just one instance. Because instanciation can be expensive (time consuming), having a single instance can save memory and speed up things.
+    A FritzConnection instance can be **reused** for all further `call_action()` calls (and also `call_http()` calls) **without side-effects**. For a single device (i.e. the router) an application needs just one instance. Because instanciation can be expensive (time consuming), having a single instance can save memory and speed up things.
+
+    Update: with the introduction of the `api-cache` in version `1.10` instanciation is much more faster than before. However, reusing an instance is still a good idea.
 
 The method `call_action` takes two required arguments: the service- and the action-name as strings. In case that a service is unknown (because of a typo or incompatible router model) fritzconnection will raise a `FritzServiceError`. If the service is known, but not the action, then a `FritzActionError` gets raised.
 
@@ -230,7 +232,7 @@ Let's look at another example using an address "192.168.178.1" for the action "G
 Calling the service `WLANConfiguration1` without giving a password (or providing a wrong one) will raise a `FritzConnectionException`. Inspecting the API works without a password, but most of the other API-calls require one.
 
 .. note ::
-    Use environment variables to avoid hardcoding username and password.
+    The environment variables ``FRITZ_USERNAME`` and ``FRITZ_PASSWORD`` can be used to avoid hardcoding username and password.
 
 In case that the servicename is given without a numeric extension (i.e '1') fritzconnection adds the extension '1' by default. So `WLANConfiguration` becomes `WLANConfiguration1`. The extension is required if there are multiple services with the same name. For backward compatibility servicenames like `WLANConfiguration:1` are also accepted.
 
@@ -386,7 +388,9 @@ This example makes use of the fritzhomeauto library-module providing the `FritzH
 
 At first the instance of FritzConnection gets reused to initialize the FritzHomeAutomation instance 'fh'. On this instance the method `get_homeautomation_devices()` is called, returning a list of all homeautomation-devices known by the router, represented as HomeAutomationDevice-instances. On these instances the `is_switchable` property gets called to filter all devices which are switches. Then the example code iterates over the existing list of HomeAutomationDevice-instances to report the temperature that is already known by the instances and don't need additional calls to the API.
 
-**Note**: In general the TR-064 API is faster than the HTTP-API. Whether this is an issue depends on the application.
+.. note::
+    In general the TR-064 API is faster than the HTTP-API. Whether this is an issue depends on the application. However, for functionalities available by both APIs it makes more sense to use the TR-064 API.
+
 
 Combining the APIs
 ------------------
@@ -448,12 +452,14 @@ At first run the api gets loaded from the router and stored in a cache-file. On 
 With the argument `cache_directory` the location of the cache files can be specified. Default is the `~.fritzconnection` folder in the user home-directory on systems providing this default location.
 
 .. note ::
-    Default cache-format is `pickle`, which is compact, fast and can be considered safe as it is your own data. However, the `json` format is also supported. With the argument `cache_format` the format can set to `json`.
+    The default cache-format is `pickle`, which is compact, fast and can be considered safe as it is your own data. However, the `json` format is also supported. With the argument `cache_format` the format can set to `json`.
 
 After loading the api from a cache-file, the data are verified to be still valid for the given router-model and the current installed software version. In case the cache is outdated, the api-data are reloaded from the router and the cache-file gets updated. The verifying step requires a request to the router, which can take some milliseconds. With the argument `verify_cache=False` verifying can turned off, loading the api even faster.
 
 .. warning ::
-    On deactivate verifying the cache data may be outdated if something has changed on the router side. (Simple solution: turn verifying on or delete the cache-file.) However, chances are that one didn't mention it until strange things happen.
+    On deactivate verifying, the cache data may be outdated if something has changed on the router side. As a consequence these changes may not be visible for the fritzconnection library (Simple solution: turn verifying on or delete the cache-file.) However, chances are that one didn't mention this until strange things happen.
+
+    Update: since version `1.11` cache verification is much faster than before, so there is no longer a real need to deactivate the cache verification.
 
 
 TLS-Encryption

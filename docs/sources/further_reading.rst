@@ -7,6 +7,7 @@ Information about the TR-064 protocol with services and actions as well as AVM-s
 
 This page also provides links to the AHA-HTTP-Interface documentation as well as the mesh-topology format.
 
-Everything that can be done by means of this API –used by fritzconnection– is documented there.
+Everything that can be done by means of these APIs – used by fritzconnection – is documented there.
 
-**Note:** please keep in mind that fritzconnection is neither related nor supported by AVM.
+.. note::
+    Please keep in mind that fritzconnection is neither related nor supported by AVM.

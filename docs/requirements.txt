@@ -18,7 +18,7 @@ docutils==0.18.1
     # via
     #   sphinx
     #   sphinx-rtd-theme
-fritzconnection==1.13.0
+fritzconnection==1.13.1
     # via -r docs/requirements.in
 furo==2023.3.27
     # via -r docs/requirements.in
