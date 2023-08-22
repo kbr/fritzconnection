@@ -8,6 +8,7 @@ development
 -----------
 
 - documentation: Style change to "Furo" and minor content improvements.
+- cleaner type-hints
 
 
 1.13.1 - 2023-08-20
