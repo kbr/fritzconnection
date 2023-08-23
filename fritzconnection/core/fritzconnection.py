@@ -567,10 +567,18 @@ class FritzConnection:
         """
         # system_id is something like ('FRITZ!Box 7590', '154.07.29') which
         # originates from the device description and is part of the cache data.
-        cached_id = (
-            self.device_manager.modelname,
-            self.device_manager.system_info[-1]
-        )
+        try:
+            cached_id = (
+                self.device_manager.modelname,
+                self.device_manager.system_info[-1]
+            )
+        except TypeError:
+            # this can happen if the default ip is used with multiple
+            # devices in the local network, so an arbitrary device gets
+            # addressed. In case the device is unable to provide
+            # system_info this value is set to `None` and a TypeError gets
+            # raised. To avoid this provide an ip as the address-argument.
+            return False
         # retrive the same information from the updatecheck property.
         # If the result is the same, the cache-data can considered as valid.
         try:
