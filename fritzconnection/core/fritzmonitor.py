@@ -202,12 +202,10 @@ class FritzMonitor:
         while reconnect_tries > 0:
             next(reconnect_delay)
             try:
-                self._get_connected_socket()
+                return self._get_connected_socket()
             except OSError:
                 reconnect_tries -= 1
-            else:
-                return True
-        return False
+        return None
 
     def _monitor(
         self,
@@ -236,11 +234,11 @@ class FritzMonitor:
             if not raw_data:
                 # empty response indicates a lost connection.
                 # try to reconnect.
-                success = self._reconnect_socket(
+                sock = self._reconnect_socket(
                     max_reconnect_delay=reconnect_delay,
                     reconnect_tries=reconnect_tries,
                 )
-                if not success:
+                if sock is None:
                     # reconnect has failed: terminate the thread
                     break
             else:
