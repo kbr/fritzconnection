@@ -248,7 +248,7 @@ class FritzMonitor:
         # clean up on terminating thread:
         try:
             sock.close()
-        except OSError:
+        except (AttributeError, OSError):
             pass
         # reset monitor_thread to be able to restart
         self.monitor_thread = None
