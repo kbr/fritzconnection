@@ -4,12 +4,13 @@ Version History
 ===============
 
 
-development
------------
+1.13.2 - 2023-09-17
+-------------------
 
+- bugfix: fix a crash in the cache-verification in case the cache is activated in combination with the Fritz!Box default-ip and multiple AVM-devices are connected in the local network, so an arbitrary device may respond (which would also be a bug in applications using fritzconnection anyway) (introduced in version 1.10.0).
+- bugfix: fix broken reconnection of fritzmonitor in case of socket loss. (#196)
+- cleaner type-hints for public api.
 - documentation: Style change to "Furo" and minor content improvements.
-- cleaner type-hints
-- bugfix: fix a crash in the cache-verification in case the cache is activated in combination with the Fritz!Box default-ip and multiple AVM-devices in the local network, so an arbitrary device may respond (which could considered as a bug in an application using fritzconnection anyway) (introduced in version 1.10.0).
 
 
 1.13.1 - 2023-08-20
