@@ -167,10 +167,10 @@ class FritzMonitor:
 
     def _get_connected_socket(self):
         """
-        Takes the given socket and builds a connection to address and port defined
-        at instantiation. If no socket is given a new one gets created.
-        Returns the socket.
+        Return a new created socket.
+        In case of failure an OSError is raised.
         """
+        # use a mock socket for tests
         if self.mock_socket:
             sock = self.mock_socket
         else:
@@ -195,8 +195,8 @@ class FritzMonitor:
         reconnect_tries=RECONNECT_TRIES,
     ):
         """
-        Try to reconnect a lost connection on the given socket.
-        Returns True on success and False otherwise.
+        Try to reconnect a lost connection.
+        Returns a new socket on success and None otherwise.
         """
         reconnect_delay = self._delayer(max_delay=max_reconnect_delay)
         while reconnect_tries > 0:
