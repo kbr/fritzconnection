@@ -117,7 +117,7 @@ Version History
 
 - FritzConnection:
 
-  - API cache integration added: for faster start up times the router API can optional get saved in a cache-file. This can save up to several seconds run-time on instanciation.
+  - API cache integration added: for faster start up times the router API can optional get saved in a cache-file. This can save up to several seconds run-time on instantiation.
 
 - FritzHosts:
 

@@ -60,7 +60,7 @@ Installing fritzconnection by pip will also install the command line tool `fritz
       -e [ENCRYPT], --encrypt [ENCRYPT]
                             Flag: use secure connection (TLS)
       -x, --use-cache       Flag: use api cache
-                            (speed-up subsequent instanciations)
+                            (speed-up subsequent instantiations)
       -y, --suppress-cache-verification
                             Flag: suppress cache verification, implies -x
       --cache-format [CACHE_FORMAT]
@@ -215,9 +215,9 @@ FritzConnection works by calling actions on services and can send and receive ar
 At first an instance of `FritzConnection` must be created. There can be a short delay doing this, because fritzconnection has to do a lot of communication with the router to get the router-specific API.
 
 .. note ::
-    A FritzConnection instance can be **reused** for all further `call_action()` calls (and also `call_http()` calls) **without side-effects**. For a single device (i.e. the router) an application needs just one instance. Because instanciation can be expensive (time consuming), having a single instance can save memory and speed up things.
+    A FritzConnection instance can be **reused** for all further `call_action()` calls (and also `call_http()` calls) **without side-effects**. For a single device (i.e. the router) an application needs just one instance. Because instantiation can be expensive (time consuming), having a single instance can save memory and speed up things.
 
-    Update: with the introduction of the `api-cache` in version `1.10` instanciation is much more faster than before. However, reusing an instance is still a good idea.
+    Update: with the introduction of the `api-cache` in version `1.10` instantiation is much more faster than before. However, reusing an instance is still a good idea.
 
 The method `call_action` takes two required arguments: the service- and the action-name as strings. In case that a service is unknown (because of a typo or incompatible router model) fritzconnection will raise a `FritzServiceError`. If the service is known, but not the action, then a `FritzActionError` gets raised.
 

@@ -152,7 +152,7 @@ class FritzConnection:
     .. versionadded:: 1.6
 
     The flag `use_cache` activates caching (default `False`). Caching
-    can speed up instanciation significantly. The cached data are
+    can speed up instantiation significantly. The cached data are
     specific for the router ip, the router model and the installed
     FritzOS version. Multiple devices in the network can have separate
     cache-fies and can get used in parallel. By default the cache files
@@ -219,7 +219,7 @@ class FritzConnection:
 
         `use_cache` is a boolean whether a cache should get used for the
         router api data. By default the api data are loaded from the
-        router at instanciation time what can take several seconds to
+        router at instantiation time what can take several seconds to
         complete. `cache_directory` is the path to the directory storing
         the cached data. By default this is a folder named
         '.fritzconnection' in the users home-directory. `cache_format`

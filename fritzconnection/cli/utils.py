@@ -86,7 +86,7 @@ def get_cli_arguments(scan_additional_arguments=None):
                         action="store_true",
                         dest='use_cache',
                         help='Flag: use api cache (e[x]cellerate: speed-up subsequent '
-                             'instanciations)'
+                             'instantiations)'
                         )
     parser.add_argument('-y', '--suppress-cache-verification',
                         action='store_false',

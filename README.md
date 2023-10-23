@@ -53,7 +53,7 @@ To avoid hardcoding the arguments `user` and `password` in applications FritzCon
 
 ### Caching
 
-On instanciation FritzConnection has to inspect the model-specific router-API. This causes a lot of network requests and can take some seconds. To avoid this FritzConnection provides a cache that can get activated by the `use_cache` parameter:
+On instantiation FritzConnection has to inspect the model-specific router-API. This causes a lot of network requests and can take some seconds. To avoid this FritzConnection provides a cache that can get activated by the `use_cache` parameter:
 
 ```
     fc = FritzConnection(..., use_cache=True)
