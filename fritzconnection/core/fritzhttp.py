@@ -1,7 +1,7 @@
 """
 fritzhttp.py
 
-Access the AVM Fritz!Box AHA-HTTP-Inferface
+Access the AVM Fritz!Box AHA-HTTP-Interface
 """
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection
