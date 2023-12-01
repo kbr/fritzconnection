@@ -4,6 +4,13 @@ Version History
 ===============
 
 
+Development
+-----------
+
+
+- documentation: some typos corrected. (#202, #204)
+
+
 1.13.2 - 2023-09-17
 -------------------
 
