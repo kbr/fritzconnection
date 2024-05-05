@@ -16,6 +16,7 @@ from requests.auth import HTTPDigestAuth
 from xml.etree import ElementTree as etree
 
 from .exceptions import (
+    FritzAuthorizationError,
     FritzConnectionException,
     FRITZ_ERRORS,
 )
@@ -24,6 +25,7 @@ from .utils import localname
 
 
 SOAP_NS = "http://schemas.xmlsoap.org/soap/envelope/"
+STATUS_UNAUTHORIZED = 401
 
 
 def datetime_convert(value):
@@ -128,26 +130,51 @@ def get_argument_value(root, argument_name):
     return value
 
 
+def is_html_response(text):
+    """
+    Returns a boolean whether the raw response text starts with an
+    html-tag.
+    """
+    return text.casefold().startswith("<html")
+
+
+def remove_html_tags(text):
+    """
+    Returns the given string `response_text` with all tags removed.
+    """
+    tag_free = re.sub(r"<.*?>", " ", text)
+    return re.sub(r" +", " ", tag_free).strip()  # make it nice
+
+
 def raise_fritzconnection_error(response):
     """
     Handles all responses with status codes other than 200.
-    Will raise the relevant FritzConnectionException with
-    the error code and description if available
+    Will raise a FritzConnectionException with the error code and
+    description if available. Can also raise a FritzAuthorizationError
+    in case of 401 html-response status code.
     """
     parts = []
     error_code = None
+
+    if is_html_response(response.text):
+        # if it is an html response, the error is described in the
+        # body part: remove all tags and provide the result as
+        # error-message:
+        detail = remove_html_tags(response.text)
+        msg = f"Unable to perform operation. {detail}"
+        if response.status_code == STATUS_UNAUTHORIZED:
+            raise FritzAuthorizationError(msg)
+        raise FritzConnectionException(msg)
+
+    # otherwise the content is xml and the error-description
+    # is part of the structured xml info:
     try:
         root = etree.fromstring(response.content)
-    except etree.ParseError:
-        # May fail in case it's html instead of xml.
-        # Can happen on wrong authentication.
-        # That means it is not an error reported from executing
-        # some service in the box, but rather not allowed to
-        # access the box at all.
-        # Whatever it is, report it here:
-        detail = re.sub(r"<.*?>", "", response.text)
-        msg = f"Unable to perform operation. {detail}"
-        raise FritzConnectionException(msg)
+    except etree.ParseError as err:
+        # should not happen (at least not observed so far)
+        raise FritzConnectionException(str(err))
+
+    # extract error information from the provided xml data
     detail = root.find(".//detail")
     children = detail.iter()
     next(children)  # skip detail itself

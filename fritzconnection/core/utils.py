@@ -2,15 +2,19 @@
 Common functions for other core-modules.
 """
 
+import os
 import re
+from xml.etree import ElementTree as etree
+
 import requests
 
-from xml.etree import ElementTree as etree
 from .exceptions import FritzConnectionException, FritzResourceError
 from .logger import fritzlogger
 
 
 NS_REGEX = re.compile("({(?P<namespace>.*)})?(?P<localname>.*)")
+VALUES_TRUE = {"true", "on", "1"}
+VALUES_FALSE = {"false", "off", "0"}
 
 
 def localname(node):
@@ -77,3 +81,41 @@ def get_xml_root(source, timeout=None, session=None):
         with open(source) as fobj:
             source = fobj.read()
     return etree.fromstring(source)
+
+
+def boolean_from_string(value):
+    """
+    Takes a value as a string and converts it to a boolean or None. The
+    string could be "true" or "false" in upper-, lower- and mixed-case.
+    Also "on", "off" and "0", "1" are converted. If the value can not
+    converted a ValueError gets raised. If the value does not support
+    the .lower() method, an AttributeError gets raised.
+    """
+    lower_value = value.lower()
+    if lower_value in VALUES_TRUE:
+        return True
+    if lower_value in VALUES_FALSE:
+        return False
+    raise ValueError(f"can't convert '{lower_value}' to a boolean.")
+
+
+def get_boolean_from_string(value, default=None):
+    """
+    Same as `boolean_from_string` but returns the `default` argument
+    instead of raising an exception.
+    """
+    try:
+        return boolean_from_string(value)
+    except (AttributeError, ValueError):
+        return default
+
+
+def get_bool_env(key, default=None):
+    """
+    Return the value of the environment variable key converted to a
+    boolean if it exists, or default if it doesn’t or can't get
+    converted to a boolean. keys convertable to a boolean are "true",
+    "on", "1" and "false", "off", "0".
+    """
+    value = os.getenv(key)
+    return get_boolean_from_string(value, default)

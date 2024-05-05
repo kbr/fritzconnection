@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 
 def get_long_description():
-    with open("README.rst") as file:
+    with open("README.md") as file:
         return file.read()
 
 
@@ -24,6 +24,7 @@ setup(
     packages=find_packages(exclude=["*.tests"]),
     license="MIT",
     description="Communicate with the AVM FRITZ!Box",
+    long_description_content_type="text/markdown",
     long_description=get_long_description(),
     author="Klaus Bremer",
     author_email="bremer@bremer-media.com",
@@ -36,15 +37,16 @@ setup(
         "Natural Language :: English",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     keywords="AVM FRITZ!Box fritzbox fritz",
-    python_requires=">= 3.6",
+    python_requires=">= 3.7",
     install_requires=["requests>=2.22.0",],
     extras_require={
         "qr": ["segno>=1.4.1",],

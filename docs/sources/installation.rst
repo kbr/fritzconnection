@@ -11,7 +11,7 @@ To enable the creation of :ref:`QR-codes for wifi login <get_wifi_qr_code_exampl
 
 .. versionadded:: 1.9.0
 
-This will install an additional dependency `segno <https://pypi.org/project/segno/>`_. In case you've missed this, segno can get installed any time later: ::
+This will install an additional dependency `segno <https://pypi.org/project/segno/>`_. The segno-package can also get installed any time later: ::
 
     $ pip install segno
 

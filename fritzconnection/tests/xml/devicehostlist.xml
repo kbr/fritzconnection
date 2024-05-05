@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<List>
+<!-- devicehosts :3 -->
+<!-- users :1 -->
+<Item>
+<Index>1</Index>
+<IPAddress>192.168.178.54</IPAddress>
+<MACAddress>F8:4D:89:7C:0A:32</MACAddress>
+<Active>1</Active>
+<HostName>MacBook</HostName>
+<InterfaceType>802.11</InterfaceType>
+<X_AVM-DE_Port>0</X_AVM-DE_Port>
+<X_AVM-DE_Speed>866</X_AVM-DE_Speed>
+<X_AVM-DE_UpdateAvailable>0</X_AVM-DE_UpdateAvailable>
+<X_AVM-DE_UpdateSuccessful>unknown</X_AVM-DE_UpdateSuccessful>
+<X_AVM-DE_InfoURL />
+<X_AVM-DE_Model />
+<X_AVM-DE_URL />
+<X_AVM-DE_Guest>0</X_AVM-DE_Guest>
+<X_AVM-DE_VPN>0</X_AVM-DE_VPN>
+<X_AVM-DE_WANAccess>granted</X_AVM-DE_WANAccess>
+<X_AVM-DE_Disallow>0</X_AVM-DE_Disallow>
+</Item>
+<Item>
+<Index>2</Index>
+<IPAddress>192.168.178.34</IPAddress>
+<MACAddress>C2:39:6F:FB:A3:E8</MACAddress>
+<Active>1</Active>
+<HostName>fritz.repeater</HostName>
+<InterfaceType>Ethernet</InterfaceType>
+<X_AVM-DE_Port>3</X_AVM-DE_Port>
+<X_AVM-DE_Speed>100</X_AVM-DE_Speed>
+<X_AVM-DE_UpdateAvailable>0</X_AVM-DE_UpdateAvailable>
+<X_AVM-DE_UpdateSuccessful>succeeded</X_AVM-DE_UpdateSuccessful>
+<X_AVM-DE_InfoURL />
+<X_AVM-DE_Model>FRITZ!Repeater 1200</X_AVM-DE_Model>
+<X_AVM-DE_URL>http://192.168.178.34</X_AVM-DE_URL>
+<X_AVM-DE_Guest>0</X_AVM-DE_Guest>
+<X_AVM-DE_VPN>0</X_AVM-DE_VPN>
+<X_AVM-DE_WANAccess>granted</X_AVM-DE_WANAccess>
+<X_AVM-DE_Disallow>0</X_AVM-DE_Disallow>
+</Item>
+<Item>
+<Index>4</Index>
+<IPAddress>192.168.178.32</IPAddress>
+<MACAddress>B4:CD:27:37:78:E4</MACAddress>
+<Active>0</Active>
+<HostName>someones-HUAWEI</HostName>
+<InterfaceType>802.11</InterfaceType>
+<X_AVM-DE_Port>0</X_AVM-DE_Port>
+<X_AVM-DE_Speed>0</X_AVM-DE_Speed>
+<X_AVM-DE_UpdateAvailable>0</X_AVM-DE_UpdateAvailable>
+<X_AVM-DE_UpdateSuccessful>unknown</X_AVM-DE_UpdateSuccessful>
+<X_AVM-DE_InfoURL />
+<X_AVM-DE_Model />
+<X_AVM-DE_URL />
+<X_AVM-DE_Guest>0</X_AVM-DE_Guest>
+<X_AVM-DE_VPN>0</X_AVM-DE_VPN>
+<X_AVM-DE_WANAccess>granted</X_AVM-DE_WANAccess>
+<X_AVM-DE_Disallow>0</X_AVM-DE_Disallow>
+</Item>
+<Item>
+<Index>3</Index>
+<IPAddress>192.168.178.49</IPAddress>
+<MACAddress>B8:27:EB:D1:DC:06</MACAddress>
+<Active>1</Active>
+<HostName>raspberrypi</HostName>
+<InterfaceType>Ethernet</InterfaceType>
+<X_AVM-DE_Port>1</X_AVM-DE_Port>
+<X_AVM-DE_Speed>1000</X_AVM-DE_Speed>
+<X_AVM-DE_UpdateAvailable>0</X_AVM-DE_UpdateAvailable>
+<X_AVM-DE_UpdateSuccessful>unknown</X_AVM-DE_UpdateSuccessful>
+<X_AVM-DE_InfoURL />
+<X_AVM-DE_Model />
+<X_AVM-DE_URL />
+<X_AVM-DE_Guest>0</X_AVM-DE_Guest>
+<X_AVM-DE_VPN>0</X_AVM-DE_VPN>
+<X_AVM-DE_WANAccess>granted</X_AVM-DE_WANAccess>
+<X_AVM-DE_Disallow>0</X_AVM-DE_Disallow>
+</Item>
+</List>

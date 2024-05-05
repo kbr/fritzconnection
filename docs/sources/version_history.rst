@@ -4,6 +4,157 @@ Version History
 ===============
 
 
+Development
+-----------
+
+
+- documentation: some typos corrected. (#202, #204)
+
+
+1.13.2 - 2023-09-17
+-------------------
+
+- bugfix: fix a crash in the cache-verification in case the cache is activated in combination with the Fritz!Box default-ip and multiple AVM-devices are connected in the local network, so an arbitrary device may respond (which would also be a bug in applications using fritzconnection anyway) (introduced in version 1.10.0).
+- bugfix: fix broken reconnection of fritzmonitor in case of socket loss. (#196)
+- cleaner type-hints for public api.
+- documentation: Style change to "Furo" and minor content improvements.
+
+
+1.13.1 - 2023-08-20
+-------------------
+
+- bugfix: added a missing import to the `/docs/requirements.in` file to generate the API-documentation on readthedocs.org (introduced in version 1.13.0).
+
+
+1.13.0 - 2023-08-19
+-------------------
+
+- support added for Python 3.12
+- support removed for Python 3.6
+- type-hints added for the public API.
+- test-tool changed from `tox` to `nox`.
+- documentation-structure adapted according to changed requirements by `readthedocs.org`.
+- command-line interface: the check for a given password has been removed and substituted by a meaningfull error message in case of an authorization failure. Not every service is password-protected and passwords can optional provided by the environment. Therefore there is no need to require a password at cli level. (Motivated by #192)
+- bugfix: unneeded required password removed from the `fritzstatus` command-line interface. (#192)
+- bugfix: make `fritzwlan.get_beacon_security()` work with older router models not supporting the `NewX_AVM-DE_PossibleBeaconTypes` argument. (#191)
+- deprecation: `fritzconnection.lib.fritzphonebook.list_phonebooks()`
+
+
+1.12.2 - 2023-07-09
+-------------------
+
+- bugfix in 'setup.py`: add `long_description_content_type="text/markdown"`, because it is not used as default.
+
+
+1.12.1 - 2023-07-09
+-------------------
+
+- FritzCall:
+
+  - New method `hangup()`. (#184)
+
+- FritzHosts:
+
+  - bugfix: removed issues preventing the method `get_hosts_attributes()` to return a list of dictionaries representing the host-attributes. (#190)
+
+
+1.12.0 - 2023-03-08
+-------------------
+
+- FritzConnection:
+
+  - New method `call_http()` for accessing the (aha-)http-interface.
+  - bugfix: create cache directory if not existing. (#183)
+
+- FritzHttp:
+
+  - New core module to access the (aha-)http-interface.
+
+- FritzHomeAutomation:
+
+  - New class `HomeAutomationDevice`. Represents properties and state of a home-automation device.
+  - New method `get_homeautomation_device()`.
+  - New method `get_homeautomation_devices()`.
+  - New method `get_device_information_list()`. Substitutes the `device_information()` method.
+
+- FritzMonitor:
+
+  - bugfix: create new socket on lost connection. (#179)
+
+- Deprecations:
+
+  - `fritzconnection.lib.fritzhomeauto.FritzHomeAutomation.device_information()`
+
+
+1.11.0 - 2023-01-28
+-------------------
+
+- FritzConnection:
+
+  - New property `updatecheck` allows access to router attributes without permissions (#168)
+  - Faster cache validation.
+
+- Exceptions:
+
+  - New `FritzAuthorizationError` raised on calling actions without the proper permissions (#170)
+
+
+1.10.3 - 2022-09-08
+-------------------
+
+- upper limit for dependency pinning removed to support installation on more recent environments.
+
+
+1.10.2 - 2022-09-04
+-------------------
+
+- bugfix: missing `self` in `FritzStatus.get_device_info()` (introduced in 1.10.0) (#165)
+- dependencies pinned for `requests` not supporting Python 3.6 since version 2.28.0 and for `segno` (which still works with EOL versions).
+
+
+1.10.1 - 2022-09-01
+-------------------
+
+- bugfix: cli argument forwarding (introduced in 1.10.0) (#164)
+- enhancement: cli flag `-y` to suppress cache-verification now implies `-x` (use cache)
+
+
+1.10.0 - 2022-08-24
+-------------------
+
+- FritzConnection:
+
+  - API cache integration added: for faster start up times the router API can optional get saved in a cache-file. This can save up to several seconds run-time on instantiation.
+
+- FritzHosts:
+
+  - New method `get_hosts_attributes` providing a list of dictionaries with the attribues of all known hosts (#134)
+
+- FritzStatus:
+
+  - New property `update_available` (#156)
+  - New property `connection_service`
+  - New property `has_wan_support` (#162)
+  - New property `has_wan_enabled` (#147)
+  - New property `upnp_enabled()` (#153)
+  - New property `device_has_mesh_support` (#146)
+  - New method `get_default_connection_service` (#146)
+  - New method `get_device_info()` (#155)
+
+- FritzWLAN:
+
+  - QR-code now supports encryption information for the described network by auto-detecting the security settings (which is optional but set to default) (#139)
+
+- Testing:
+
+  - requires opencv to check qr-codes
+  - covering Python 3.11
+
+- New class `ArgumentNamespace` added in `fritzconnection.lib.fritztools` for convenient handling of dictionaries returned from  `FritzConnection.call_action()` calls.
+- Better error message in case application access is disabled (#142)
+
+
+
 1.9.1 - 2022-01-17
 ------------------
 

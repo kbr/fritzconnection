@@ -14,24 +14,37 @@
 #
 # import os
 # import sys
-# sys.path.insert(0, os.path.abspath('.'))
+# sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
 
-import fritzconnection
+# import fritzconnection
+import re
 from datetime import date
+from pathlib import Path
+
+
+def get_version():
+    path = Path("..") / "fritzconnection" / "__init__.py"
+    path = path.resolve()  # make it absolute
+    with open(path) as file:
+        content = file.read()
+    mo = re.search(r'\n\s*__version__\s*=\s*[\'"]([^\'"]*)[\'"]', content)
+    if mo:
+        return mo.group(1)
+    raise RuntimeError(f"Unable to find version string in {path}")
+
 
 project = 'fritzconnection'
 copyright = '2013 - {}, Klaus Bremer'.format(date.today().year)
 author = 'Klaus Bremer'
 
-# The short X.Y version
-#version = '0.7.0'
-version = fritzconnection.__version__
-# The full version, including alpha/beta/rc tags
-release = '.'.join(version.split('.')[:-1])
-
+# release: the fritzconnection.__version__ as is, including alpha/beta/rc tags
+# version: The short X.Y major project version
+release = get_version()
+version = '.'.join(release.split('.')[:-1])
+html_title = f"{project}<br />{release}"
 
 
 # -- General configuration ---------------------------------------------------
@@ -64,30 +77,39 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = None
+pygments_style = "default"
 
 
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
-#html_theme = 'alabaster'
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'furo'
+#html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    "light_css_variables": {
+        "admonition-font-size": "0.9375em",
+        "color-link": "#005493",
+        "color-link-underline": "#005493",
+        "color-link--hover": "#941100",
+        "color-link-underline--hover": "#941100",
+        "color-sidebar-link-text--top-level": "#941100",
+        "color-toc-item-text--active": "#941100",
+    }
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

@@ -16,6 +16,9 @@ Module defining fritzconnection specific exceptions.
 #                 |--> ActionError --> FritzActionError
 #                 |--> ServiceError --> FritzServiceError
 #                 |
+#                 |--> FritzAuthorizationError
+#                 |--> FritzHttpInterfaceError
+#                 |
 #                 |--> FritzResourceError
 #                 |
 #                 |--> FritzArgumentError
@@ -50,12 +53,14 @@ __all__ = [
     'FritzConnectionException',
     'FritzActionError',
     'FritzActionFailedError',
+    'FritzHttpInterfaceError',
     'FritzArgumentCharacterError',
     'FritzArgumentError',
     'FritzArgumentStringToLongError',
     'FritzArgumentStringToShortError',
     'FritzArgumentValueError',
     'FritzArrayIndexError',
+    'FritzAuthorizationError',
     'FritzInternalError',
     'FritzLookUpError',
     'FritzOutOfMemoryError',
@@ -89,6 +94,13 @@ class FritzServiceError(ServiceError):
 
 class FritzActionError(ActionError):
     """Exception raised by calling non-existing actions."""
+
+
+class FritzHttpInterfaceError(FritzConnectionException):
+    """
+    Exception raised on calling the aha-interface and getting an
+    response with a status-code other than 200.
+    """
 
 
 class FritzResourceError(FritzConnectionException):
@@ -170,6 +182,11 @@ class FritzArrayIndexError(FritzConnectionException, IndexError):
     So IndexError can also be used for exception handling.
     """
 
+class FritzAuthorizationError(FritzConnectionException):
+    """
+    Authentication error.
+    Not allowed to access the box at all.
+    """
 
 # Collection of error codes and corresponding exceptions:
 # (the error codes are defined by AVM)

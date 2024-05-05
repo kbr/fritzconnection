@@ -439,11 +439,21 @@ FritzWLAN API
     :members:
 
 
-FritzBase
----------
+Library-Tools
+-------------
 
-An internal module providing the `AbstractLibraryBase` class. This is an abstract class that should not get instantiated but should serve as a base class for library classes providing a common initialisation.
+Helper classes and functions for library-development.
+
+fritzbase
+.........
 
 .. automodule:: fritzconnection.lib.fritzbase
+    :noindex:
     :members:
 
+
+fritztools
+..........
+
+.. automodule:: fritzconnection.lib.fritztools
+    :members:

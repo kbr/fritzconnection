@@ -10,8 +10,14 @@ License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
 
+from ..core.exceptions import FritzAuthorizationError
 from ..lib.fritzhosts import FritzHosts
-from . utils import get_cli_arguments, get_instance, print_header
+from .utils import (
+    get_cli_arguments,
+    get_instance,
+    print_header,
+    print_common_exception_message
+)
 
 
 def print_status(fh):
@@ -29,14 +35,18 @@ def print_status(fh):
     print('\n')
 
 
-def main():
+def execute():
     args = get_cli_arguments()
-    if not args.password:
-        print('Exit: password required.')
-    else:
-        fh = get_instance(FritzHosts, args)
-        print_header(fh)
-        print_status(fh)
+    fh = get_instance(FritzHosts, args)
+    print_header(fh)
+    print_status(fh)
+
+
+def main():
+    try:
+        execute()
+    except FritzAuthorizationError as err:
+        print_common_exception_message(err)
 
 
 if __name__ == '__main__':

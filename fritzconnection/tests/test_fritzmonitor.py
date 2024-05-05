@@ -65,7 +65,7 @@ class MockReconnectSocket(MockSocket):
 
 class MockReconnectFailSocket(MockReconnectSocket):
     """
-    Dummy socket to simulate multiple faild reconnections.  
+    Dummy socket to simulate multiple faild reconnections.
     """
 
     def __init__(self, mock_data=None, timeouts=0):
@@ -88,8 +88,8 @@ class MockReconnectFailSocket(MockReconnectSocket):
 
 def test_init_fritzmonitor():
     fm = FritzMonitor()
-    assert fm.monitor_thread == None
-    assert fm.stop_flag.is_set() == False
+    assert fm.monitor_thread is None
+    assert fm.stop_flag.is_set() is False
 
 
 @pytest.mark.parametrize(
@@ -151,7 +151,7 @@ def test_queue_and_threading_instances():
 
 def test_start_twice():
     """
-    It is a failure to start a running instance again.  
+    It is a failure to start a running instance again.
     """
     mock_socket = MockSocket(timeout=0.01)
     fm = FritzMonitor()
@@ -277,38 +277,57 @@ def test_MockReconnectFailSocket(timeouts, tries, expected_result):
 @pytest.mark.parametrize(
     "timeouts", list(range(6)),
 )
-def test__get_connected_socket(timeouts):
+def test_get_connected_socket(timeouts):
     socket = MockReconnectFailSocket(timeouts=timeouts)
     fm = FritzMonitor()
-    s = fm._get_connected_socket(sock=socket)  # make initional connection
-    assert s == socket
+    fm.mock_socket = socket
+    s = fm._get_connected_socket()  # make initional connection
+    assert s is socket
     for _ in range(timeouts):
         with pytest.raises(OSError):
-            fm._get_connected_socket(sock=socket)
-    fm._get_connected_socket(sock=socket)
+            fm._get_connected_socket()
+    s = fm._get_connected_socket()
+    assert s is socket
 
 
 @pytest.mark.parametrize(
     "timeouts, tries, expected_result",
     [
-        (0, 0, False),
+        (0, 0, None),
         (0, 1, True),
-        (1, 0, False),
-        (1, 1, False),
+        (1, 0, None),
+        (1, 1, None),
         (1, 2, True),
         (4, 5, True),
-        (5, 5, False),
-        (6, 5, False),
+        (5, 5, None),
+        (6, 5, None),
     ],
 )
-def test__reconnect_socket(timeouts, tries, expected_result):
+def test_reconnect_socket(timeouts, tries, expected_result):
     mock_socket = MockReconnectFailSocket(timeouts=timeouts)
     fm = FritzMonitor()
-    socket = fm._get_connected_socket(sock=mock_socket)  # make initional connection
+    fm.mock_socket = mock_socket
+    socket = fm._get_connected_socket()  # make initional connection
     result = fm._reconnect_socket(
-        sock=socket, max_reconnect_delay=0.001, reconnect_tries=tries
+        max_reconnect_delay=0.001, reconnect_tries=tries
     )
-    assert result == expected_result
+    if expected_result is None:
+        assert result is expected_result
+    else:
+        assert result is mock_socket
+
+
+def test_shut_down_monitor_thread():
+    data = ["first_block\n", "second_block\n", ""]
+    mock_socket = MockReconnectFailSocket(data, timeouts=1)
+    fm = FritzMonitor()
+    q = fm.start(sock=mock_socket, reconnect_delay=0.001, reconnect_tries=0)
+    for d in data[:-1]:
+        time.sleep(0.1)
+        value = q.get(timeout=0.1)
+        assert value == d.strip()
+    assert fm.is_alive is False
+    assert fm.has_monitor_thread is False
 
 
 @pytest.mark.parametrize(
@@ -325,9 +344,13 @@ def test__reconnect_socket(timeouts, tries, expected_result):
         (["first\n", "", "second\n"], 5, 5, False),
     ],
 )
-def test_terminate_thread_on_failed_reconnection(data, timeouts, tries, success):
+def test_terminate_thread_on_failed_reconnection(
+    data, timeouts, tries, success
+):
     """
     Check for thread-termination in case reconnection fails.
+    If the tries are lower than the timeouts, the the start of the
+    monitor has failed and the Thread must terminate itself.
     """
     mock_socket = MockReconnectFailSocket(data, timeouts=timeouts)
     fm = FritzMonitor()
@@ -342,12 +365,13 @@ def test_terminate_thread_on_failed_reconnection(data, timeouts, tries, success)
     fm.stop()
 
 
+
 def test_restart_failed_monitor():
     """
-    Check whether a fritzmonitor instance with a lost connection can get started again.
-    Starting the same instance twice does (and should) not work.
-    See test_start_twice().
-    But after a failed reconnect (a lost connection) the same instance without calling stop()
+    Check whether a fritzmonitor instance with a lost connection can get
+    started again. Starting the same instance twice does (and should)
+    not work. See test_start_twice(). But after a failed reconnect (a
+    lost connection) the same instance without calling stop()
     """
     socket = MockReconnectFailSocket(
         mock_data=["first\n", "", "second\n"], timeouts=16

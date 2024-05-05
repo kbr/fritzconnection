@@ -7,6 +7,10 @@ Module for read-only access to the contents of the Fritz!Box phonebooks.
 # Authors: Klaus Bremer, David M. Straub
 
 
+from __future__ import annotations
+
+from warnings import warn
+
 from ..core.processor import (
     processor,
     process_node,
@@ -41,7 +45,7 @@ class FritzPhonebook(AbstractLibraryBase):
         return self.fc.call_action(SERVICE, actionname, **kwargs)
 
     @property
-    def phonebook_ids(self):
+    def phonebook_ids(self) -> list[int]:
         """
         List of integers identifying the phonebooks. This property is
         defined as `phonebook_ids` and as `list_phonebooks` for backward
@@ -57,9 +61,15 @@ class FritzPhonebook(AbstractLibraryBase):
         return res
 
     # legathy api name for backward compatibility
-    list_phonebooks = phonebook_ids
+    def list_phonebooks(self) -> list[int]:
+        """
+        .. deprecated:: 1.13.0
+           Use :func:`phonebook_ids` instead.
+        """
+        warn('This method is deprecated. Use "phonebook_ids" instead.', DeprecationWarning)
+        return self.phonebook_ids
 
-    def phonebook_info(self, id):
+    def phonebook_info(self, id: int) -> dict:
         """
         Get the `name`, `url` and an optional `extra id` of the
         phonebook with integer `id`. Returns a dictionary with the keys
@@ -72,10 +82,12 @@ class FritzPhonebook(AbstractLibraryBase):
             'xid': result.get('NewPhonebookExtraID')
         }
 
-    def get_all_name_numbers(self, id):
+    def get_all_name_numbers(self, id: int) -> list[tuple]:
         """
-        Returns all entries from the phonebook with the given id as a list of tuples. The first item of every tuple is
-        the contact name and the second item is the list of numbers for this contact.
+        Returns all entries from the phonebook with the given id as a
+        list of tuples. The first item of every tuple is the contact
+        name and the second item is the list of numbers for this
+        contact.
         """
         url = self.phonebook_info(id)['url']
         self._read_phonebook(url)
@@ -84,19 +96,23 @@ class FritzPhonebook(AbstractLibraryBase):
             for contact in self.phonebook.contacts
         ]
 
-    def get_all_names(self, id):
+    def get_all_names(self, id: int) -> dict:
         """
         Get a dictionary with all names and their phone numbers for the
-        phonebook with `id`. If a name is given more than once in a single phonebook, the last entry will overwrite
-        the previous entries. (That's because the names are the keys in the dictionary returned from this method.
-        In this case use the method 'get_all_name_numbers()' to get all entries as a list of tuples.)
+        phonebook with `id`. If a name is given more than once in a
+        single phonebook, the last entry will overwrite the previous
+        entries. (That's because the names are the keys in the
+        dictionary returned from this method. In this case use the
+        method 'get_all_name_numbers()' to get all entries as a list of
+        tuples.)
         """
         return {name: number for name, number in self.get_all_name_numbers(id)}
 
-    def get_all_numbers(self, id):
+    def get_all_numbers(self, id: int) -> dict:
         """
         Get a dictionary with all phone numbers and the according names
-        for the phonebook with `id`. This method is based on the method 'get_all_names()' and has the same limitations.
+        for the phonebook with `id`. This method is based on the method
+        'get_all_names()' and has the same limitations.
         """
         reverse_contacts = dict()
         for name, numbers in self.get_all_names(id).items():
@@ -104,7 +120,7 @@ class FritzPhonebook(AbstractLibraryBase):
                 reverse_contacts[number] = name
         return reverse_contacts
 
-    def lookup_numbers(self, id, name):
+    def lookup_numbers(self, id: int, name: str) -> list[str]:
         """
         Look up the phone numbers of contact `name` in the phonebook
         with `id`. Returns a list of numbers. Will raise a KeyError if
@@ -112,7 +128,7 @@ class FritzPhonebook(AbstractLibraryBase):
         """
         return self.get_all_names(id)[name]
 
-    def lookup_names(self, id, number):
+    def lookup_names(self, id: int, number: str) -> str:
         """
         Look up the names of the contacts with phone number `number` in
         the phonebook with `id`. Will raise a KeyError if the number is

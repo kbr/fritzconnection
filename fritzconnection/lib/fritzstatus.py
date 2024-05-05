@@ -2,13 +2,24 @@
 Module to read status-information from an AVM FritzBox.
 """
 
-import time
+
+from __future__ import annotations
+
+from collections import namedtuple
 from warnings import warn
 
-from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
-from .fritztools import format_num, format_rate, format_dB
+from .fritztools import (
+    ArgumentNamespace,
+    format_dB,
+    format_num,
+    format_rate,
+)
 
+DefaultConnectionService = namedtuple(
+    "DefaultConnectionService",
+    "prefix connection_service postfix"
+)
 
 def _integer_or_original(value):
     """
@@ -33,7 +44,7 @@ class FritzStatus(AbstractLibraryBase):
     """
 
     @property
-    def is_linked(self):
+    def is_linked(self) -> bool:
         """
         A boolean whether the FritzBox is physically linked to
         the provider.
@@ -42,7 +53,7 @@ class FritzStatus(AbstractLibraryBase):
         return status["NewPhysicalLinkStatus"] == "Up"
 
     @property
-    def is_connected(self):
+    def is_connected(self) -> bool:
         """
         A boolean whether the FritzBox has established an
         internet-connection.
@@ -51,19 +62,19 @@ class FritzStatus(AbstractLibraryBase):
         return status["NewConnectionStatus"] == "Connected"
 
     @property
-    def external_ip(self):
+    def external_ip(self) -> str:
         """The external v4 ip-address."""
         return self.fc.call_action("WANIPConn", "GetExternalIPAddress")[
             "NewExternalIPAddress"
         ]
 
     @property
-    def external_ipv6(self):
+    def external_ipv6(self) -> str:
         """The external v6 ip-address."""
         return self.external_ipv6_info["NewExternalIPv6Address"]
 
     @property
-    def external_ipv6_info(self):
+    def external_ipv6_info(self) -> dict:
         """
         Returns the ipv6 external address information as a dictionary with the keys:
         NewExternalIPv6Address                   out ->     string
@@ -79,7 +90,7 @@ class FritzStatus(AbstractLibraryBase):
         return self.ipv6_prefix_info["NewIPv6Prefix"]
 
     @property
-    def ipv6_prefix_info(self):
+    def ipv6_prefix_info(self) -> dict:
         """
         Returns the ipv6 prefix information as a dictionary with the keys:
         NewIPv6Prefix                            out ->     string
@@ -90,36 +101,39 @@ class FritzStatus(AbstractLibraryBase):
         return self.fc.call_action("WANIPConn", "X_AVM_DE_GetIPv6Prefix")
 
     @property
-    def connection_uptime(self):
+    def connection_uptime(self) -> int:
         """Connection uptime in seconds."""
         status = self.fc.call_action("WANIPConn", "GetStatusInfo")
         return status["NewUptime"]
 
     @property
-    def uptime(self):
+    def uptime(self) -> int:
         """
         .. deprecated:: 1.9.0
-        Use :func:`connection_uptime` instead.
+           Use :func:`connection_uptime` instead.
         """
         warn('This method is deprecated. Use "connection_uptime" instead.', DeprecationWarning)
         return self.connection_uptime
 
     @property
-    def device_uptime(self):
+    def device_uptime(self) -> int:
         """Device uptime in seconds."""
         status = self.fc.call_action("DeviceInfo1", "GetInfo")
         return status["NewUpTime"]
 
     @property
-    def str_uptime(self):
+    def str_uptime(self) -> str:
         """Connection uptime in human-readable format."""
         mins, secs = divmod(self.uptime, 60)
         hours, mins = divmod(mins, 60)
         return "%02d:%02d:%02d" % (hours, mins, secs)
 
     @property
-    def bytes_sent(self):
-        """Total number of sent bytes."""
+    def bytes_sent(self) -> int | str:
+        """
+        Total number of sent bytes. Returns an integer or, in case of
+        failure, the original value which would be a string.
+        """
         try:
             status = self.fc.call_action("WANCommonIFC1", "GetAddonInfos")
             value = status["NewX_AVM_DE_TotalBytesSent64"]
@@ -132,8 +146,11 @@ class FritzStatus(AbstractLibraryBase):
         return _integer_or_original(value)
 
     @property
-    def bytes_received(self):
-        """Total number of received bytes."""
+    def bytes_received(self) -> int | str:
+        """
+        Total number of received bytes. Returns an integer or, in case of
+        failure, the original value which would be a string.
+        """
         try:
             status = self.fc.call_action("WANCommonIFC1", "GetAddonInfos")
             value = status["NewX_AVM_DE_TotalBytesReceived64"]
@@ -146,7 +163,7 @@ class FritzStatus(AbstractLibraryBase):
         return _integer_or_original(value)
 
     @property
-    def transmission_rate(self):
+    def transmission_rate(self) -> tuple[int, int]:
         """
         The upstream and downstream values as a tuple in bytes per
         second. Use this for periodical calling.
@@ -157,16 +174,16 @@ class FritzStatus(AbstractLibraryBase):
         return upstream, downstream
 
     @property
-    def str_transmission_rate(self):
+    def str_transmission_rate(self) -> tuple[str, str]:
         """
         Tuple of human-readable transmission rate in bytes. First item
         is upstream, second item downstream.
         """
         upstream, downstream = self.transmission_rate
-        return (format_num(upstream), format_num(downstream))
+        return format_num(upstream), format_num(downstream)
 
     @property
-    def max_linked_bit_rate(self):
+    def max_linked_bit_rate(self) -> tuple[int, int]:
         """
         Tuple with the maximum upstream- and downstream-rate
         of the physical link. The rate is given in bits/sec.
@@ -174,14 +191,14 @@ class FritzStatus(AbstractLibraryBase):
         return self._get_max_bit_rate("WANCommonInterfaceConfig")
 
     @property
-    def max_bit_rate(self):
+    def max_bit_rate(self) -> tuple[int, int]:
         """
         Tuple with the maximum upstream- and downstream-rate
         of the given connection. The rate is given in bits/sec.
         """
         return self._get_max_bit_rate("WANCommonIFC")
 
-    def _get_max_bit_rate(self, servicename):
+    def _get_max_bit_rate(self, servicename: str) -> tuple[int, int]:
         """
         internal method to get the upstream and downstream-rates for
         different services of the WANCommonInterfaceConfig1 ServiceType.
@@ -192,7 +209,7 @@ class FritzStatus(AbstractLibraryBase):
         return upstream, downstream
 
     @property
-    def max_byte_rate(self):
+    def max_byte_rate(self) -> tuple[float, float]:
         """
         Same as max_bit_rate but rate is given in bytes/sec.
         """
@@ -200,7 +217,7 @@ class FritzStatus(AbstractLibraryBase):
         return upstream / 8.0, downstream / 8.0
 
     @property
-    def str_max_linked_bit_rate(self):
+    def str_max_linked_bit_rate(self) -> tuple[str, str]:
         """
         Human-readable maximum of the physical upstream- and
         downstream-rate in bits/sec. Value is a tuple, first item is
@@ -213,7 +230,7 @@ class FritzStatus(AbstractLibraryBase):
         )
 
     @property
-    def str_max_bit_rate(self):
+    def str_max_bit_rate(self) -> tuple[str, str]:
         """
         Human-readable maximum of the upstream- and downstream-rate in
         bits/sec, as given by the provider. Value is a tuple, first item
@@ -225,7 +242,7 @@ class FritzStatus(AbstractLibraryBase):
             format_rate(downstream, unit="bits"),
         )
 
-    def get_monitor_data(self, sync_group_index=0):
+    def get_monitor_data(self, sync_group_index=0) -> dict:
         """
         Returns a dictionary with realtime data about the current up-
         and downstream rates.
@@ -243,15 +260,15 @@ class FritzStatus(AbstractLibraryBase):
                     # ignore and keep value as is:
                     pass
                 else:
-                    monitor_data[key] = items
+                    monitor_data[key] = items  # type: ignore
         return monitor_data
 
-    def reconnect(self):
+    def reconnect(self) -> None:
         """Makes a reconnection with a new external ip."""
         self.fc.reconnect()
 
     @property
-    def noise_margin(self):
+    def noise_margin(self) -> tuple[int, int]:
         """
         Tuple of noise margin. First item
         is upstream, second item downstream.
@@ -262,16 +279,16 @@ class FritzStatus(AbstractLibraryBase):
         return upstream, downstream
 
     @property
-    def str_noise_margin(self):
+    def str_noise_margin(self) -> tuple[str, str]:
         """
         Human-readable noise margin in dB. Value is a tuple, first item
         is upstream, second item downstream.
         """
         upstream, downstream = self.noise_margin
-        return (format_dB(upstream), format_dB(downstream))
+        return format_dB(upstream), format_dB(downstream)
 
     @property
-    def attenuation(self):
+    def attenuation(self) -> tuple[int, int]:
         """
         Tuple of attenuation. First item
         is upstream, second item downstream.
@@ -282,11 +299,96 @@ class FritzStatus(AbstractLibraryBase):
         return upstream, downstream
 
     @property
-    def str_attenuation(self):
+    def str_attenuation(self) -> tuple[str, str]:
         """
         Human-readable attenuation in dB. Value is a tuple, first item
         is upstream, second item downstream.
         """
         upstream, downstream = self.attenuation
-        return (format_dB(upstream), format_dB(downstream))
+        return format_dB(upstream), format_dB(downstream)
 
+    @property
+    def upnp_enabled(self) -> bool:
+        """
+        Returns a boolean whether upnp is enabled or raises a
+        FritzServiceError in case the service is not available.
+        """
+        status = self.fc.call_action("X_AVM-DE_UPnP1", "GetInfo")
+        return status["NewEnable"]
+
+    @property
+    def device_has_mesh_support(self) -> bool:
+        """
+        True if the device supports mesh, otherwise False.
+        """
+        # check for the corresponding action
+        # whether mesh is supported
+        try:
+            return (
+                "X_AVM-DE_GetMeshListPath"
+                in self.fc.services["Hosts1"].actions
+            )
+        except KeyError:
+            # can happen if "Hosts1" is not known
+            return False
+
+    def get_device_info(self) -> ArgumentNamespace:
+        """
+        Returns an ArgumentNamespace with the attributes:
+
+        manufacturer_name, manufacturer_oui, model_name, description,
+        product_class, serial_number, software_version, hardware_version,
+        spec_version, provisioning_code, up_time, device_log
+
+        .. versionadded:: 1.10
+
+        """
+        return ArgumentNamespace(self.fc.call_action("DeviceInfo1", "GetInfo"))
+
+    def get_default_connection_service(self) -> DefaultConnectionService:
+        """
+        Returns a namedtuple of type DefaultConnectionService:
+        `prefix` -> str
+        `device_connection` -> str (like "WANPPPConnection")
+        `postfix` -> str
+        """
+        result = self.fc.call_action(
+                "Layer3Forwarding1", "GetDefaultConnectionService"
+        )
+        prefix, connection_service, postfix = \
+            result["NewDefaultConnectionService"].split('.', 2)
+        return DefaultConnectionService(
+            prefix, connection_service, postfix
+        )
+
+    @property
+    def connection_service(self) -> str:
+        """
+        The extracted connection_service from
+        get_default_connection_service().
+        """
+        result = self.get_default_connection_service()
+        return result.connection_service
+
+    @property
+    def update_available(self) -> str:
+        """
+        The new version number (as a string) if an update is available or an
+        empty string if no update is avilable.
+        """
+        return self.fc.call_action("UserInterface1", "GetInfo")["NewX_AVM-DE_Version"]
+
+    @property
+    def has_wan_enabled(self) -> bool:
+        """
+        True if wan is enabled otherwise False.
+        """
+        return self.fc.call_action(self.connection_service, "GetInfo")["NewEnable"]
+
+    @property
+    def has_wan_support(self) -> bool:
+        """
+        True is the device supports a WAN interface.
+        False otherwise.
+        """
+        return "Layer3Forwarding1" in self.fc.services

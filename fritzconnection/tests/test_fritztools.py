@@ -1,6 +1,10 @@
 import pytest
 
-from ..lib.fritztools import byte_formatter, format_num
+from ..lib.fritztools import (
+    ArgumentNamespace,
+    byte_formatter,
+    format_num,
+)
 
 
 @pytest.mark.parametrize(
@@ -54,3 +58,119 @@ def test_format_num(num, formated_num):
 def test_format_num_bits():
     result = format_num(1234, unit='bits')
     assert result == '1.2 KBit'
+
+
+def test_argument_namespace():
+    source = {
+        'NewManufacturerName': 'AVM',
+        'NewManufacturerOUI': '00040E',
+        'NewModelName': 'FRITZ!Box 7590',
+        'NewDescription': 'FRITZ!Box 7590 154.07.29',
+        'NewProductClass': 'AVMFB7590',
+        'NewSerialNumber': '989BCB2B93B0',
+        'NewSoftwareVersion': '154.07.29',
+        'NewHardwareVersion': 'FRITZ!Box 7590',
+        'NewSpecVersion': '1.0',
+        'NewProvisioningCode': '000.044.004.000',
+        'NewUpTime': 9516949,
+        'NewDeviceLog': 'long string here ...'
+    }
+    mapping = {
+        "serial_number": "NewSerialNumber",
+        "model_name": "NewModelName",
+    }
+    info = ArgumentNamespace(source, mapping)
+    assert info.serial_number == '989BCB2B93B0'
+    assert info['model_name'] == 'FRITZ!Box 7590'
+
+
+@pytest.mark.parametrize(
+    "name, expected_result", [
+        ("description", "description"),
+        ("Description", "description"),
+        ("ModelName", "model_name"),
+        ("NewUpTime", "new_up_time"),
+        ("new_up_time", "new_up_time"),
+        ("NewManufacturerOUI", "new_manufacturer_oui"),
+    ]
+)
+def test_argument_namespace_rewrite(name, expected_result):
+    result = ArgumentNamespace.rewrite_argument(name, suppress_new=False)
+    assert result == expected_result
+
+
+@pytest.mark.parametrize(
+    "name, expected_result", [
+        ("NewUpTime", "up_time"),
+        ("UpTime", "up_time"),
+        ("upTime", "up_time"),
+        ("up_time", "up_time"),
+        ("uptime", "uptime"),
+        ("newuptime", "newuptime"),
+        ("Newuptime", "newuptime"),
+        ("New_uptime", "uptime"),
+        ("NewManufacturerOUI", "manufacturer_oui"),
+    ]
+)
+def test_argument_namespace_rewrite_no_new(name, expected_result):
+    result = ArgumentNamespace.rewrite_argument(name)
+    assert result == expected_result
+
+
+@pytest.fixture()
+def avm_source():
+    source = {
+        'NewModelName': 'FRITZ!Box 7590',
+        'NewDescription': 'FRITZ!Box 7590 154.07.29',
+        'NewProductClass': 'AVMFB7590',
+        'NewSerialNumber': '989BCB2B93B0',
+    }
+    return source
+
+
+def test_argument_namespace_no_mapping(avm_source):
+    """
+    In case of a missing mapping, all values from source should get
+    transfered to the ArgumentNamespace and the key should get converted
+    to snake_case.
+    """
+    info = ArgumentNamespace(avm_source)
+    assert info.model_name == 'FRITZ!Box 7590'
+    assert info['model_name'] == 'FRITZ!Box 7590'
+
+
+def test_argument_namespace_no_mapping_no_suppress(avm_source):
+    """
+    In case of a missing mapping, all values from source should get
+    transfered to the ArgumentNamespace and the key should get converted
+    to snake_case.
+    """
+    info = ArgumentNamespace(avm_source, suppress_new=False)
+    assert info.new_serial_number == '989BCB2B93B0'
+    assert info['new_serial_number'] == '989BCB2B93B0'
+    assert info.new_model_name == 'FRITZ!Box 7590'
+    assert info['new_model_name'] == 'FRITZ!Box 7590'
+
+
+def test_argument_namespace_has_len(avm_source):
+    info = ArgumentNamespace(avm_source)
+    assert len(info) == len(avm_source)
+
+
+def test_argument_namespace_assignment(avm_source):
+    info = ArgumentNamespace(avm_source)
+    info.new_value = 42
+    assert info.new_value == 42
+    assert len(info) == len(avm_source) + 1
+    info["minus"] = -3
+    assert info["minus"] == -3
+    assert info.minus == -3
+    assert len(info) == len(avm_source) + 2
+
+
+def test_argument_namespace_extract(avm_source):
+    extract = "NewModelName", "NewProductClass"
+    info = ArgumentNamespace(avm_source, extract=extract)
+    assert len(info) == len(extract)
+    assert info.model_name == avm_source['NewModelName']
+    assert info.product_class == avm_source['NewProductClass']

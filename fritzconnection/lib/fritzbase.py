@@ -1,5 +1,10 @@
 """
 Abstract base class for all library classes.
+
+An internal module providing the `AbstractLibraryBase` class. This is an
+abstract class that should not get instantiated but should serve as a
+base class for library classes providing a common initialisation.
+
 """
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection
@@ -7,38 +12,33 @@ Abstract base class for all library classes.
 # Author: Klaus Bremer
 
 
-from ..core.fritzconnection import (
-    FritzConnection,
-    DEFAULT_POOL_CONNECTIONS,
-    DEFAULT_POOL_MAXSIZE,
-)
+from __future__ import annotations
+
+from ..core.fritzconnection import FritzConnection
 
 
 class AbstractLibraryBase:
     """
     Abstract base class for library classes. Implements the common
-    initialisation. All parameters are optional. If given, they have the
-    following meaning: `fc` is an instance of FritzConnection, `address`
-    the ip of the Fritz!Box, `port` the port to connect to, `user` the
-    username, `password` the password, `timeout` a timeout as floating
-    point number in seconds, `use_tls` a boolean indicating to use TLS
-    (default False). `pool_connections` and `pool_maxsize` are to
-    override the urllib3 default settings.
+    initialisation. The first argument `fc` can be a FritzConnection
+    instance. If this argument is given no further arguments are needed.
+    If the argument `fc` is not given, all other arguments are forwarded
+    to get a FritzConnection instance. These arguments have the same
+    meaning as for `FritzConnection.__init__()`. Using positional
+    arguments is strongly discouraged. Use keyword arguments instead.
     """
-    def __init__(self, fc=None, address=None, port=None, user=None,
-                 password=None, timeout=None, use_tls=False,
-                 pool_connections=DEFAULT_POOL_CONNECTIONS,
-                 pool_maxsize=DEFAULT_POOL_MAXSIZE,
-        ):
+    def __init__(
+        self,
+        fc: FritzConnection | None = None,
+        *args,
+        **kwargs
+    ):
         if fc is None:
-            kwargs = {
-                k:v for k, v in locals().items() if k not in ('self', 'fc')
-            }
-            fc = FritzConnection(**kwargs)
+            fc = FritzConnection(*args, **kwargs)
         self.fc = fc
 
     @property
-    def modelname(self):
+    def modelname(self) -> str:
         """
         The device modelname. Every library module derived from
         `AbstractLibraryBase` inherits this property.

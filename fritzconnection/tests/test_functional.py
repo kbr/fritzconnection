@@ -19,18 +19,6 @@ from ..lib.fritzwlan import FritzWLAN
 
 
 TIMEOUT = 2.0  # give older models some time
-NO_ROUTER = 'no router present'
-
-
-def _no_router_present():
-    try:
-        requests.get('http://169.254.1.1/', timeout=TIMEOUT)
-    except requests.ConnectionError:
-        return True
-    return False
-
-
-no_router_present = _no_router_present()
 
 
 @pytest.fixture(scope="module")
@@ -43,7 +31,7 @@ def get_fc_tls_instance():
     return FritzConnection(timeout=TIMEOUT, use_tls=True)
 
 
-@pytest.mark.skipif(no_router_present, reason=NO_ROUTER)
+@pytest.mark.routertest
 @pytest.mark.parametrize("use_tls", [False, True])
 def test_access_model_name(use_tls):
     """
@@ -55,7 +43,7 @@ def test_access_model_name(use_tls):
     assert isinstance(fc.modelname, str)
 
 
-@pytest.mark.skipif(no_router_present, reason=NO_ROUTER)
+@pytest.mark.routertest
 @pytest.mark.parametrize("use_tls", [False, True])
 def test_soap_access(use_tls, get_fc_instance, get_fc_tls_instance):
     """
@@ -92,7 +80,7 @@ def test_soap_access(use_tls, get_fc_instance, get_fc_tls_instance):
     assert True
 
 
-@pytest.mark.skipif(no_router_present, reason=NO_ROUTER)
+@pytest.mark.routertest
 @pytest.mark.parametrize(
     "cls, use_tls", [
         (FritzCall, False),
@@ -114,7 +102,7 @@ def test_library_api_arguments(cls, use_tls):
     assert isinstance(obj.modelname, str)
 
 
-@pytest.mark.skipif(no_router_present, reason=NO_ROUTER)
+@pytest.mark.routertest
 @pytest.mark.parametrize(
     "cls", [
         FritzCall,
@@ -129,7 +117,7 @@ def test_init_cls_with_instance(cls, get_fc_instance):
     assert isinstance(obj.modelname, str)
 
 
-@pytest.mark.skipif(no_router_present, reason=NO_ROUTER)
+@pytest.mark.routertest
 @pytest.mark.parametrize(
     "cls", [
         FritzCall,
