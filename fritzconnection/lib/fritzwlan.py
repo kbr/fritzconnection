@@ -204,6 +204,11 @@ class FritzWLAN(AbstractLibraryBase):
         return self.get_info()['NewBeaconType']
 
     @property
+    def is_hidden(self) -> bool:
+        """Returns True if the SSID hidden (not advertised through beacons)."""
+        return not self._action('GetBeaconAdvertisement')['NewBeaconAdvertisementEnabled']
+
+    @property
     def channel(self) -> int:
         """The WLAN channel in use"""
         return self.channel_info()['NewChannel']
