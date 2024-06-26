@@ -121,7 +121,7 @@ def _get_wifi_qr_code(instance, kind='svg',
         ssid=instance.ssid,
         password=instance.get_password(),
         security=security,
-        hidden=hidden
+        hidden=instance.is_hidden
     )
     qr_code.save(out=stream, kind=kind, scale=scale)
     stream.seek(0)
