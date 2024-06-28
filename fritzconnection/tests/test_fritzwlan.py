@@ -129,6 +129,7 @@ class WLANConfigMock:
         ('11i', 'WPA3', 'WPA3'),
         ('WPAand11i', None, 'WPA'),
         ('11iandWPA3', None, 'WPA'),
+        ('Basic', None, 'WEP'),
         ('None', None, 'nopass'),
         ('OWETrans', None, 'nopass'),
     ]
