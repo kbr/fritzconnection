@@ -95,6 +95,7 @@ def _get_wifi_qr_code(instance, kind='svg',
     """
     stream = io.BytesIO()
     if not security:
+        # if beacon type is something unknown, assume a "no pass" connection:
         security = _BEACONTYPE_TO_QR_SECURITY.get(instance.beacontype,
                                                   _QR_SECURITY_NO_PASS)
     qr_code = segno.helpers.make_wifi(
