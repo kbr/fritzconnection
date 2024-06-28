@@ -121,31 +121,6 @@ class WLANConfigMock:
         return self.mock_data["NewSSID"]
 
 
-@pytest.mark.parametrize(
-    "current_beacontype, security, expected_result", [
-        ('11i', None, 'WPA'),
-        ('11i', '', 'WPA'),
-        ('11i', 'WPA3', 'WPA3'),
-        ('WPAand11i', None, 'WPA'),
-        ('11iandWPA3', None, 'WPA'),
-        ('None', None, 'nopass'),
-        ('OWETrans', None, 'nopass'),
-    ]
-)
-def test_get_beacon_security(current_beacontype, security, expected_result):
-    """
-    Test for correct selection of "WPA" or "nopass" depending on the
-    WLAN-settings.
-    """
-    mock_data = {
-        'NewBeaconType': current_beacontype,
-        'NewX_AVM-DE_PossibleBeaconTypes': 'None,11i,WPAand11i,11iandWPA3'
-    }
-    instance = WLANConfigMock(mock_data)
-    result = get_beacon_security(instance, security)
-    assert result == expected_result
-
-
 @pytest.mark.skipif(OPENCV_NOT_AVAILABLE, reason="requires opencv")
 @pytest.mark.parametrize(
     "current_beacontype, security, expected_security", [
