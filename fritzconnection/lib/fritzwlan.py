@@ -68,7 +68,7 @@ def _get_beacon_security(instance, security):
 
 def _get_wifi_qr_code(instance, kind='svg',
                      security=None, hidden=False,
-                     scale=4):
+                     scale=4, border=0):
     """
     Returns a file-like object providing a bytestring representing a
     qr-code for wlan access. `instance` is a FritzWLAN or FritzGuestWLAN
@@ -130,10 +130,10 @@ def _get_wifi_qr_code(instance, kind='svg',
     if kind in ['text', 'text-compact']:
         stream = io.StringIO()
         compact = kind != 'text'
-        qr_code.terminal(out=stream, border=0, compact=compact)
+        qr_code.terminal(out=stream, border=border, compact=compact)
     else:
         stream = io.BytesIO()
-        qr_code.save(out=stream, kind=kind, scale=scale)
+        qr_code.save(out=stream, kind=kind, scale=scale, border=border)
     stream.seek(0)
     return stream
 
