@@ -119,9 +119,10 @@ def _get_wifi_qr_code(instance, kind='svg', security=None, scale=4, border=0):
 
     """
     security = _get_beacon_security(instance, security)
+    password = instance.get_password() if security != NO_PASS else None
     qr_code = segno.helpers.make_wifi(
         ssid=instance.ssid,
-        password=instance.get_password(),
+        password=password,
         security=security,
         hidden=instance.is_hidden
     )
