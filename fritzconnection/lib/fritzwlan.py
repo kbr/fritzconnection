@@ -67,8 +67,7 @@ def _get_beacon_security(instance, security):
 
 
 def _get_wifi_qr_code(instance, kind='svg',
-                     security=None, hidden=False,
-                     scale=4):
+                     security=None, scale=4):
     """
     Returns a file-like object providing a bytestring representing a
     qr-code for wlan access. `instance` is a FritzWLAN or FritzGuestWLAN
@@ -121,7 +120,7 @@ def _get_wifi_qr_code(instance, kind='svg',
         ssid=instance.ssid,
         password=instance.get_password(),
         security=security,
-        hidden=hidden
+        hidden=instance.is_hidden
     )
     qr_code.save(out=stream, kind=kind, scale=scale)
     stream.seek(0)
@@ -202,6 +201,11 @@ class FritzWLAN(AbstractLibraryBase):
         network.
         """
         return self.get_info()['NewBeaconType']
+
+    @property
+    def is_hidden(self) -> bool:
+        """Returns True if the SSID hidden (not advertised through beacons)."""
+        return not self._action('GetBeaconAdvertisement')['NewBeaconAdvertisementEnabled']
 
     @property
     def channel(self) -> int:
