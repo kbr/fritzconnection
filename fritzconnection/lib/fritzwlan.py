@@ -44,14 +44,12 @@ _BEACONTYPE_TO_QR_SECURITY = {
 }
 
 
-def _get_wifi_qr_code(instance, kind='svg',
-                     security=None, hidden=False,
-                     scale=4):
+def _get_wifi_qr_code(instance, kind='svg', security=None, scale=4, border=0):
     """
     Returns a file-like object providing a bytestring representing a
     qr-code for wlan access. `instance` is a FritzWLAN or FritzGuestWLAN
     instance. `kind` describes the type of the qr-code. Supported types
-    are: 'svg', 'png' and 'pdf'. Default is 'svg'.
+    are: 'svg', 'png', 'pdf', 'text' and 'text-compact'. Default is 'svg'.
 
     This function is not intended to get called directly. Instead it is
     available as a method on FritzWLAN instances (as well as on
@@ -70,6 +68,11 @@ def _get_wifi_qr_code(instance, kind='svg',
 
         with open('qr_code.png', 'wb') as fobj:
             fobj.write(stream.read())
+
+    The stream can be printed out if qr-code is represented as text: ::
+
+        stream = guest_wlan.get_wifi_qr_code(kind='text')
+        print(stream.getvalue())
 
     If `segno` is not installed the call will trigger an
     AttributeError when called on an instance and a NameError when
@@ -93,18 +96,23 @@ def _get_wifi_qr_code(instance, kind='svg',
     .. versionadded:: 1.10
 
     """
-    stream = io.BytesIO()
     if not security:
         # if beacon type is something unknown, assume a "no pass" connection:
         security = _BEACONTYPE_TO_QR_SECURITY.get(instance.beacontype,
                                                   _QR_SECURITY_NO_PASS)
     qr_code = segno.helpers.make_wifi(
         ssid=instance.ssid,
-        password=instance.get_password(),
+        password=password,
         security=security,
-        hidden=hidden
+        hidden=instance.is_hidden
     )
-    qr_code.save(out=stream, kind=kind, scale=scale)
+    if kind in ['text', 'text-compact']:
+        stream = io.StringIO()
+        compact = kind != 'text'
+        qr_code.terminal(out=stream, border=border, compact=compact)
+    else:
+        stream = io.BytesIO()
+        qr_code.save(out=stream, kind=kind, scale=scale, border=border)
     stream.seek(0)
     return stream
 
@@ -183,6 +191,11 @@ class FritzWLAN(AbstractLibraryBase):
         network.
         """
         return self.get_info()['NewBeaconType']
+
+    @property
+    def is_hidden(self) -> bool:
+        """Returns True if the SSID hidden (not advertised through beacons)."""
+        return not self._action('GetBeaconAdvertisement')['NewBeaconAdvertisementEnabled']
 
     @property
     def channel(self) -> int:

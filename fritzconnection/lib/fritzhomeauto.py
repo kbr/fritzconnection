@@ -395,7 +395,16 @@ class HomeAutomationDevice:
                 if key == "datatime":
                     value = datetime.datetime.fromtimestamp(value)  # type: ignore
                 content[key] = value
-            content["data"] = list(map(int, stats.text.split(",")))  # type: ignore
+            # convert the csv-list of returned values from text to int.
+            # on missing data dashes (-) may get returned.
+            # this get catched and missing data are represented as `None`.
+            content["data"] = []
+            for item in stats.text.split(","):
+                try:
+                    value = int(d)
+                except ValueError:
+                    value = None
+                content["data"].append(value)
             elements[element.tag] = content
         return elements
 
