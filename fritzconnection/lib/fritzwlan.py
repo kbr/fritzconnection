@@ -67,7 +67,8 @@ def _get_beacon_security(instance, security):
 
 
 def _get_wifi_qr_code(instance, kind='svg',
-                     security=None, scale=4):
+                     security=None, hidden=False,
+                     scale=4, border=0):
     """
     Returns a file-like object providing a bytestring representing a
     qr-code for wlan access. `instance` is a FritzWLAN or FritzGuestWLAN
