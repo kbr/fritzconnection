@@ -401,7 +401,7 @@ class HomeAutomationDevice:
             content["data"] = []
             for item in stats.text.split(","):
                 try:
-                    value = int(d)
+                    value = int(item)
                 except ValueError:
                     value = None
                 content["data"].append(value)
