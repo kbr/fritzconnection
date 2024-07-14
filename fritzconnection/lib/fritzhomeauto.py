@@ -395,7 +395,14 @@ class HomeAutomationDevice:
                 if key == "datatime":
                     value = datetime.datetime.fromtimestamp(value)  # type: ignore
                 content[key] = value
-            content["data"] = list(map(int, stats.text.split(",")))  # type: ignore
+            content["data"] = []
+            for d in stats.text.split(","):
+                try:
+                    content["data"].append(int(d))
+                except:
+                    pass
+            if "count" in content:
+                content["count"] = len(content["data"])
             elements[element.tag] = content
         return elements
 
