@@ -7,6 +7,7 @@ Version History
 Development
 -----------
 
+- support added for Python 3.13
 - FritzHomeAutomation: fix a bug converting data from actors which are reporting missing data as non integer values. (#215)
 - FritzWLAN: added ability to output QR code as string stream with ANSI or unicode. (#223)
 - FritzWLAN: `is_hidden` property added for wlan ssid. Internal use of this property to handle hidden SSID in QR codes. Parameter `hidden` removed from `FritzWLAN.get_wifi_qr_code()`. (#221)
