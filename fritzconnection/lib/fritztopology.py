@@ -1,5 +1,6 @@
 """
 Module to access to the Mesh Topology
+See https://avm.de/service/schnittstellen/ "Mesh-Topologie"
 """
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection
@@ -112,7 +113,9 @@ class InterfaceLink:
         return f"InterfaceLink:  {self.uid:<8}target-interface:  {self.node_interface_2_uid}"
 
     def __str__(self) -> str:
-        return f"from {self.source.name} to {self.target.name}"
+        connection = Connection(self.source, self.target, self)
+        throughput = connection.cur_tx // 1000  # from kB/s to MB/s
+        return f"from {self.source.name} to {self.target.name} (-> {throughput} MBit/s)"
 
     @property
     def source(self) -> Device:
@@ -263,7 +266,7 @@ class FritzMeshTopology(AbstractLibraryBase):
         )
 
     def __str__(self) -> str:
-        nodes = "\n".join(str(device) for device in self.devices)
+        nodes = "\n\n".join(str(device) for device in self.devices)
         return f"{repr(self)}\n{nodes}"
 
     @property
@@ -279,6 +282,12 @@ class FritzMeshTopology(AbstractLibraryBase):
         return list(self.nodes.values())
 
     def get_device_by_id(self, uid: str) -> Device:
+        """
+        Returns a device by id. The id is the node-uid like "n-1".
+        The node-uids are fixed to devices after calling
+        `load_topology()` but may change if `load_topology()` gets
+        called again.
+        """
         return self.nodes[uid]
 
     def load_topology(self):
