@@ -28,42 +28,20 @@ else:
 # important: don't set an extension number here:
 SERVICE = 'WLANConfiguration'
 DEFAULT_PASSWORD_LENGTH = 12
-WPA_SECURITY = 'WPA'
-NO_PASS = 'nopass'
-
-POSSIBLE_BEACON_TYPES_KEY = "NewX_AVM-DE_PossibleBeaconTypes"
-
-
-def _get_beacon_security(instance, security):
-    """
-    Returns the beacon-security as a string based on the security
-    argument. Possible return values are 'nopass' and 'WPA'. If the
-    security is None or an empty string, the function tries to find the
-    proper security setting ('nopass'|'WPA'). If security is neither
-    None nor an empty string, the value is returned as is.
-
-    This function is not intended to get called directly.
-
-    .. versionadded:: 1.10
-    """
-    if not security:
-        security = NO_PASS
-        info = instance.get_info()
-        beacontype = info["NewBeaconType"]
-        # check for the POSSIBLE_BEACON_TYPES_KEY argument
-        # as older models may not provide it:
-        if POSSIBLE_BEACON_TYPES_KEY in info:
-            beacontypes = set(info[POSSIBLE_BEACON_TYPES_KEY].split(","))
-            beacontypes -= set(('None', 'OWETrans'))
-            if beacontype in beacontypes:
-                security = WPA_SECURITY
-        else:
-            # dealing with an older model
-            # assuming at least providing WPA security
-            # (unable to test for WEP because of missing hardware)
-            if beacontype != "None":
-                security = WPA_SECURITY
-    return security
+_QR_SECURITY_WPA = 'WPA'
+_QR_SECURITY_WEP  = 'WEP'
+_QR_SECURITY_NO_PASS = 'nopass'
+_BEACONTYPE_TO_QR_SECURITY = {
+    'WPA': _QR_SECURITY_WPA,
+    '11i': _QR_SECURITY_WPA,
+    'WPAand11i': _QR_SECURITY_WPA,
+    'WPA3': _QR_SECURITY_WPA,
+    '11iandWPA3': _QR_SECURITY_WPA,
+    'Basic': _QR_SECURITY_WEP,
+    'OWE': _QR_SECURITY_NO_PASS,
+    'OWETrans': _QR_SECURITY_NO_PASS,
+    'None': _QR_SECURITY_NO_PASS,
+}
 
 
 def _get_wifi_qr_code(instance, kind='svg', security=None, scale=4, border=0):
@@ -118,8 +96,10 @@ def _get_wifi_qr_code(instance, kind='svg', security=None, scale=4, border=0):
     .. versionadded:: 1.10
 
     """
-    security = _get_beacon_security(instance, security)
-    password = instance.get_password() if security != NO_PASS else None
+    if not security:
+        # if beacon type is something unknown, assume a "no pass" connection:
+        security = _BEACONTYPE_TO_QR_SECURITY.get(instance.beacontype,
+                                                  _QR_SECURITY_NO_PASS)
     qr_code = segno.helpers.make_wifi(
         ssid=instance.ssid,
         password=password,
