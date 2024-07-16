@@ -11,14 +11,14 @@ Development
 
 - FritzHomeAutomation:
 
-    - bugfix: converting data from actors which are reporting missing data as non integer values. Missing data are now represented by `None`.  (#215)
+  - bugfix: converting data from actors which are reporting missing data as non integer values. Missing data are now represented by `None`.  (#215)
 
 - FritzWLAN:
 
-    -complexy reduction, removing internal function `_get_beacon_security()` to determine QR code security by mapping. (#224)
-    - added ability to output QR code as string stream with ANSI or unicode. (#223)
-    - new property `is_hidden` for wlan ssid. Internal use of this property to handle hidden SSID in QR codes. Parameter `hidden` removed from `FritzWLAN.get_wifi_qr_code()`. (#221)
-    - bugfix: fixed potential password leak in QR code for an unencrypted connection. (#225, #226)
+  - complexy reduction, removing internal function `_get_beacon_security()` to determine QR code security by mapping. (#224)
+  - added ability to output QR code as string stream with ANSI or unicode. (#223)
+  - new property `is_hidden` for wlan ssid. Internal use of this property to handle hidden SSID in QR codes. Parameter `hidden` removed from `FritzWLAN.get_wifi_qr_code()`. (#221)
+  - bugfix: fixed potential password leak in QR code for an unencrypted connection. (#225, #226)
 
 - bugfix: some devices may not return system-information the propper way, causing errors on the cli output. In these cases the system-information will get ignored. (#214)
 - testing: tox.ini removed because change to nox
