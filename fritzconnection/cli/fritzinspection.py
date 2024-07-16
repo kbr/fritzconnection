@@ -87,11 +87,13 @@ class FritzInspection:
         """
         print()
         system_info = self.fc.device_manager.system_info
-        print(
-            f"system : {system_info[-1]}\n"
-            f"build  : {system_info[-2]}\n"
-            f"hw-code: {system_info[0]}"
-        )
+        # some devices may return None as system_info
+        if system_info:
+            print(
+                f"system : {system_info[-1]}\n"
+                f"build  : {system_info[-2]}\n"
+                f"hw-code: {system_info[0]}"
+            )
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(f"Report date: {now}")
         for service_name, service in self.fc.services.items():
