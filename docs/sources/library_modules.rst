@@ -287,6 +287,36 @@ FritzStatus API
     :members:
 
 
+FritzTopology
+-------------
+
+Module to access the current Network-Topology information. This can be a cyclic graph with the devices as nodes. The devices do have interfaces and the interfaces provide links to other the interfaces of other devices. Links do have attributes like the current throughput.
+
+The following example prints an overview of a topology: ::
+
+    from fritzconnection import FritzConnection
+    from fritzconnection.lib.fritztopology import FritzMeshTopology
+
+    # assume user and password are read from the environment:
+    fc = FritzConnection(address="192.168.178.1")
+
+    # create a topology-instance
+    fm = FritzMeshTopology(fc=fc)
+
+    # read the topology data (can take some time)
+    fm.load_topology()
+
+    # print the instance:
+    print(fm)
+
+
+FritzTopology API
+.................
+
+
+placeholder
+
+
 FritzWLAN
 ---------
 
