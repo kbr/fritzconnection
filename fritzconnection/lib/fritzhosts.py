@@ -130,7 +130,7 @@ class FritzHosts(AbstractLibraryBase):
             )
         return result
 
-    def get_mesh_topology(self, raw=False) -> dict:
+    def get_mesh_topology(self, raw=False) -> dict | str:
         """
         Returns information about the mesh network topology. If `raw` is
         `False` the topology gets returned as a dictionary with a list
