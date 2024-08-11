@@ -15,7 +15,7 @@ In general pull requests are welcome. But please create an issue first before pu
 
 For pull requests there is a golden rule: **keep them small**. Smaller pull requests are easier to review and easier to merge – especially in cases when not every part of a larger changeset should get merged and has to get modifications.
 
-Please avoid to just change the formatting. The result is most often nothing else than git-diff pollution. This is especially true for `black` – this project startet before `black` (or `blue`). It is ok to use `black` for modified code snippets, but not for a module.
+Please avoid to just change the formatting. The result is most often nothing else than git-diff pollution. This is especially true for `black` (or `blue` or the corresponding modes in `ruff`) – this project startet before `black`. It is ok to use these tools for modified code snippets, but not for a module.
 
 
 ## Status of core and lib
@@ -49,6 +49,16 @@ Update: since version 1.13.0 type hints are introduced for the public API (and o
 
 ## Tests
 
-This project comes with tests. The test framework is tox/pytest. For development run `pip install -r requirements_test.txt` to install both libraries. As far as possible, the code should get tests. Before committing run the tests with tox.
+This project comes with tests. Since version `1.13.0` `nox` is used for testautomation (https://nox.thea.codes/en/stable/index.html). `nox` should get installed separately. After installation the sessions from the `noxfile.py` can be used like:
 
-Update: since version 1.13.0 `nox` has been introduced for testing. For `nox` there is no need for the `requirements_test.txt` file.
+- `nox -s test`: run the tests with all supported python versions. The versions must be installed on the local development system and callable like `python3.11` or `python3.12`. Currently python `3.7` and newer are supported (no new language features are used, so backward compatibility is cheap). You can run `nox -s test-3.11` to run the tests with a single python version. This can be handy for development running the test for all versions later.
+
+- `nox -s test_router`: run all tests making a connection to the router. These tests are taking much more time and can fail because of connection errors. In case of a connection error run the tests again - chances are good they are are gone and there are no real bugs.
+
+- `nox -s test_all`: run all tests including the time consuming router-tests.
+
+- `nox -s lint`: if you run this command just check for your own changes. Currently `lint` complains a lot because of the dynamic nature of large parts of the code. This will be addressed in the future.
+
+- `nox -s mypy`: apply a mypy check.
+
+- `nox -s sphinx`:  make a local build of the documentation.
