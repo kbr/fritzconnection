@@ -46,7 +46,13 @@ def mypy(session):
 def sphinx(session):
     session.install("-e", ".")
     session.install("pip-tools==7.3.0")
-    session.run("pip-compile", "--strip-extras", "-q", "docs/requirements.in")
+    session.run(
+        "pip-compile",
+        "--strip-extras",
+        "-q",
+        "--output-file=docs/requirements.txt",
+        "docs/requirements.local.in"
+    )
     session.install("-r", "docs/requirements.txt")
     session.run("sphinx-build", "docs", "docs_out")
 
