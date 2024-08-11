@@ -42,9 +42,9 @@ def mypy(session):
     session.run("mypy", "fritzconnection/lib")
 
 
-@nox.session(python=PYTHON_DEVELOPMENT_VERSION)
+@nox.session
 def sphinx(session):
-    session.install(".")
+    session.install("-e", ".")
     session.install("pip-tools==7.3.0")
     session.run("pip-compile", "--strip-extras", "-q", "docs/requirements.in")
     session.install("-r", "docs/requirements.txt")
