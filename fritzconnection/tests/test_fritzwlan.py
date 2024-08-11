@@ -16,7 +16,6 @@ except ImportError:
 else:
     OPENCV_NOT_AVAILABLE = False
 
-from fritzconnection.lib.fritzwlan import _get_beacon_security as get_beacon_security
 from fritzconnection.lib.fritzwlan import _get_wifi_qr_code as get_wifi_qr_code
 
 
