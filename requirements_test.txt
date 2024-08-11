@@ -1,4 +1,0 @@
-pytest
-tox
-segno
-opencv-python-headless
