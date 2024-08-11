@@ -64,7 +64,7 @@ def build(session):
 
 
 @nox.session(name="upload-to-pypi", python=PYTHON_DEVELOPMENT_VERSION)
-def uppload_to_pypi(session):
+def upload_to_pypi(session):
     session.install("-e", ".")
     session.install("twine")
     session.run("twine", "upload", "dist/*")
