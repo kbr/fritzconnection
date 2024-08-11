@@ -7,18 +7,13 @@ See https://avm.de/service/schnittstellen/ "Mesh-Topologie"
 # License: MIT (https://opensource.org/licenses/MIT)
 # Authors: Klaus Bremer
 
+# code partly to dynamic for a useful mypy run:
+# mypy: disable-error-code="attr-defined"
 
 from __future__ import annotations
 
-from typing import ForwardRef
-
 from .fritzhosts import FritzHosts
 from .fritzbase import AbstractLibraryBase
-
-
-Device = ForwardRef("Device")
-Interface = ForwardRef("Interface")
-FritzMeshTopology = ForwardRef("FritzMeshTopology")
 
 
 class Connection:
@@ -114,7 +109,10 @@ class InterfaceLink:
 
     def __str__(self) -> str:
         connection = Connection(self.source, self.target, self)
-        throughput = connection.cur_tx // 1000  # from kB/s to MB/s
+        if connection.cur_tx is not None:
+            throughput = connection.cur_tx // 1000  # from kB/s to MB/s
+        else:
+            throughput = None  # not known
         return f"from {self.source.name} to {self.target.name} (-> {throughput} MBit/s)"
 
     @property

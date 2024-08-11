@@ -399,11 +399,11 @@ class HomeAutomationDevice:
             # on missing data dashes (-) may get returned.
             # this get catched and missing data are represented as `None`.
             content["data"] = []
-            for item in stats.text.split(","):
+            for item in stats.text.split(","):  # type: ignore
                 try:
-                    value = int(item)
+                    value = int(item)  # type: ignore
                 except ValueError:
-                    value = None
+                    value = None  # type: ignore
                 content["data"].append(value)
             elements[element.tag] = content
         return elements
