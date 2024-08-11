@@ -313,8 +313,8 @@ The following example prints an overview of a topology: ::
 FritzTopology API
 .................
 
-
-placeholder
+.. automodule:: fritzconnection.lib.fritztopology
+    :members:
 
 
 FritzWLAN

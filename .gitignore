@@ -16,6 +16,7 @@ _jupyter
 bin
 build/*
 dist/*
+docs/requirements.txt
 fritzconnection.egg-info/*
 include
 lib_
