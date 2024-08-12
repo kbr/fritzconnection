@@ -10,6 +10,9 @@ https://avm.de/service/schnittstellen/
 https://fritzconnection.readthedocs.io/
 """
 
+# unused shortcut import are intended:
+# ruff: noqa: F401
+
 __version__ = "1.13.2"
 
 # import shortcuts
