@@ -4,8 +4,8 @@ Version History
 ===============
 
 
-Development
------------
+1.14.0 - 2024-08-12
+-------------------
 
 - support added for Python 3.13
 - New FritzTopology module: represents the mesh-topology graph.
@@ -22,7 +22,7 @@ Development
 
 - bugfix: some devices may not return system-information the propper way, causing errors on the cli output. In these cases the system-information will get ignored. (#214)
 - documentation: some typos corrected. (#202, #204)
-- testing: tox.ini removed because of change to `nox`. Change from `pylint` to `ruff`.
+- testing: `tox.ini` removed because of change to `nox`. Change from `pylint` to `ruff` for linting.
 - deprecation: use of the `json` cache-format is discouraged. Use the default pickle-format instead. The highly dynamic TR-064 parser may get an ouverhaul in the future and to reduce the complexity of the parser the support of `json` for caching will be removed.
 
 
