@@ -22,7 +22,7 @@ Development
 
 - bugfix: some devices may not return system-information the propper way, causing errors on the cli output. In these cases the system-information will get ignored. (#214)
 - documentation: some typos corrected. (#202, #204)
-- testing: tox.ini removed because of change to nox.
+- testing: tox.ini removed because of change to `nox`. Change from `pylint` to `ruff`.
 
 
 1.13.2 - 2023-09-17

@@ -26,11 +26,9 @@ def test_all(session):
     session.run("pytest")
 
 
-@nox.session
-def lint(session):
-    session.install("-e", ".")
-    session.install("pylint")
-    session.run("pylint", "fritzconnection")
+@nox.session(name="check")
+def ruff_check(session):
+    session.run("ruff", "check", "fritzconnection", external=True)
 
 
 @nox.session
@@ -61,6 +59,13 @@ def sphinx(session):
 def build(session):
     session.install("-e", ".")
     session.run("python", "setup.py", "sdist", "bdist_wheel")
+
+
+@nox.session(name="check-twine", python=PYTHON_DEVELOPMENT_VERSION)
+def check_twine(session):
+    session.install("-e", ".")
+    session.install("twine")
+    session.run("twine", "check", "dist/*")
 
 
 @nox.session(name="upload-to-pypi", python=PYTHON_DEVELOPMENT_VERSION)
