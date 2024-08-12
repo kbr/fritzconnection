@@ -100,7 +100,7 @@ def _get_wifi_qr_code(instance, kind='svg', security=None, scale=4, border=0):
         # if beacon type is something unknown, assume a "no pass" connection:
         security = _BEACONTYPE_TO_QR_SECURITY.get(instance.beacontype,
                                                   _QR_SECURITY_NO_PASS)
-    password = instance.get_password() if security != NO_PASS else None
+    password = instance.get_password() if security != _QR_SECURITY_NO_PASS else None
     qr_code = segno.helpers.make_wifi(
         ssid=instance.ssid,
         password=password,
