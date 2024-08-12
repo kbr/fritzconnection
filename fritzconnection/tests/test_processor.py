@@ -151,7 +151,7 @@ def test_tr64_description_services(name, tr64desc_source):
 
 def test_system_version_igd(igddesc_source):
     d = Description(igddesc_source)
-    assert d.system_version == None
+    assert d.system_version is None
 
 
 def test_system_version_tr64(tr64desc_source):

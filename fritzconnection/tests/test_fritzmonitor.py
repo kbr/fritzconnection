@@ -307,7 +307,7 @@ def test_reconnect_socket(timeouts, tries, expected_result):
     mock_socket = MockReconnectFailSocket(timeouts=timeouts)
     fm = FritzMonitor()
     fm.mock_socket = mock_socket
-    socket = fm._get_connected_socket()  # make initional connection
+    _ = fm._get_connected_socket()  # make initional connection
     result = fm._reconnect_socket(
         max_reconnect_delay=0.001, reconnect_tries=tries
     )
