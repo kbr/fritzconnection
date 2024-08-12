@@ -4,8 +4,6 @@ tests for serialization and deserialization data from the processor classes.
 
 import json
 
-import pytest
-
 from fritzconnection.core.processor import (
     Action,
     Argument,

@@ -3,7 +3,6 @@ Running functional tests against a router - if the router is present.
 """
 
 import pytest
-import requests
 
 from ..core.exceptions import (
     FritzConnectionException,

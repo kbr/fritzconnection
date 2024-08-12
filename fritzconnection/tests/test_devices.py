@@ -1,10 +1,7 @@
 import json
 import os
-from io import StringIO
-from pathlib import Path
 
 import pytest
-from xml.etree import ElementTree as etree
 
 from ..core.devices import DeviceManager
 

@@ -1,8 +1,4 @@
 
-import json
-import pathlib
-import pytest
-
 from ..lib.fritzhomeauto import HomeAutomationDevice
 
 

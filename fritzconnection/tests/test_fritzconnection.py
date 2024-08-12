@@ -76,7 +76,7 @@ def test_get_cache_path(address, port, cache_directory, cache_format, expected_r
 def test_invalide_cache_format():
     mock = SimpleNamespace(address='192.168.178.1', port=49000)
     with pytest.raises(FritzConnectionException):
-        result = FritzConnection._get_cache_path(mock, None, 'weird')
+        _ = FritzConnection._get_cache_path(mock, None, 'weird')
 
 
 @pytest.mark.parametrize(
