@@ -55,7 +55,7 @@ After installation the sessions from the `noxfile.py` can be used like:
 
 - `nox -s test`: run the tests with all supported python versions. The supported versions must be installed on the local development system and must be callable like `python3.11` or `python3.12`. Currently python `3.7` and newer are supported (no new language features are used, so backward compatibility is cheap). You can run `nox -s test-3.11` to run the tests with a single python version. This can be handy for development running the test for all versions later on.
 
-- `nox -s test_router`: run all tests making a connection to the router. These tests are taking much more time and can fail because of connection errors. In case of a connection error run the tests again - chances are good the error was temporarly and gone and there are no real bugs. In all other cases: fix it.
+- `nox -s test_router`: run all tests making a connection to the router. These tests are taking much more time and can fail because of connection errors. In case of a connection error run the tests again - chances are good the error was temporarly and gone and there are no real bugs. In all other cases: fix it. A test run with a defined python version (here `3.11`) can get started with `nox -s test_router-3.11`.
 
 - `nox -s test_all`: run all tests including the time consuming router-tests.
 
