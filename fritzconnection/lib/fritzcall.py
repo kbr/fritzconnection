@@ -209,6 +209,7 @@ class Call:
         self.Date = None
         self.Duration = None
         self.Count = None
+        self.Path = None
 
     def __str__(self):
         number = self.Called if self.type == 3 else self.Caller
