@@ -392,3 +392,10 @@ class FritzStatus(AbstractLibraryBase):
         False otherwise.
         """
         return "Layer3Forwarding1" in self.fc.services
+    
+    @property
+    def cpu_temp(self) -> int:
+        """
+        Returns the current cpu temperature.
+        """
+        return self.fc.call_http_query({ "CPUTEMP": "cpu:status/StatTemperature" })["CPUTEMP"].split(",")[0]

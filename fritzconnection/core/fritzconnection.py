@@ -486,9 +486,7 @@ class FritzConnection:
 
         .. versionadded:: 1.12
         """
-        header, content = self.http_interface.execute(
-            command,
-            identifier,
+        header, content = self.http_interface.executeQuery(
             **kwargs
         )
         content_type, charset = [item.strip() for item in header.split(";")]
@@ -499,6 +497,16 @@ class FritzConnection:
             "encoding": encoding,
             "content": content
         }
+    
+    def call_http_query(
+        self,
+        payload
+    ) -> dict[str, str]:
+        """
+        Send a request to the query.lua endpoint.
+        """
+        content = self.http_interface.executeQuery(payload)
+        return content
 
     def reconnect(self) -> None:
         """
