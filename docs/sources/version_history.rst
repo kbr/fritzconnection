@@ -4,6 +4,12 @@ Version History
 ===============
 
 
+development
+-----------
+
+- new attribute `Path` for the Call class in lib.fritzcall to access an optional phone message. (#231)
+
+
 1.14.0 - 2024-08-12
 -------------------
 

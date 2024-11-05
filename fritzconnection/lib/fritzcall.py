@@ -184,8 +184,9 @@ class Call:
     """
     Represents a call with the attributes provided by AVM. Instance
     attributes are *Id*, *Type*, *Called*, *Caller*, *CallerNumber*,
-    *CalledNumber*, *Name*, *Device*, *Port*, *Date*, *Duration* and
-    *Count*. The spelling represents the original xml-node names.
+    *CalledNumber*, *Name*, *Device*, *Port*, *Date*, *Duration*,
+    *Count* and *Path* which can be set in case of an optional phone
+    message. The spelling represents the original xml-node names.
     Additionally, the following attributes can be accessed by lowercase
     names: *id* returning the Id as integer, *type* returning the Type
     as integer, *date* returning the Date as datetime-instance,
