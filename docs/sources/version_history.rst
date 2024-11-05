@@ -7,13 +7,10 @@ Version History
 development
 -----------
 
-- FritzCall:
+- FritzCall: new attribute `Path` for the class `Call` to access an optional phone message. (#231)
+- FritzStatus: new method `get_avm_device_log()` to access system events. Requires FritzOS 8. (#234)
 
-  - new attribute `Path` for the class `Call` to access an optional phone message. (#231)
-
-- FritzStatus:
-
-  - new method `get_avm_device_log()` to access system events. Requires FritzOS 8. (#234)
+- bugfix: in rare cases a session id of None has prevented a successfull request of the http-interface.
 
 
 1.14.0 - 2024-08-12
