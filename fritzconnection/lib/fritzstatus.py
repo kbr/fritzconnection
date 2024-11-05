@@ -387,7 +387,7 @@ class FritzStatus(AbstractLibraryBase):
         """
         return ArgumentNamespace(self.fc.call_action("DeviceInfo1", "GetInfo"))
 
-    def get_avm_device_log(self) -> DeviceLog:
+    def get_avm_device_log(self, filter: str | None = None) -> DeviceLog:
         """
         The avm device log is a list of events with the attributes `id`,
         `group`, `date`, `time` and `msg` holding information like "DSL
@@ -399,10 +399,15 @@ class FritzStatus(AbstractLibraryBase):
         >>> device_log = fritzstatus.get_avm_device_log()
         >>> for event in device_log:
         >>>     print(event.datetime, event.msg)
-        """
 
+        The returned events can be filtered by groups like 'sys', 'net',
+        'fon', 'wlan' or 'usb'. To filter by a group provide the
+        group-name as filter-argument.
+        """
         result = self.fc.call_action("DeviceInfo1", "X_AVM-DE_GetDeviceLogPath")
         path = result["NewDeviceLogPath"]
+        if filter:
+            path = f"{path}&filter={filter}"
         url = f"{self.fc.address}:{self.fc.port}{path}"
         root_node = get_xml_root(url, session=self.fc.session)
         return DeviceLog(root_node)
