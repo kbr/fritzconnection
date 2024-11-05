@@ -13,7 +13,9 @@ In case you think that something is not working as expected or you have a new id
 
 In general pull requests are welcome. Please create an issue first before putting too much work into a pull request that may not get merged at the end, for whatever reason. An issue can help to clarify points of view and motivation.
 
-For pull requests there is a golden rule: **keep them small**. Smaller pull requests are easier to review and easier to merge – especially in cases when not every part of a larger changeset should get merged and has to get modifications.
+In case of providing a pull-request please do this for the **development-branch** and not for the master-branch.
+
+For pull-requests there is a golden rule: **keep them small**. Smaller pull-requests are easier to review and easier to merge – especially in cases when not every part of a larger changeset should get merged and has to get modifications.
 
 Please avoid to just change the formatting. The result is most often nothing else than git-diff pollution. This is especially true for `black` (or `blue` or the corresponding modes in `ruff`) – this project startet before `black`. It is ok to use these tools for modified code snippets, but not for a module.
 
