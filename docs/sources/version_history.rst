@@ -7,7 +7,13 @@ Version History
 development
 -----------
 
-- new attribute `Path` for the Call class in lib.fritzcall to access an optional phone message. (#231)
+- FritzCall:
+
+  - new attribute `Path` for the class `Call` to access an optional phone message. (#231)
+
+- FritzStatus:
+
+  - new method `get_avm_device_log()` to access system events. Requires FritzOS 8.0. (#234)
 
 
 1.14.0 - 2024-08-12
