@@ -2,11 +2,19 @@
 Module to read status-information from an AVM FritzBox.
 """
 
-
 from __future__ import annotations
 
+import datetime
 from collections import namedtuple
 from warnings import warn
+
+from fritzconnection.core.processor import (
+    Storage,
+    InstanceAttributeFactory,
+    processor,
+    process_node,
+)
+from fritzconnection.core.utils import get_xml_root
 
 from .fritzbase import AbstractLibraryBase
 from .fritztools import (
@@ -17,9 +25,9 @@ from .fritztools import (
 )
 
 DefaultConnectionService = namedtuple(
-    "DefaultConnectionService",
-    "prefix connection_service postfix"
+    "DefaultConnectionService", "prefix connection_service postfix"
 )
+
 
 def _integer_or_original(value):
     """
@@ -30,6 +38,44 @@ def _integer_or_original(value):
         return int(value)
     except ValueError:
         return value
+
+
+@processor
+class Event:
+    """
+    Represents an AVM DeviceLog entry with the subnodes given as
+    class-attributes. The default types are strings as extracted from
+    the xml-source.
+    """
+
+    id = None
+    group = None
+    date = None
+    time = None
+    msg = None
+
+    @property
+    def datetime(self):
+        return datetime.datetime.strptime(f"{self.date}{self.time}", "%d.%m.%y%H:%M:%S")
+
+
+class DeviceLog(Storage):
+    """
+    The AVM DeviceLog is a list of Event-nodes stored in the `events`
+    instance attribute. But instances of DeviceLog are also iterables
+    for the events.
+    """
+
+    Event = InstanceAttributeFactory(Event)
+
+    def __init__(self, root):
+        self.events = list()
+        super().__init__(self.events)
+        process_node(self, root)
+
+    def __iter__(self):
+        for event in self.events:
+            yield event
 
 
 class FritzStatus(AbstractLibraryBase):
@@ -112,7 +158,10 @@ class FritzStatus(AbstractLibraryBase):
         .. deprecated:: 1.9.0
            Use :func:`connection_uptime` instead.
         """
-        warn('This method is deprecated. Use "connection_uptime" instead.', DeprecationWarning)
+        warn(
+            'This method is deprecated. Use "connection_uptime" instead.',
+            DeprecationWarning,
+        )
         return self.connection_uptime
 
     @property
@@ -139,9 +188,7 @@ class FritzStatus(AbstractLibraryBase):
             value = status["NewX_AVM_DE_TotalBytesSent64"]
         except KeyError:
             # fallback for older FritzOS Versions not providing a 64 bit value:
-            status = self.fc.call_action(
-                "WANCommonIFC1", "GetTotalBytesSent"
-            )
+            status = self.fc.call_action("WANCommonIFC1", "GetTotalBytesSent")
             value = status["NewTotalBytesSent"]
         return _integer_or_original(value)
 
@@ -156,9 +203,7 @@ class FritzStatus(AbstractLibraryBase):
             value = status["NewX_AVM_DE_TotalBytesReceived64"]
         except KeyError:
             # fallback for older FritzOS Versions not providing a 64 bit value:
-            status = self.fc.call_action(
-                "WANCommonIFC1", "GetTotalBytesReceived"
-            )
+            status = self.fc.call_action("WANCommonIFC1", "GetTotalBytesReceived")
             value = status["NewTotalBytesReceived"]
         return _integer_or_original(value)
 
@@ -324,10 +369,7 @@ class FritzStatus(AbstractLibraryBase):
         # check for the corresponding action
         # whether mesh is supported
         try:
-            return (
-                "X_AVM-DE_GetMeshListPath"
-                in self.fc.services["Hosts1"].actions
-            )
+            return "X_AVM-DE_GetMeshListPath" in self.fc.services["Hosts1"].actions
         except KeyError:
             # can happen if "Hosts1" is not known
             return False
@@ -345,6 +387,26 @@ class FritzStatus(AbstractLibraryBase):
         """
         return ArgumentNamespace(self.fc.call_action("DeviceInfo1", "GetInfo"))
 
+    def get_avm_device_log(self) -> DeviceLog:
+        """
+        The avm device log is a list of events with the attributes `id`,
+        `group`, `date`, `time` and `msg` holding information like "DSL
+        synchronization starting (training)" and other system messages.
+        The Method returns a DeviceLog instance holding a list of Event
+        instances. The DeviceLog instance is an interable and can be
+        used on a FritzStatus instance like:
+
+        >>> device_log = fritzstatus.get_avm_device_log()
+        >>> for event in device_log:
+        >>>     print(event.datetime, event.msg)
+        """
+
+        result = self.fc.call_action("DeviceInfo1", "X_AVM-DE_GetDeviceLogPath")
+        path = result["NewDeviceLogPath"]
+        url = f"{self.fc.address}:{self.fc.port}{path}"
+        root_node = get_xml_root(url, session=self.fc.session)
+        return DeviceLog(root_node)
+
     def get_default_connection_service(self) -> DefaultConnectionService:
         """
         Returns a namedtuple of type DefaultConnectionService:
@@ -352,14 +414,11 @@ class FritzStatus(AbstractLibraryBase):
         `device_connection` -> str (like "WANPPPConnection")
         `postfix` -> str
         """
-        result = self.fc.call_action(
-                "Layer3Forwarding1", "GetDefaultConnectionService"
-        )
-        prefix, connection_service, postfix = \
-            result["NewDefaultConnectionService"].split('.', 2)
-        return DefaultConnectionService(
-            prefix, connection_service, postfix
-        )
+        result = self.fc.call_action("Layer3Forwarding1", "GetDefaultConnectionService")
+        prefix, connection_service, postfix = result[
+            "NewDefaultConnectionService"
+        ].split(".", 2)
+        return DefaultConnectionService(prefix, connection_service, postfix)
 
     @property
     def connection_service(self) -> str:
