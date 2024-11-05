@@ -22,6 +22,7 @@ from fritzconnection.core.exceptions import (
 
 URL_LOGIN = "/login_sid.lua?version=2"
 URL_HOMEAUTOSWITCH = "/webservices/homeautoswitch.lua"
+URL_QUERY = "/query.lua"
 PBKDF2_CHALLENGE_INDICATOR = "2$"
 
 
@@ -62,6 +63,11 @@ class FritzHttp:
     def homeauto_url(self):
         """The homeauto-url including protocol and configurable port."""
         return f"{self.fc.address}:{self.remote_port}{URL_HOMEAUTOSWITCH}"
+    
+    @property
+    def query_url(self):
+        """The homeauto-url including protocol and configurable port."""
+        return f"{self.fc.address}:{self.remote_port}{URL_QUERY}"
 
     def execute(self, command=None, identifier=None, **kwargs):
         """
@@ -85,6 +91,30 @@ class FritzHttp:
             ) as response:
                 if response.status_code == HTTPStatus.OK:
                     return response.headers.get('content-type'), response.text
+        msg = f"Request failed: http error code '{response.status_code}'"
+        if response.status_code == HTTPStatus.FORBIDDEN:
+            # can happen if FritzConnection was initialized
+            # without a password.
+            raise FritzAuthorizationError(msg)
+        # This can be from the 400 or 500 error-family.
+        # Most often these errors are triggered by a malformed payload,
+        # therefore include the payload in the message:
+        msg = f"{msg}, payload: {payload}"
+        raise FritzHttpInterfaceError(msg)
+    
+    def executeQuery(self, payload):
+        """
+        Send a request to the query.lua endpoint.
+        """
+        for sid in self._get_sid():
+            if sid == None:
+                continue
+            payload['sid'] = sid
+            with self.fc.session.get(
+                self.query_url, params=payload
+            ) as response:
+                if response.status_code == HTTPStatus.OK:
+                    return response.json()
         msg = f"Request failed: http error code '{response.status_code}'"
         if response.status_code == HTTPStatus.FORBIDDEN:
             # can happen if FritzConnection was initialized
