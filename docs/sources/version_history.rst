@@ -13,7 +13,7 @@ development
 
 - FritzStatus:
 
-  - new method `get_avm_device_log()` to access system events. Requires FritzOS 8.0. (#234)
+  - new method `get_avm_device_log()` to access system events. Requires FritzOS 8. (#234)
 
 
 1.14.0 - 2024-08-12
