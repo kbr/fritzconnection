@@ -412,6 +412,18 @@ class FritzStatus(AbstractLibraryBase):
         root_node = get_xml_root(url, session=self.fc.session)
         return DeviceLog(root_node)
 
+    def get_cpu_temperatures(self) -> list[int]:
+        """
+        Returns a list of the last measured cpu-temperatures (Celsius).
+        The most recent entry is the first one in the list.
+        NOTE: this property is experimental as it is based on a
+        non-public API.
+        """
+        url = f"{self.fc.http_interface.router_url}/query.lua"
+        payload = {"CPUTEMP": "cpu:status/StatTemperature"}
+        response = self.fc.http_interface.call_url(url, payload)
+        return list(map(int, response.json()["CPUTEMP"].split(",")))
+
     def get_default_connection_service(self) -> DefaultConnectionService:
         """
         Returns a namedtuple of type DefaultConnectionService:
@@ -452,7 +464,8 @@ class FritzStatus(AbstractLibraryBase):
     @property
     def has_wan_support(self) -> bool:
         """
-        True is the device supports a WAN interface.
+        True if the device supports a WAN interface.
         False otherwise.
         """
         return "Layer3Forwarding1" in self.fc.services
+
