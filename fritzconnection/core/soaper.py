@@ -8,6 +8,7 @@ Module handling the SOAP based communication with the router.
 
 
 import datetime
+from logging import DEBUG
 import html
 import re
 
@@ -190,6 +191,14 @@ def raise_fritzconnection_error(response):
     exception = FRITZ_ERRORS.get(error_code, FritzConnectionException)
     raise exception(message)
 
+def redact_response(redact: bool, input: str):
+    # avoid expansive regex matching, when not neccessary
+    if fritzlogger.level != DEBUG or not redact:
+        return input
+    # redact possible phone numbers
+    # numbers with len of 5 or more, sourounded by white spaces or bracket
+    redacted = re.sub(r"([\s\[\(])\d{5,}([\s\]\)])", r"\1******\2", input)
+    return redacted
 
 class Soaper:
     """
@@ -238,13 +247,14 @@ class Soaper:
         "ui4": int,
     }
 
-    def __init__(self, address, port, user, password, timeout=None, session=None):
+    def __init__(self, address, port, user, password, timeout=None, session=None, redact_debug_log=False):
         self.address = address
         self.port = port
         self.user = user
         self.password = password
         self.timeout = timeout
         self.session = session
+        self.redact_debug_log = redact_debug_log
 
     def get_body(self, service, action_name, arguments):
         """Returns the body by template substitution."""
@@ -263,7 +273,7 @@ class Soaper:
 
         def handle_response(response):
             fritzlogger.debug(f"response status: {response.status_code}")
-            fritzlogger.debug(response.text)
+            fritzlogger.debug(redact_response(self.redact_debug_log, response.text))
             if response.status_code != 200:
                 raise_fritzconnection_error(response)
             return self.parse_response(response, service, action_name)

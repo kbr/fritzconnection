@@ -186,6 +186,7 @@ class FritzConnection:
         cache_format: str | None = None,
         pool_connections: int = DEFAULT_POOL_CONNECTIONS,
         pool_maxsize: int = DEFAULT_POOL_MAXSIZE,
+        redact_debug_log: bool = False
     ):
         """
         Initialisation of FritzConnection: reads all data from the box
@@ -279,7 +280,7 @@ class FritzConnection:
         self.port = port
 
         self.soaper = Soaper(
-            address, port, user, password, timeout=timeout, session=session
+            address, port, user, password, timeout=timeout, session=session, redact_debug_log=redact_debug_log
         )
         self.device_manager = DeviceManager(timeout=timeout, session=session)
         self._load_router_api(
