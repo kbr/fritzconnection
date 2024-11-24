@@ -393,7 +393,7 @@ class FritzStatus(AbstractLibraryBase):
         `group`, `date`, `time` and `msg` holding information like "DSL
         synchronization starting (training)" and other system messages.
         The Method returns a DeviceLog instance holding a list of Event
-        instances. The DeviceLog instance is an interable and can be
+        instances. The DeviceLog instance is an iterable and can be
         used on a FritzStatus instance like:
 
         >>> device_log = fritzstatus.get_avm_device_log()
@@ -416,7 +416,7 @@ class FritzStatus(AbstractLibraryBase):
         """
         Returns a list of the last measured cpu-temperatures (Celsius).
         The most recent entry is the first one in the list.
-        NOTE: this property is experimental as it is based on a
+        NOTE: this function call is experimental as it is based on a
         non-public API.
         """
         url = f"{self.fc.http_interface.router_url}/query.lua"
