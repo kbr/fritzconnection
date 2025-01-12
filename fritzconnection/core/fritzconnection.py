@@ -123,6 +123,11 @@ class FritzConnection:
     credentials. In case of an unknown command or identifier a
     FritzHttpInterfaceError will get raised.
 
+    .. versionadded:: 1.15
+
+    `redact_debug_log` accepts a boolean for enabling redacting some
+    sensitiv data in debug outputs. Default is `False`.
+
     .. versionadded:: 1.12
 
     The optional parameter `timeout` is a floating number in seconds
@@ -186,6 +191,7 @@ class FritzConnection:
         cache_format: str | None = None,
         pool_connections: int = DEFAULT_POOL_CONNECTIONS,
         pool_maxsize: int = DEFAULT_POOL_MAXSIZE,
+        redact_debug_log: bool = False
     ):
         """
         Initialisation of FritzConnection: reads all data from the box
@@ -237,6 +243,9 @@ class FritzConnection:
         `pool_connections` and `pool_maxsize` accept integers for
         changing the default urllib3 settings in order to modify the
         number of reusable connections.
+
+        `redact_debug_log` accepts a boolean for enabling redacting some
+        sensitiv data in debug outputs. Default is `False`.
         """
         if address is None:
             address = FRITZ_IP_ADDRESS
@@ -279,7 +288,7 @@ class FritzConnection:
         self.port = port
 
         self.soaper = Soaper(
-            address, port, user, password, timeout=timeout, session=session
+            address, port, user, password, timeout=timeout, session=session, redact_debug_log=redact_debug_log
         )
         self.device_manager = DeviceManager(timeout=timeout, session=session)
         self._load_router_api(
