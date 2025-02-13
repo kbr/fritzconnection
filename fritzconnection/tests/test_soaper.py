@@ -345,6 +345,55 @@ def test_redact_debug_log_phone_numbers():
     </s:Envelope>
     """
 
+def test_redact_debug_log_external_ip_addresses():
+    response = """
+    <?xml version="1.0" encoding="utf-8"?>
+    <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <s:Body>
+    <u:GetExternalIPAddressResponse xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1">
+    <NewExternalIPAddress>12.34.56.78</NewExternalIPAddress>
+    </u:GetExternalIPAddressResponse>
+    </s:Body>
+    </s:Envelope>
+    <?xml version="1.0" encoding="utf-8"?>
+    <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <s:Body>
+    <u:X_AVM_DE_GetExternalIPv6AddressResponse xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1">
+    <NewExternalIPv6Address>0011:2233:4455:6677::0abcd</NewExternalIPv6Address>
+    <NewPrefixLength>64</NewPrefixLength>
+    <NewValidLifetime>0</NewValidLifetime>
+    <NewPreferedLifetime>0</NewPreferedLifetime>
+    </u:X_AVM_DE_GetExternalIPv6AddressResponse>
+    </s:Body>
+    </s:Envelope>
+    """
+
+    result = redact_response(False, response)
+    assert result == response
+
+    result = redact_response(True, response)
+    assert result == """
+    <?xml version="1.0" encoding="utf-8"?>
+    <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <s:Body>
+    <u:GetExternalIPAddressResponse xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1">
+    <NewExternalIPAddress>******</NewExternalIPAddress>
+    </u:GetExternalIPAddressResponse>
+    </s:Body>
+    </s:Envelope>
+    <?xml version="1.0" encoding="utf-8"?>
+    <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <s:Body>
+    <u:X_AVM_DE_GetExternalIPv6AddressResponse xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1">
+    <NewExternalIPv6Address>******</NewExternalIPv6Address>
+    <NewPrefixLength>64</NewPrefixLength>
+    <NewValidLifetime>0</NewValidLifetime>
+    <NewPreferedLifetime>0</NewPreferedLifetime>
+    </u:X_AVM_DE_GetExternalIPv6AddressResponse>
+    </s:Body>
+    </s:Envelope>
+    """
+
 def test_redact_debug_log_wifi_passwords():
     response = """
     <?xml version="1.0"?>
