@@ -9,6 +9,7 @@ development
 
 - FritzCall: new attribute `Path` for the class `Call` to access an optional phone message. (#231)
 - FritzStatus: new method `get_avm_device_log()` to access system events. Requires FritzOS 8. (#234)
+- FritzConnection: additional flag for optional redacting response in debug output added as argument to FritzConnection. (#238)
 
 - bugfix: in rare cases a session id of None has prevented a successfull request of the http-interface.
 
