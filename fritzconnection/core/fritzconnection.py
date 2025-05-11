@@ -123,11 +123,6 @@ class FritzConnection:
     credentials. In case of an unknown command or identifier a
     FritzHttpInterfaceError will get raised.
 
-    .. versionadded:: 1.15
-
-    `redact_debug_log` accepts a boolean for enabling redacting some
-    sensitiv data in debug outputs. Default is `False`.
-
     .. versionadded:: 1.12
 
     The optional parameter `timeout` is a floating number in seconds
@@ -175,6 +170,12 @@ class FritzConnection:
     (json|pickle) and FRITZ_CACHEDIRECTORY (a path).
 
     .. versionadded:: 1.10
+
+    `redact_debug_log` accepts a boolean for enabling redacting sensitiv
+    data (i.e. phone numbers) in debug outputs. Default is `False`.
+
+    .. versionadded:: 1.15
+
     """
 
     def __init__(
@@ -513,7 +514,10 @@ class FritzConnection:
         """
         Terminate the connection and reconnects with a new ip.
         """
-        self.call_action("WANIPConn1", "ForceTermination")
+        # changed Service from "WANIPConn1" to "WANIPConnection1"
+        # because the former has been removed for some devices
+        # with the introduction of FritzOS 8
+        self.call_action("WANIPConnection1", "ForceTermination")
 
     def reboot(self) -> None:
         """
