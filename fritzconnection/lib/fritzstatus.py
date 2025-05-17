@@ -153,18 +153,6 @@ class FritzStatus(AbstractLibraryBase):
         return status["NewUptime"]
 
     @property
-    def uptime(self) -> int:
-        """
-        .. deprecated:: 1.9.0
-           Use :func:`connection_uptime` instead.
-        """
-        warn(
-            'This method is deprecated. Use "connection_uptime" instead.',
-            DeprecationWarning,
-        )
-        return self.connection_uptime
-
-    @property
     def device_uptime(self) -> int:
         """Device uptime in seconds."""
         status = self.fc.call_action("DeviceInfo1", "GetInfo")
