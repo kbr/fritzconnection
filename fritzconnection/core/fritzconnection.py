@@ -529,9 +529,9 @@ class FritzConnection:
         NOTE: this function call is experimental as it is based on a
         non-public API.
         """
-        url = f"{self.fc.http_interface.router_url}/query.lua"
+        url = f"{self.http_interface.router_url}/query.lua"
         payload = {"CPUTEMP": "cpu:status/StatTemperature"}
-        response = self.fc.http_interface.call_url(url, payload)
+        response = self.http_interface.call_url(url, payload)
         return list(map(int, response.json()["CPUTEMP"].split(",")))
 
     # -------------------------------------------
