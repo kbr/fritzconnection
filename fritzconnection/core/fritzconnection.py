@@ -522,6 +522,18 @@ class FritzConnection:
         """
         self.call_action("DeviceConfig1", "Reboot")
 
+    def get_cpu_temperatures(self) -> list[int]:
+        """
+        Returns a list of the last measured cpu-temperatures.
+        The most recent entry is the first one in the list.
+        NOTE: this function call is experimental as it is based on a
+        non-public API.
+        """
+        url = f"{self.fc.http_interface.router_url}/query.lua"
+        payload = {"CPUTEMP": "cpu:status/StatTemperature"}
+        response = self.fc.http_interface.call_url(url, payload)
+        return list(map(int, response.json()["CPUTEMP"].split(",")))
+
     # -------------------------------------------
     # internal methods to load router-api:
     # -------------------------------------------
