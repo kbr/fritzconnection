@@ -17,6 +17,7 @@ bin
 build/*
 dist/*
 docs/requirements.out
+docs/requirements.local.txt
 fritzconnection.egg-info/*
 include
 lib_

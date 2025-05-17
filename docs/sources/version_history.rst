@@ -4,19 +4,22 @@ Version History
 ===============
 
 
-development
------------
+1.15.0-dev
+----------
 
-- FritzConnection: additional argument `redact_debug_log` (default: False) for optional redacting response in debug output. (#238) (#241)
-- FritzConnection: new method `get_cpu_temperatures()` providing a list of the last recent cpu-temperatures. (Rewrite of #232).
+- FritzConnection:
+
+  - additional argument `redact_debug_log` (default: False) for optional redacting response in debug output. (#238) (#241)
+  - new method `get_cpu_temperatures()` providing a list of the last recent cpu-temperatures. (Rewrite of #232).
+
 - FritzCall: new attribute `Path` for the class `Call` to access an optional phone message. (#231)
 - FritzStatus: new method `get_avm_device_log()` to access system events. Requires FritzOS 8. (#234)
 
 - bugfix: in rare cases a session id of None has prevented a successfull request of the http-interface.
 
-- removed: `fritzconnection.lib.fritzhomeauto.FritzHomeAutomation.device_informations()`, deprecated in 1.9.0
-- removed: `fritzconnection.lib.fritzstatus.FritzStatus.uptime()`, deprecated in 1.9.0
-- removed: `fritzconnection.lib.fritzwlan.FritzWLAN.channel_infos()`, deprecated in 1.9.0
+- **removed**: `fritzconnection.lib.fritzhomeauto.FritzHomeAutomation.device_informations()`, deprecated in 1.9.0
+- **removed**: `fritzconnection.lib.fritzstatus.FritzStatus.uptime()`, deprecated in 1.9.0
+- **removed**: `fritzconnection.lib.fritzwlan.FritzWLAN.channel_infos()`, deprecated in 1.9.0
 
 
 1.14.0 - 2024-08-12
@@ -38,7 +41,7 @@ development
 - bugfix: some devices may not return system-information the propper way, causing errors on the cli output. In these cases the system-information will get ignored. (#214)
 - documentation: some typos corrected. (#202, #204)
 - testing: `tox.ini` removed because of change to `nox`. Change from `pylint` to `ruff` for linting.
-- deprecation: use of the `json` cache-format is discouraged. Use the default pickle-format instead. The highly dynamic TR-064 parser may get an ouverhaul in the future and to reduce the complexity of the parser the support of `json` for caching will be removed.
+- **deprecation**: use of the `json` cache-format is discouraged. Use the default pickle-format instead. The highly dynamic TR-064 parser may get an ouverhaul in the future and to reduce the complexity of the parser the support of `json` for caching will be removed.
 
 
 1.13.2 - 2023-09-17
@@ -111,7 +114,7 @@ development
 
   - bugfix: create new socket on lost connection. (#179)
 
-- Deprecations:
+- **Deprecations**:
 
   - `fritzconnection.lib.fritzhomeauto.FritzHomeAutomation.device_information()`
 
@@ -201,7 +204,8 @@ development
   - New method `channel_info()` (#131)
 
 - FritzHomeAutomation: New method `device_information()` (#131)
-- Deprecations:
+
+- **Deprecations**:
 
   - `fritzconnection.lib.fritzhomeauto.FritzHomeAutomation.device_informations()`
   - `fritzconnection.lib.fritzstatus.FritzStatus.uptime()`
