@@ -8,6 +8,8 @@ build:
 python:
   install:
     - requirements: docs/requirements.txt
+    - method: pip
+      path: .
 
 sphinx:
   builder: html
