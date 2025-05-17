@@ -514,10 +514,7 @@ class FritzConnection:
         """
         Terminate the connection and reconnects with a new ip.
         """
-        # changed Service from "WANIPConn1" to "WANIPConnection1"
-        # because the former has been removed for some devices
-        # with the introduction of FritzOS 8
-        self.call_action("WANIPConnection1", "ForceTermination")
+        self.call_action("WANIPConn1", "ForceTermination")
 
     def reboot(self) -> None:
         """
