@@ -13,7 +13,6 @@ import io
 import itertools
 import random
 import string
-from warnings import warn
 
 from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase

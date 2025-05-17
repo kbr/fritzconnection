@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import datetime
 from collections import namedtuple
-from warnings import warn
 
 from fritzconnection.core.processor import (
     Storage,
