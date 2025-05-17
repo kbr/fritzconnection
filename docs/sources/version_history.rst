@@ -4,8 +4,8 @@ Version History
 ===============
 
 
-1.15.0-dev
-----------
+1.15.0 - 2025-05-17
+-------------------
 
 - support added for Python 3.14
 - FritzConnection:
@@ -78,7 +78,7 @@ Version History
 - command-line interface: the check for a given password has been removed and substituted by a meaningfull error message in case of an authorization failure. Not every service is password-protected and passwords can optional provided by the environment. Therefore there is no need to require a password at cli level. (Motivated by #192)
 - bugfix: unneeded required password removed from the `fritzstatus` command-line interface. (#192)
 - bugfix: make `fritzwlan.get_beacon_security()` work with older router models not supporting the `NewX_AVM-DE_PossibleBeaconTypes` argument. (#191)
-- deprecation: `fritzconnection.lib.fritzphonebook.list_phonebooks()`
+- **deprecation**: `fritzconnection.lib.fritzphonebook.list_phonebooks()`
 
 
 1.12.2 - 2023-07-09
