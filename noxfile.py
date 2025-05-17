@@ -48,10 +48,11 @@ def sphinx(session):
         "pip-compile",
         "--strip-extras",
         "-q",
-        "--output-file=docs/requirements.txt",
-        "docs/requirements.local.in"
+        "--output-file=docs/requirements.out",
+        "docs/requirements.txt"
+        #"docs/requirements.local.in"
     )
-    session.install("-r", "docs/requirements.txt")
+    session.install("-r", "docs/requirements.out")
     session.run("sphinx-build", "docs", "docs_out")
 
 
