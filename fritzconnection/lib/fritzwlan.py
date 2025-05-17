@@ -13,7 +13,6 @@ import io
 import itertools
 import random
 import string
-from warnings import warn
 
 from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
@@ -207,14 +206,6 @@ class FritzWLAN(AbstractLibraryBase):
     def alternative_channels(self) -> str:
         """Alternative channels (as string)"""
         return self.channel_info()['NewPossibleChannels']
-
-    def channel_infos(self) -> dict:
-        """
-        .. deprecated:: 1.9.0
-           Use :func:`channel_info` instead.
-        """
-        warn('This method is deprecated. Use "channel_info" instead.', DeprecationWarning)
-        return self.channel_info()
 
     def channel_info(self) -> dict:
         """

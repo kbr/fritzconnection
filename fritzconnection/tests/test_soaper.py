@@ -30,6 +30,7 @@ from ..core.soaper import (
     get_html_safe_value,
     is_html_response,
     raise_fritzconnection_error,
+    redact_response,
     remove_html_tags,
 )
 
@@ -286,3 +287,146 @@ def test_get_converted_value(data_type, value, expected_value):
 def test_get_converted_value_fails(data_type, value):
     with pytest.raises(ValueError):
         get_converted_value(data_type, value)
+
+def test_redact_debug_log_phone_numbers():
+    response = """
+    <?xml version="1.0"?>
+    <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <s:Body>
+    <u:GetInfoResponse xmlns:u="urn:dslforum-org:service:DeviceInfo:1">
+    <NewManufacturerName>AVM</NewManufacturerName>
+    <NewManufacturerOUI>00040E</NewManufacturerOUI>
+    <NewModelName>FRITZ!Box 7530 AX</NewModelName>
+    <NewDescription>FRITZ!Box 7530 AX Release 256.08.00</NewDescription>
+    <NewProductClass>FRITZ!Box</NewProductClass>
+    <NewSerialNumber>aabbccddeeff</NewSerialNumber>
+    <NewSoftwareVersion>256.08.00</NewSoftwareVersion>
+    <NewHardwareVersion>FRITZ!Box 7530 AX</NewHardwareVersion>
+    <NewSpecVersion>1.0</NewSpecVersion>
+    <NewProvisioningCode></NewProvisioningCode>
+    <NewUpTime>86446</NewUpTime>
+    <NewDeviceLog>
+    23.11.24 12:28:10 Anmeldung der Internetrufnummer 491234567890 war nicht erfolgreich. Ursache: DNS-Fehler
+    23.11.24 12:28:10 Anmeldung der Internetrufnummer 491234567891 war nicht erfolgreich. Ursache: DNS-Fehler
+    23.11.24 12:28:10 Anmeldung der Internetrufnummer 491234567892 war nicht erfolgreich. Ursache: DNS-Fehler
+    23.11.24 12:28:10 Anmeldung der Internetrufnummer 491234567893 war nicht erfolgreich. Ursache: DNS-Fehler
+    </u:GetInfoResponse>
+    </s:Body>
+    </s:Envelope>
+    """
+
+    result = redact_response(False, response)
+    assert result == response
+
+    result = redact_response(True, response)
+    assert result == """
+    <?xml version="1.0"?>
+    <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <s:Body>
+    <u:GetInfoResponse xmlns:u="urn:dslforum-org:service:DeviceInfo:1">
+    <NewManufacturerName>AVM</NewManufacturerName>
+    <NewManufacturerOUI>00040E</NewManufacturerOUI>
+    <NewModelName>FRITZ!Box 7530 AX</NewModelName>
+    <NewDescription>FRITZ!Box 7530 AX Release 256.08.00</NewDescription>
+    <NewProductClass>FRITZ!Box</NewProductClass>
+    <NewSerialNumber>aabbccddeeff</NewSerialNumber>
+    <NewSoftwareVersion>256.08.00</NewSoftwareVersion>
+    <NewHardwareVersion>FRITZ!Box 7530 AX</NewHardwareVersion>
+    <NewSpecVersion>1.0</NewSpecVersion>
+    <NewProvisioningCode></NewProvisioningCode>
+    <NewUpTime>86446</NewUpTime>
+    <NewDeviceLog>
+    23.11.24 12:28:10 Anmeldung der Internetrufnummer ****** war nicht erfolgreich. Ursache: DNS-Fehler
+    23.11.24 12:28:10 Anmeldung der Internetrufnummer ****** war nicht erfolgreich. Ursache: DNS-Fehler
+    23.11.24 12:28:10 Anmeldung der Internetrufnummer ****** war nicht erfolgreich. Ursache: DNS-Fehler
+    23.11.24 12:28:10 Anmeldung der Internetrufnummer ****** war nicht erfolgreich. Ursache: DNS-Fehler
+    </u:GetInfoResponse>
+    </s:Body>
+    </s:Envelope>
+    """
+
+def test_redact_debug_log_external_ip_addresses():
+    response = """
+    <?xml version="1.0" encoding="utf-8"?>
+    <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <s:Body>
+    <u:GetExternalIPAddressResponse xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1">
+    <NewExternalIPAddress>12.34.56.78</NewExternalIPAddress>
+    </u:GetExternalIPAddressResponse>
+    </s:Body>
+    </s:Envelope>
+    <?xml version="1.0" encoding="utf-8"?>
+    <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <s:Body>
+    <u:X_AVM_DE_GetExternalIPv6AddressResponse xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1">
+    <NewExternalIPv6Address>0011:2233:4455:6677::0abcd</NewExternalIPv6Address>
+    <NewPrefixLength>64</NewPrefixLength>
+    <NewValidLifetime>0</NewValidLifetime>
+    <NewPreferedLifetime>0</NewPreferedLifetime>
+    </u:X_AVM_DE_GetExternalIPv6AddressResponse>
+    </s:Body>
+    </s:Envelope>
+    """
+
+    result = redact_response(False, response)
+    assert result == response
+
+    result = redact_response(True, response)
+    assert result == """
+    <?xml version="1.0" encoding="utf-8"?>
+    <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <s:Body>
+    <u:GetExternalIPAddressResponse xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1">
+    <NewExternalIPAddress>******</NewExternalIPAddress>
+    </u:GetExternalIPAddressResponse>
+    </s:Body>
+    </s:Envelope>
+    <?xml version="1.0" encoding="utf-8"?>
+    <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <s:Body>
+    <u:X_AVM_DE_GetExternalIPv6AddressResponse xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1">
+    <NewExternalIPv6Address>******</NewExternalIPv6Address>
+    <NewPrefixLength>64</NewPrefixLength>
+    <NewValidLifetime>0</NewValidLifetime>
+    <NewPreferedLifetime>0</NewPreferedLifetime>
+    </u:X_AVM_DE_GetExternalIPv6AddressResponse>
+    </s:Body>
+    </s:Envelope>
+    """
+
+def test_redact_debug_log_wifi_passwords():
+    response = """
+    <?xml version="1.0"?>
+    <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <s:Body>
+    <u:GetSecurityKeysResponse xmlns:u="urn:dslforum-org:service:WLANConfiguration:3">
+    <NewWEPKey0>0123456789</NewWEPKey0>
+    <NewWEPKey1></NewWEPKey1>
+    <NewWEPKey2>01234 6789</NewWEPKey2>
+    <NewWEPKey3></NewWEPKey3>
+    <NewPreSharedKey>0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF</NewPreSharedKey>
+    <NewKeyPassphrase>MY_GREAT_WIFI_PSK</NewKeyPassphrase>
+    </u:GetSecurityKeysResponse>
+    </s:Body>
+    </s:Envelope>
+    """
+
+    result = redact_response(False, response)
+    assert result == response
+
+    result = redact_response(True, response)
+    assert result == """
+    <?xml version="1.0"?>
+    <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <s:Body>
+    <u:GetSecurityKeysResponse xmlns:u="urn:dslforum-org:service:WLANConfiguration:3">
+    <NewWEPKey0>******</NewWEPKey0>
+    <NewWEPKey1>******</NewWEPKey1>
+    <NewWEPKey2>******</NewWEPKey2>
+    <NewWEPKey3>******</NewWEPKey3>
+    <NewPreSharedKey>******</NewPreSharedKey>
+    <NewKeyPassphrase>******</NewKeyPassphrase>
+    </u:GetSecurityKeysResponse>
+    </s:Body>
+    </s:Envelope>
+    """

@@ -96,14 +96,6 @@ class FritzHomeAutomation(AbstractLibraryBase):
         """
         return self._action('GetSpecificDeviceInfos', NewAIN=identifier)
 
-    def device_informations(self) -> list[dict]:
-        """
-        .. deprecated:: 1.9.0
-           Use :func:`get_device_information_list` instead.
-        """
-        warn('This method is deprecated. Use "get_device_information_list" instead.', DeprecationWarning)
-        return self.get_device_information_list()
-
     def device_information(self) -> list[dict]:
         """
         .. deprecated:: 1.12.0

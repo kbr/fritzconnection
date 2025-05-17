@@ -170,6 +170,12 @@ class FritzConnection:
     (json|pickle) and FRITZ_CACHEDIRECTORY (a path).
 
     .. versionadded:: 1.10
+
+    `redact_debug_log` accepts a boolean for enabling redacting sensitiv
+    data (i.e. phone numbers) in debug outputs. Default is `False`.
+
+    .. versionadded:: 1.15
+
     """
 
     def __init__(
@@ -186,6 +192,7 @@ class FritzConnection:
         cache_format: str | None = None,
         pool_connections: int = DEFAULT_POOL_CONNECTIONS,
         pool_maxsize: int = DEFAULT_POOL_MAXSIZE,
+        redact_debug_log: bool = False
     ):
         """
         Initialisation of FritzConnection: reads all data from the box
@@ -237,6 +244,9 @@ class FritzConnection:
         `pool_connections` and `pool_maxsize` accept integers for
         changing the default urllib3 settings in order to modify the
         number of reusable connections.
+
+        `redact_debug_log` accepts a boolean for enabling redacting some
+        sensitiv data in debug outputs. Default is `False`.
         """
         if address is None:
             address = FRITZ_IP_ADDRESS
@@ -279,7 +289,7 @@ class FritzConnection:
         self.port = port
 
         self.soaper = Soaper(
-            address, port, user, password, timeout=timeout, session=session
+            address, port, user, password, timeout=timeout, session=session, redact_debug_log=redact_debug_log
         )
         self.device_manager = DeviceManager(timeout=timeout, session=session)
         self._load_router_api(
@@ -511,6 +521,18 @@ class FritzConnection:
         Reboot the system.
         """
         self.call_action("DeviceConfig1", "Reboot")
+
+    def get_cpu_temperatures(self) -> list[int]:
+        """
+        Returns a list of the last measured cpu-temperatures.
+        The most recent entry is the first one in the list.
+        NOTE: this function call is experimental as it is based on a
+        non-public API.
+        """
+        url = f"{self.http_interface.router_url}/query.lua"
+        payload = {"CPUTEMP": "cpu:status/StatTemperature"}
+        response = self.http_interface.call_url(url, payload)
+        return list(map(int, response.json()["CPUTEMP"].split(",")))
 
     # -------------------------------------------
     # internal methods to load router-api:

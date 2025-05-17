@@ -1,7 +1,7 @@
 import nox
 
 
-PYTHON_TEST_VERSIONS = ("3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13")
+PYTHON_TEST_VERSIONS = ("3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14")
 PYTHON_DEVELOPMENT_VERSION = "3.11"
 
 
@@ -48,10 +48,11 @@ def sphinx(session):
         "pip-compile",
         "--strip-extras",
         "-q",
-        "--output-file=docs/requirements.txt",
-        "docs/requirements.local.in"
+        "--output-file=docs/requirements.out",
+        "docs/requirements.txt"
+        #"docs/requirements.local.in"
     )
-    session.install("-r", "docs/requirements.txt")
+    session.install("-r", "docs/requirements.out")
     session.run("sphinx-build", "docs", "docs_out")
 
 

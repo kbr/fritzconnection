@@ -54,14 +54,19 @@ class FritzHttp:
         return HTTP_PORT
 
     @property
+    def router_url(self):
+        """Returns the combination of router address and port."""
+        return f"{self.fc.address}:{self.remote_port}"
+
+    @property
     def login_url(self):
         """The login-url including protocol and configurable port."""
-        return f"{self.fc.address}:{self.remote_port}{URL_LOGIN}"
+        return f"{self.router_url}{URL_LOGIN}"
 
     @property
     def homeauto_url(self):
         """The homeauto-url including protocol and configurable port."""
-        return f"{self.fc.address}:{self.remote_port}{URL_HOMEAUTOSWITCH}"
+        return f"{self.router_url}{URL_HOMEAUTOSWITCH}"
 
     def execute(self, command=None, identifier=None, **kwargs):
         """
@@ -78,13 +83,29 @@ class FritzHttp:
         """
         payload = {"switchcmd": command, "ain": identifier}
         payload.update(kwargs)
+        response = self.call_url(self.homeauto_url, payload)
+        return response.headers.get('content-type'), response.text
+
+    def call_url(self, url, payload):
+        """
+        Makes a call to the router with the provided url. Returns the
+        request object in case of success. Otherwise a
+        FritzHttpInterfaceError will get raised.
+
+        Beside the public API documented by AVM this method allows calls
+        to undocumented APIs serving the router web-interface or
+        providing other data.
+
+        WARNING: For a reliable application it is highly discouraged to
+        use undocumented endpoints because they can change any time without
+        notice. So an application may not survive a router OS update.
+        """
         for sid in self._get_sid():
             payload['sid'] = sid
-            with self.fc.session.get(
-                self.homeauto_url, params=payload
-            ) as response:
+            with self.fc.session.get(url, params=payload) as response:
                 if response.status_code == HTTPStatus.OK:
-                    return response.headers.get('content-type'), response.text
+                    return response
+
         msg = f"Request failed: http error code '{response.status_code}'"
         if response.status_code == HTTPStatus.FORBIDDEN:
             # can happen if FritzConnection was initialized
@@ -102,6 +123,9 @@ class FritzHttp:
         failed. This can happen on an invalide or expired sid. In this
         case the sid gets regenerated for the second try.
         """
+        if self.sid is None:
+            # a session id of None can lead to irritation
+            self._set_sid_from_box()
         yield self.sid
         self._set_sid_from_box()
         yield self.sid
