@@ -2,14 +2,14 @@ import nox
 
 
 PYTHON_TEST_VERSIONS = ("3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14")
-PYTHON_DEVELOPMENT_VERSION = "3.11"
+PYTHON_DEVELOPMENT_VERSION = "3.13"
 
 
 @nox.session(python=PYTHON_TEST_VERSIONS)
 def test(session):
     session.install("-e", ".")
     session.install("requests", "pytest")
-    session.run("pytest", "-m", "not routertest")
+    session.run("pytest", "-m", "not routertest", *session.posargs)
 
 
 @nox.session(python=PYTHON_TEST_VERSIONS)
