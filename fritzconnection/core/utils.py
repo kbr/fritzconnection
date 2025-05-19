@@ -67,12 +67,34 @@ def get_xml_root(source, timeout=None, session=None):
     """
     Function to help migrate from lxml to the standard-library xml-package.
 
-    'source' must be a string and can be a xml-string, a uri or a file
-    name. `timeout` is an optional parameter limiting the time waiting
-    for a router response.
+    'source' must be a string and can be a xml-string, a uri, a
+    file-name or a Path object. `timeout` is an optional parameter
+    limiting the time waiting for a router response.
     In all cases this function returns a xml.etree.Element instance
     which is the root of the parsed tree.
     """
+
+    fname = ""
+    if isinstance(source, str):
+        if source.startswith("http://") or source.startswith("https://"):
+            # source is an uri:
+            xml_content = get_content_from(source, timeout=timeout, session=session)
+        elif source.startswith("<"):
+            # source is a string with xml-content:
+            xml_content = source
+        else:
+            # it is a posix filename:
+            fname = source
+    else:
+        # it should be a Path-object (or an AttributeError get raised – that's ok):
+        fname = source.as_posix()
+    if fname:
+        with open(fname) as fobj:
+            xml_content = fobj.read()
+    return etree.fromstring(xml_content)
+
+
+
     if source.startswith("http://") or source.startswith("https://"):
         # it's an uri, use requests to get the content
         source = get_content_from(source, timeout=timeout, session=session)
