@@ -3,9 +3,11 @@ import pathlib
 import pytest
 
 from fritzconnection.core.description import AllowedValueList
+from fritzconnection.core.description import FritzDescription
 from fritzconnection.core.description import Icon
 from fritzconnection.core.description import IconList
-from fritzconnection.core.description import UpnPInternetGatewayDescription
+from fritzconnection.core.description import TR64Description
+from fritzconnection.core.description import UPnPInternetGatewayDescription
 from fritzconnection.core.utils import get_xml_root
 
 
@@ -15,7 +17,9 @@ DESCRIPTION_FILES_DIR = THIS_DIRECTORY / "description_files"
 
 def test_load_icon():
     """
-    Check if the dataclass Icon is a Loader that can load its own attributes.
+    Check if a description dataclass can load its own attributes.
+    This is tested with Icon as a placeholder for all classes
+    of the same type (like i.e. Service or SpecVersion).
     """
     source = DESCRIPTION_FILES_DIR / "icon.xml"
     root = get_xml_root(source.as_posix())
@@ -37,7 +41,9 @@ def test_load_icon():
 
 def test_load_iconlist():
     """
-    Load a node with subnodes.
+    Test a node with a collection of subnodes in the attribute
+    list_items. Here IconList is a placeholder for similar classes like
+    ServiceList or DeviceList with the same structure.
     """
     source = DESCRIPTION_FILES_DIR / "iconlist.xml"
     root = get_xml_root(source.as_posix())
@@ -54,7 +60,7 @@ def test_load_iconlist():
 def test_allowed_valuelist():
     """
     An allowedValueList has multiple subnodes `allowdValue` holding pure
-    text. So the texts have to be stored in a list.
+    text. So the texts of the subnodes have to be stored in a list.
     """
     source = DESCRIPTION_FILES_DIR / "allowedvaluelist.xml"
     root = get_xml_root(source.as_posix())
@@ -72,15 +78,130 @@ def test_allowed_valuelist():
 
 def test_upnpinternetgatewaydescription_devices():
     """
-    The router internally is a box of three upnp-devices:
-    The router itself, a wan-device and a wan-connection-device
+    The router is a box of three nested upnp-devices:
+    The router itself, which has a wan-device that has wan-connection-device.
     """
     source = DESCRIPTION_FILES_DIR / "igddesc.xml"
     root = get_xml_root(source.as_posix())
-    igd = UpnPInternetGatewayDescription()
+    igd = UPnPInternetGatewayDescription()
     igd.load(root)
 
-    # three devices should be known as well as the spec_version
-    assert len(igd.devices) == 3
+    # there is a spec version:
     assert igd.spec_version == "1.0"
+
+    # the three devices are hierarchically structured, but the
+    # UPnPInternetGatewayDescription class stores them also in a mapping that
+    # can be accessed as the property `devices` with the short device types as
+    # key and the objects as values:
+    igd_devices = igd.devices
+    assert isinstance(igd_devices, dict) is True
+    assert len(igd_devices) == 3
+
+    # test the mapping for the devices:
+    device_names = [
+        "InternetGatewayDevice",
+        "WANDevice",
+        "WANConnectionDevice",
+    ]
+    for device_name in device_names:
+        assert device_name in igd_devices
+
+    # the three devices provide a total of five services. Every device knows
+    # its own services but the UPnPInternetGatewayDescription class also
+    # provides a mapping with the the service ids as key (which are unique)
+    # and the corresponding service description as value:
+    igd_services = igd.services
+    assert isinstance(igd_services, dict) is True
+    assert len(igd_services) == 5
+
+    # test the mapping for the services:
+    service_names = [
+        "any1",
+        "WANCommonIFC1",
+        "WANDSLLinkC1",
+        "WANIPConn1",
+        "WANIPv6Firewall1"
+    ]
+    for service_name in service_names:
+        assert service_name in igd_services
+
+
+def test_tr64description_devices():
+    source = DESCRIPTION_FILES_DIR / "tr64desc.xml"
+    root = get_xml_root(source.as_posix())
+    trd = TR64Description()
+    trd.load(root)
+
+    # there is a spec version:
+    assert trd.spec_version == "1.0"
+
+    # and also a system version that should get presented
+    # as in the web-backend to reduce confusion:
+    assert trd.system_version == "8.02"
+
+    # TR064 provides four devices as for UPnP plus a LANDevice (which include
+    # the WLAN)
+    trd_devices = trd.devices
+    assert isinstance(trd_devices, dict) is True
+    assert len(trd_devices) == 4
+
+    # test the mapping for the devices:
+    device_names = [
+        "InternetGatewayDevice",
+        "WANDevice",
+        "WANConnectionDevice",
+        "LANDevice"
+    ]
+    for device_name in device_names:
+        assert device_name in trd_devices
+
+    # the TR064 services have the same structure like UPnP,
+    # but the four devices have a total of 37 services.
+    trd_services = trd.services
+    assert isinstance(trd_services, dict) is True
+    assert len(trd_services) == 37
+
+    # test the mapping for the services:
+    service_names = [
+        "DeviceInfo1",
+        "DeviceConfig1",
+        "Layer3Forwarding1",
+        "LANConfigSecurity1",
+        "ManagementServer1",
+        "Time1",
+        "UserInterface1",
+        "X_AVM-DE_Storage1",
+        "X_AVM-DE_WebDAVClient1",
+        "X_AVM-DE_UPnP1",
+        "X_AVM-DE_Speedtest1",
+        "X_AVM-DE_RemoteAccess1",
+        "X_AVM-DE_MyFritz1",
+        "X_VoIP1",
+        "X_AVM-DE_OnTel1",
+        "X_AVM-DE_Dect1",
+        "X_AVM-DE_TAM1",
+        "X_AVM-DE_AppSetup1",
+        "X_AVM-DE_Homeauto1",
+        "X_AVM-DE_Homeplug1",
+        "X_AVM-DE_Filelinks1",
+        "X_AVM-DE_Auth1",
+        "X_AVM-DE_HostFilter1",
+        "X_AVM-DE_USPController1",
+        "WLANConfiguration1",
+        "WLANConfiguration2",
+        "WLANConfiguration3",
+        "Hosts1",
+        "LANEthernetInterfaceConfig1",
+        "LANHostConfigManagement1",
+        "WANCommonInterfaceConfig1",
+        "WANDSLInterfaceConfig1",
+        "X_AVM-DE_WANMobileConnection1",
+        "WANDSLLinkConfig1",
+        "WANEthernetLinkConfig1",
+        "WANPPPConnection1",
+        "WANIPConnection1",
+    ]
+    for service_name in service_names:
+        assert service_name in trd_services
+
 
