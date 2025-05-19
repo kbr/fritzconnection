@@ -169,6 +169,13 @@ class FritzHosts(AbstractLibraryBase):
         }
         self._action("X_AVM-DE_SetAutoWakeOnLANByMACAddress", arguments=args)
 
+    def wakeonlan_host(self, mac_address: str) -> None:
+        """
+        Triggers sending a wake on lan message with the given `mac_address`
+        on the local network. This method has no return value.
+        """
+        self._action("X_AVM-DE_WakeOnLANByMACAddress", NewMACAddress=mac_address)
+
     def set_host_name(self, mac_address: str, name: str) -> None:
         """
         Sets the hostname of the device with the given `mac_address` to
