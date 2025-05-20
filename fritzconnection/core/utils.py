@@ -94,17 +94,6 @@ def get_xml_root(source, timeout=None, session=None):
     return etree.fromstring(xml_content)
 
 
-
-    if source.startswith("http://") or source.startswith("https://"):
-        # it's an uri, use requests to get the content
-        source = get_content_from(source, timeout=timeout, session=session)
-    elif not source.startswith("<"):
-        # assume it's a filename
-        with open(source) as fobj:
-            source = fobj.read()
-    return etree.fromstring(source)
-
-
 def boolean_from_string(value):
     """
     Takes a value as a string and converts it to a boolean or None. The
