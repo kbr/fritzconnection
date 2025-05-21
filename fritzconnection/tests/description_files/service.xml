@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<service>
+    <serviceType>
+        urn:dslforum-org:service:DeviceConfig:1
+    </serviceType>
+    <serviceId>
+        urn:DeviceConfig-com:serviceId:DeviceConfig1
+    </serviceId>
+    <controlURL>
+        /upnp/control/deviceconfig
+    </controlURL>
+    <eventSubURL>
+        /upnp/control/deviceconfig
+    </eventSubURL>
+    <SCPDURL>
+        /deviceconfigSCPD.xml
+    </SCPDURL>
+</service>
