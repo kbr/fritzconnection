@@ -3,14 +3,21 @@ Loads the description files from the device describing the API. A device
 can be a router or a repeater.
 """
 
+import pathlib
+import pickle
+
+from fritzconnection.core.description import BoxInfo
 from fritzconnection.core.description import TR64Description
 from fritzconnection.core.description import UPnPInternetGatewayDescription
 from fritzconnection.core.exceptions import FritzResourceError
 from fritzconnection.core.utils import get_xml_root
 
 
+FRITZ_BOXINFO_FILE = "jason_boxinfo.xml"
 FRITZ_IGD_DESC_FILE = "igddesc.xml"
 FRITZ_TR64_DESC_FILE = "tr64desc.xml"
+FRITZ_CACHE_DIR = ".fritzconnection"
+FRITZ_CACHE_EXT = ".cache"
 IGD_DEVICE = "igd_device"
 TR64_DEVICE = "tr64_device"
 
@@ -29,7 +36,8 @@ class FritzDescription:
     All arguments are optional for testing
     """
 
-    def __init__(self, ip_address=None, uri=None, session=None, use_cache=True):
+    def __init__(self, ip_address=None, uri=None, session=None,
+                 use_cache=True, cache_directory=None):
         self.descriptions = {
             IGD_DEVICE: UPnPInternetGatewayDescription(),
             TR64_DEVICE: TR64Description()
@@ -38,7 +46,19 @@ class FritzDescription:
         self.uri = uri
         self.session = session
         self.use_cache = use_cache
+        self.cache_directory = cache_directory
         self._services = {}
+
+    def __eq__(self, other):
+        """
+        This is implemented for testing. Two instances are assumed to be
+        equal if the descriptions are the same (which are dataclasses
+        and comparable).
+        """
+        return (
+            self.descriptions[IGD_DEVICE] == other.descriptions[IGD_DEVICE]
+            and self.descriptions[TR64_DEVICE] == other.descriptions[TR64_DEVICE]
+        )
 
     @property
     def services(self):
@@ -64,9 +84,18 @@ class FritzDescription:
         else:
             self.load_descriptions_from_device()
 
-    def load_descriptions_from_cache(self):
-        # not implemented, so same behaviour as for an invalide cache:
+    def load_descriptions_from_cache(self) -> None:
+        """
+        Loads the description data from cache. In case this fails or the
+        cache is invalid, load the descriptions from the device and
+        store the data again in a cache-file.
+        """
+        if self.load_cache():
+            if self.check_cache():
+                return None
         self.load_descriptions_from_device()
+        if self.use_cache:
+            self.store_cache()
 
     def load_descriptions_from_device(self):
         uri = self.uri if self.uri.endswith("/") else f"{self.uri}/"
@@ -83,7 +112,7 @@ class FritzDescription:
         """
         if igd_source:
             try:
-                root = get_xml_root(igd_source)
+                root = get_xml_root(igd_source, session=self.session)
             except FritzResourceError:
                 # can happen if the device does not support
                 # an igd_file (i.e. it is not a WAN device)
@@ -92,5 +121,65 @@ class FritzDescription:
                 self.descriptions[IGD_DEVICE].load(root)
         if tr64_source:
             # it is an error if this source is not available
-            root = get_xml_root(tr64_source)
+            root = get_xml_root(tr64_source, session=self.session)
             self.descriptions[TR64_DEVICE].load(root)
+
+    def store_cache(self):
+        """
+        Store the pickled description data.
+        """
+        path = self._get_cache_path()
+        with open(path, "wb") as fobj:
+            pickle.dump(self.descriptions, fobj)
+
+    def load_cache(self) -> bool:
+        """
+        Loads the cached data into self.descriptions. Returns False if
+        there was no cache-file, otherwise returns True.
+        """
+        path = self._get_cache_path()
+        try:
+            with open(path, "rb") as fobj:
+                self.descriptions = pickle.load(fobj)
+        except FileNotFoundError:
+            result = False
+        else:
+            result = True
+        return result
+
+    def check_cache(self, source=None) -> bool:
+        """
+        Assumes the description data are loaded. Then the boxinfo gets
+        loaded from the given argument or from a known uri (the argument
+        `source` is for testing).
+        Returns True if the description data are valid, otherwise
+        returns False.
+        """
+        if source is None:
+            # uri without the port because
+            # FRITZ_BOXINFO_FILE is provided via port 80
+            uri, _ = self.uri.rsplit(":", 1)
+            source = f"{uri}/{FRITZ_BOXINFO_FILE}"
+        root = get_xml_root(source, session=self.session)
+        boxinfo = BoxInfo()
+        boxinfo.load(root)
+        # compare the loaded identification with the separate
+        # loaded box-information. The cache is valid if both are the same.
+        return boxinfo.ident == self.descriptions[TR64_DEVICE].ident
+
+    def _get_cache_path(self, create_cache_dir=True) -> pathlib.Path:
+        """
+        Returns a Path object for the cache-file. If cache_directory is
+        not defined, the directory defaults to `~/.fritzconnection`.
+        The filename gets constructed from the device-ip.
+        The `create_cache_dir` argument is used for testing.
+        """
+        filename = self.ip_address.replace(".", "_")
+        cache_filename = filename + FRITZ_CACHE_EXT
+        if self.cache_directory:
+            path = pathlib.Path(self.cache_directory)
+        else:
+            path = pathlib.Path().home() / FRITZ_CACHE_DIR
+        if create_cache_dir:
+            path.mkdir(exist_ok=True)
+        return (path / cache_filename).resolve()
