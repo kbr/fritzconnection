@@ -1,16 +1,18 @@
 """
-Loads the description files from the device describing the API. A device
-can be a router or a repeater.
+Definition of all description nodes as dataclasses with methods for parsing.
 """
+
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 
 from dataclasses import dataclass
 from dataclasses import field
-
-#from fritzconnection.core.utils import get_xml_root
 from fritzconnection.core.utils import localname
+
+
+FRITZ_IGD_DESC_FILE = "igddesc.xml"
+FRITZ_TR64_DESC_FILE = "tr64desc.xml"
 
 
 class _UnknownNode:
@@ -27,6 +29,9 @@ class ListItemIteratorMixin:
     """
     def __iter__(self):
         return iter(self.list_items)
+
+    def __len__(self):
+        return len(self.list_items)
 
 
 def nodeloader(cls):
@@ -116,10 +121,33 @@ class Service:
     controlURL: str = ""
     eventSubURL: str = ""
     SCPDURL: str = ""
+    scpd: SCPD|None = None
+    _actions: dict = field(default_factory=dict)
+    _state_variables: dict = field(default_factory=dict)
 
     @property
     def short_service_id(self):
         return self.serviceId.split(":")[-1]
+
+    @property
+    def actions(self):
+        """
+        Mapping of all actions provided by the service
+        """
+        if not self._actions:
+            for action in self.scpd.actionList:
+                self._actions[action.name] = action
+        return self._actions
+
+    @property
+    def state_variables(self):
+        """
+        Mapping of all state_variables for the action-arguments
+        """
+        if not self._state_variables:
+            for state_variable in self.scpd.serviceStateTable:
+                self._state_variables[state_variable.name] = state_variable
+        return self._state_variables
 
 
 @description
@@ -205,8 +233,7 @@ class ArgumentList(ListItemIteratorMixin):
         return argument
 
 
-@dataclass
-@nodeloader
+@description
 class Argument:
     name: str = ""
     direction: str = ""
@@ -227,7 +254,15 @@ class ActionList(ListItemIteratorMixin):
 @description
 class Action:
     name: str = ""
-    argumentList: list[Argument] = field(default_factory=list)
+    argumentList: ArgumentList = field(default_factory=ArgumentList)
+    _arguments: dict = field(default_factory=dict)
+
+    @property
+    def arguments(self):
+        if not self._arguments:
+            for argument in self.argumentList:
+                self._arguments[argument.name] = argument
+        return self._arguments
 
 
 @description
@@ -301,27 +336,9 @@ class TR64Description(DeviceDescriptionMixin):
     device: Device = field(default_factory=Device)
 
     @property
-    def system_version(self) -> str:
-        return str(self.systemVersion)
-
-
-
-class FritzDescription:
-    """
-    Description wrapper class for the device information.
-    """
-    def __init__(self):
-        self.igd_description = UpnPInternetGatewayDescription()
-        self.tr64_description = TR64Description()
-        self._devices = {}
-        self._services = {}
+    def device_name(self):
+        return self.device.modelName
 
     @property
-    def devices(self) -> dict[str, Device]:
-        """
-        Returns a dict with all devices from both descriptions.
-        """
-        if not self._devices:
-            for desc in (self.igd_description, self.tr64_description):
-                self._devices.update(desc.devices)
-        return self._devices
+    def system_version(self) -> str:
+        return str(self.systemVersion)

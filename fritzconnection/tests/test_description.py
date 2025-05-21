@@ -1,11 +1,12 @@
 import pathlib
 
-import pytest
+# import pytest
 
 from fritzconnection.core.description import AllowedValueList
-from fritzconnection.core.description import FritzDescription
 from fritzconnection.core.description import Icon
 from fritzconnection.core.description import IconList
+from fritzconnection.core.description import SCPD
+from fritzconnection.core.description import Service
 from fritzconnection.core.description import TR64Description
 from fritzconnection.core.description import UPnPInternetGatewayDescription
 from fritzconnection.core.utils import get_xml_root
@@ -204,4 +205,49 @@ def test_tr64description_devices():
     for service_name in service_names:
         assert service_name in trd_services
 
+
+def test_service():
+    source = DESCRIPTION_FILES_DIR / "service.xml"
+    root = get_xml_root(source)
+    service = Service()
+    service.load(root)
+
+    assert service.short_service_id == "DeviceConfig1"
+    assert service.SCPDURL == "/deviceconfigSCPD.xml"
+    assert service.scpd is None
+
+
+def test_load_service_scpd():
+    source = DESCRIPTION_FILES_DIR / "service.xml"
+    root = get_xml_root(source)
+    service = Service()
+    service.load(root)
+
+    # get the uri:
+    assert service.SCPDURL == "/deviceconfigSCPD.xml"
+    uri = DESCRIPTION_FILES_DIR / service.SCPDURL[1:]  # make a file-path
+
+    # create the SCPD instance:
+    assert service.scpd is None
+    service.scpd = SCPD()
+    root = get_xml_root(uri)
+    service.scpd.load(root)
+
+    # a service has a specVersion and a list of actions
+    assert str(service.scpd.specVersion) == "1.0"
+    assert len(service.scpd.actionList) == 14
+
+    # for fast access the service must provide the actions as a mapping
+    # `service.actions['action_name']`
+    assert isinstance(service.actions, dict) is True
+    assert len(service.actions) == 14
+    # select an action and check for the arguments:
+    action = service.actions["X_AVM-DE_GetConfigFile"]
+    assert isinstance(action.arguments, dict) is True
+    assert len(action.arguments) == 2
+    assert "NewX_AVM-DE_Password" in action.arguments
+
+    # the service must also provide a `state_variables` mapping
+    assert isinstance(service.state_variables, dict) is True
+    assert len(service.state_variables) == 12
 
