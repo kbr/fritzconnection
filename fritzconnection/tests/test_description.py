@@ -3,6 +3,7 @@ import pathlib
 # import pytest
 
 from fritzconnection.core.description import AllowedValueList
+from fritzconnection.core.description import BoxInfo
 from fritzconnection.core.description import Icon
 from fritzconnection.core.description import IconList
 from fritzconnection.core.description import SCPD
@@ -251,3 +252,31 @@ def test_load_service_scpd():
     assert isinstance(service.state_variables, dict) is True
     assert len(service.state_variables) == 12
 
+
+def test_boxinfo():
+    source = DESCRIPTION_FILES_DIR / "jason_boxinfo.xml"
+    root = get_xml_root(source)
+    boxinfo = BoxInfo()
+    boxinfo.load(root)
+
+    # test for reading a reprensentative attribute and the flags
+    assert boxinfo.Version == "154.08.02"
+    for item in ("crashreport", "mesh_master"):
+        assert item in boxinfo.flags
+
+    assert boxinfo.ident == "226-154.08.02-117975"
+
+
+def test_box_ident():
+    # get tr64 description
+    source = DESCRIPTION_FILES_DIR / "tr64desc.xml"
+    root = get_xml_root(source.as_posix())
+    trd = TR64Description()
+    trd.load(root)
+    # get boxinfo
+    source = DESCRIPTION_FILES_DIR / "jason_boxinfo.xml"
+    root = get_xml_root(source)
+    boxinfo = BoxInfo()
+    boxinfo.load(root)
+    # check identification:
+    assert boxinfo.ident == trd.ident

@@ -1,5 +1,9 @@
 """
-Definition of all description nodes as dataclasses with methods for parsing.
+Definition of all description nodes as dataclasses with methods for
+parsing.
+
+The classes may have attibutes violating PEP 8 representing the original
+typography in the xml-sources.
 """
 
 from __future__ import annotations
@@ -9,29 +13,6 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from dataclasses import field
 from fritzconnection.core.utils import localname
-
-
-FRITZ_IGD_DESC_FILE = "igddesc.xml"
-FRITZ_TR64_DESC_FILE = "tr64desc.xml"
-
-
-class _UnknownNode:
-    """
-    Marker class for unknown node names.
-    Used internally.
-    """
-
-class ListItemIteratorMixin:
-    """
-    Provides an __iter__ method for classes with a list_items attribute
-    of type list, so that the instances are iterables with regard to the
-    list_item list.
-    """
-    def __iter__(self):
-        return iter(self.list_items)
-
-    def __len__(self):
-        return len(self.list_items)
 
 
 def nodeloader(cls):
@@ -77,10 +58,70 @@ def description(cls):
     return cls
 
 
-# ------------------------------------------------------------------------
-# classes for igd- and tr64-description parsing. The classes may
-# have attributes violation pep 8 but representing the original node-names
-# of the xml-sources.
+class _UnknownNode:
+    """
+    Marker class for unknown node names.
+    Used internally.
+    """
+
+
+class ListItemIteratorMixin:
+    """
+    Provides an __iter__ method for classes with a list_items attribute
+    of type list, so that the instances are iterables with regard to the
+    list_item list.
+    """
+    def __iter__(self):
+        return iter(self.list_items)
+
+    def __len__(self) -> int:
+        return len(self.list_items)
+
+
+class DeviceDescriptionMixin:
+
+    @property
+    def devices(self) -> dict[str, Device]:
+        return self.device.devices
+
+    @property
+    def spec_version(self) -> str:
+        return str(self.specVersion)
+
+    @property
+    def services(self) -> dict[str, Service]:
+        services = {}
+        for device in self.devices.values():
+            for service in device.serviceList:
+                services[service.short_service_id] = service
+        return services
+
+
+@description
+class BoxInfo:
+    Name: str = ""
+    HW: str = ""
+    Version: str = ""
+    Revision: str = ""
+    Serial: str = ""
+    OEM: str = ""
+    Lang: str = ""
+    Annex: str = ""
+    Country: str = ""
+    flags: list = field(default_factory=list)
+    UpdateConfig: str = ""
+
+    @property
+    def Flag(self):
+        return ""
+
+    @Flag.setter
+    def Flag(self, value):
+        self.flags.append(value)
+
+    @property
+    def ident(self):
+        return "-".join((self.HW, self.Version, self.Revision))
 
 
 @description
@@ -170,6 +211,10 @@ class SystemVersion:
 
     def __str__(self):
         return f"{self.Minor}.{int(self.Patch):0>2d}"
+
+    @property
+    def ident(self):
+        return "-".join((self.HW, self.Display, self.Buildnumber))
 
 
 @description
@@ -304,25 +349,6 @@ class SCPD:
     serviceStateTable: ServiceStateTable = field(default_factory=ServiceStateTable)
 
 
-class DeviceDescriptionMixin:
-
-    @property
-    def devices(self) -> dict[str, Device]:
-        return self.device.devices
-
-    @property
-    def spec_version(self) -> str:
-        return str(self.specVersion)
-
-    @property
-    def services(self) -> dict[str, Service]:
-        services = {}
-        for device in self.devices.values():
-            for service in device.serviceList:
-                services[service.short_service_id] = service
-        return services
-
-
 @description
 class UPnPInternetGatewayDescription(DeviceDescriptionMixin):
     specVersion: SpecVersion = field(default_factory=SpecVersion)
@@ -342,3 +368,7 @@ class TR64Description(DeviceDescriptionMixin):
     @property
     def system_version(self) -> str:
         return str(self.systemVersion)
+
+    @property
+    def ident(self):
+        return self.systemVersion.ident
