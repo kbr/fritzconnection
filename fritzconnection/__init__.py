@@ -13,7 +13,7 @@ https://fritzconnection.readthedocs.io/
 # unused shortcut import are intended:
 # ruff: noqa: F401
 
-__version__ = "1.15.0"
+__version__ = "2.0-a1"
 
 # import shortcuts
 from .core.fritzconnection import FritzConnection

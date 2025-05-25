@@ -7,6 +7,7 @@ import pathlib
 import pickle
 
 from fritzconnection.core.description import BoxInfo
+from fritzconnection.core.description import SCPD
 from fritzconnection.core.description import TR64Description
 from fritzconnection.core.description import UPnPInternetGatewayDescription
 from fritzconnection.core.exceptions import FritzResourceError
@@ -84,6 +85,14 @@ class FritzDescription:
         else:
             self.load_descriptions_from_device()
 
+    def load_scpd_data(self):
+        for service in self.services.values():
+            scpd_source = self.uri + service.SCPDURL
+            root = get_xml_root(scpd_source, session=self.session)
+            scpd = SCPD()
+            scpd.load(root)
+            service.scpd = scpd
+
     def load_descriptions_from_cache(self) -> None:
         """
         Loads the description data from cache. In case this fails or the
@@ -123,6 +132,10 @@ class FritzDescription:
             # it is an error if this source is not available
             root = get_xml_root(tr64_source, session=self.session)
             self.descriptions[TR64_DEVICE].load(root)
+        # after loading the services load the scpd-data:
+        self.load_scpd_data()
+        if self.use_cache:
+            self.store_cache()
 
     def store_cache(self):
         """
