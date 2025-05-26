@@ -153,8 +153,11 @@ class FritzDescription:
             # it is an error if this source is not available
             root = get_xml_root(tr64_source, session=self.session)
             self.descriptions[TR64_DEVICE].load(root)
-        # after loading the services load the scpd-data:
-        self.load_scpd_data()
+        # after loading the services load the scpd-data,
+        # but don't do this if self.uri is None
+        # (happen by testing with files)
+        if self.uri:
+            self.load_scpd_data()
 
     def store_cache(self):
         """
