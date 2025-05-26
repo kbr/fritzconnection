@@ -88,9 +88,14 @@ class FritzDescription:
     def load_scpd_data(self):
         for service in self.services.values():
             scpd_source = self.uri + service.SCPDURL
-            root = get_xml_root(scpd_source, session=self.session)
             scpd = SCPD()
-            scpd.load(root)
+            try:
+                root = get_xml_root(scpd_source, session=self.session)
+            except FritzResourceError:
+                # unable to read the requestet resource: skip this
+                pass
+            else:
+                scpd.load(root)
             service.scpd = scpd
 
     def load_descriptions_from_cache(self) -> None:
@@ -103,8 +108,7 @@ class FritzDescription:
             if self.check_cache():
                 return None
         self.load_descriptions_from_device()
-        if self.use_cache:
-            self.store_cache()
+        self.store_cache()
 
     def load_descriptions_from_device(self):
         uri = self.uri if self.uri.endswith("/") else f"{self.uri}/"
@@ -119,6 +123,10 @@ class FritzDescription:
         `get_xml_root` the sources can be an xml-string, a file-name a
         Path object or an uri. This makes the method testable.
         """
+        # create new descriptions in case of remaining
+        # invalide cache data:
+        self.descriptions[IGD_DEVICE] = UPnPInternetGatewayDescription()
+        self.descriptions[TR64_DEVICE] = TR64Description()
         if igd_source:
             try:
                 root = get_xml_root(igd_source, session=self.session)
@@ -134,8 +142,6 @@ class FritzDescription:
             self.descriptions[TR64_DEVICE].load(root)
         # after loading the services load the scpd-data:
         self.load_scpd_data()
-        if self.use_cache:
-            self.store_cache()
 
     def store_cache(self):
         """

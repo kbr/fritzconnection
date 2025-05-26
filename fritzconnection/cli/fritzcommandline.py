@@ -40,9 +40,9 @@ class FritzInspection:
 
     def get_header(self) -> str:
         messages = [
-            f"{PROGRAM_NAME}: {_version_}",
+            f"{PROGRAM_NAME} v{_version_}",
             "",
-            self.fc.device_name,
+            f"{self.fc.device_name} ({self.fc.ip_address})",
             f"Fritz!OS: {self.fc.system_version}",
             "",
         ]
@@ -121,6 +121,12 @@ def get_arguments():
         required=True,
         help='Servicename to list actions'
     )
+    actions.add_argument(
+        '-a', '--arguments',
+        dest='arguments',
+        action='store_true',
+        help='list arguments for actions.'
+    )
     actions.set_defaults(func=report_actions)
     return parser.parse_args()
 
@@ -128,10 +134,24 @@ def get_arguments():
 def report_actions(fi, args):
     services = fi.get_services()
     service_name = args.service_name
-    service = services[service_name]
+    try:
+        service = services[service_name]
+    except KeyError:
+        print(f"  Error: service '{service_name}' not available\n")
+        return
     print(f"  Actions for Service '{service_name}':\n")
-    for action in service.actions:
-        print(f"    {action}")
+    actions = service.actions.values()
+    if actions:
+        for action in actions:
+            print(f"{' '*4}{action.name}")
+            if args.arguments:
+                for argument in action.arguments.values():
+                    name = argument.name
+                    d = "<-- out" if argument.direction == "out" else "-->  in"
+                    print(f"{' '*8}{name:32}{d}")
+    else:
+        print("  Error: no actions available")
+    print()
 
 
 def report_services(fi, args):
@@ -144,12 +164,17 @@ def report_services(fi, args):
         service for service in services.values()
         if "dslforum" in service.serviceType
     ]
-    print("  UPnP services:\n")
+    no_services_message = "no services available"
+    print(f"{' '*2}UPnP services:\n")
+    if not upnp_services:
+        print(f"{' '*4}{no_services_message}")
     for service in sorted(upnp_services, key=lambda s: s.short_service_id):
-        print(f"    {service.short_service_id}")
+        print(f"{' '*4}{service.short_service_id}")
     print("\n  TR64 services:\n")
+    if not tr64_services:
+        print(f"{' '*4}{no_services_message}")
     for service in sorted(tr64_services, key=lambda s: s.short_service_id):
-        print(f"    {service.short_service_id}")
+        print(f"{' '*4}{service.short_service_id}")
 
 
 def main():

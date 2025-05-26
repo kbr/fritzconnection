@@ -209,8 +209,16 @@ class SystemVersion:
     Buildnumber: str = ""
     Display: str = ""
 
-    def __str__(self):
-        return f"{self.Minor}.{int(self.Patch):0>2d}"
+    def __str__(self) -> str:
+        try:
+            patch = f"{int(self.Patch):0>2d}"
+        except ValueError:
+            patch = self.Patch
+        version = f"{self.Minor}.{patch}"
+        if len(version) == 1:
+            # just the dot
+            version = "not available"
+        return version
 
     @property
     def ident(self):
@@ -249,7 +257,12 @@ class Device:
 
     @property
     def short_device_type(self):
-        return self.deviceType.split(":")[-2]
+        try:
+            result = self.deviceType.split(":")[-2]
+        except IndexError:
+            # unexpected deviceType format, return the original value
+            result = self.deviceType
+        return result
 
     @property
     def devices(self) -> dict[str, Device]:
