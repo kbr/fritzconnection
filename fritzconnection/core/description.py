@@ -171,7 +171,7 @@ class Service:
         return self.serviceId.split(":")[-1]
 
     @property
-    def actions(self):
+    def actions(self) -> dict:
         """
         Mapping of all actions provided by the service
         """
@@ -181,7 +181,7 @@ class Service:
         return self._actions
 
     @property
-    def state_variables(self):
+    def state_variables(self) -> dict:
         """
         Mapping of all state_variables for the action-arguments
         """
@@ -316,7 +316,7 @@ class Action:
     _arguments: dict = field(default_factory=dict)
 
     @property
-    def arguments(self):
+    def arguments(self) -> dict:
         if not self._arguments:
             for argument in self.argumentList:
                 self._arguments[argument.name] = argument

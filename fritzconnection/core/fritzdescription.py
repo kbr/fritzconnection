@@ -62,7 +62,20 @@ class FritzDescription:
         )
 
     @property
-    def services(self):
+    def upnp_services(self):
+        return self.descriptions[IGD_DEVICE].services
+
+    @property
+    def tr64_services(self):
+        return self.descriptions[TR64_DEVICE].services
+
+    @property
+    def services(self) -> dict:
+        """
+        Returns a dictionary with the provided services of the device.
+        The keys are the service-names, the values are the
+        service-objects.
+        """
         if not self._services:
             for description in self.descriptions.values():
                 self._services.update(description.services)

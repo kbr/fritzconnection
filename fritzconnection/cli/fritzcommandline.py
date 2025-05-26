@@ -6,6 +6,7 @@ import argparse
 import textwrap
 
 import fritzconnection
+from fritzconnection.core.description import Service
 
 _author_ = "Klaus Bremer"
 _version_ = fritzconnection.__version__
@@ -48,8 +49,75 @@ class FritzInspection:
         ]
         return "\n".join(messages)
 
+    def get_upnp_services(self) -> dict:
+        return {
+            name: value for name, value in
+            self.fc.description.upnp_services.items()
+            if not name.startswith("any")
+        }
+
+    def get_tr64_services(self) -> dict:
+        return self.fc.description.tr64_services
+
     def get_services(self) -> dict:
         return self.fc.description.services
+
+    def get_actions(self, service: Service|str) -> dict:
+        """
+        Returns the actions of a given service as dict: action-name as
+        key, action-object as value.
+        """
+        if isinstance(service, str):
+            service = self.fc.description.services[service]
+        return service.actions
+
+
+def report_actions(fi, args):
+    services = fi.get_services()
+    service_name = args.service_name
+    try:
+        service = services[service_name]
+    except KeyError:
+        print(f"  Error: service '{service_name}' not available\n")
+        return
+    print(f"  Actions for Service '{service_name}':\n")
+    actions = service.actions.values()
+    if actions:
+        for action in actions:
+            print(f"{' '*4}{action.name}:")
+            if args.arguments:
+                for argument in action.arguments.values():
+                    name = argument.name
+                    d = "<-- out" if argument.direction == "out" else "-->  in"
+                    print(f"{' '*8}{name:35}{d}")
+            print()
+    else:
+        print("  Error: no actions available\n")
+
+
+def report_service(service, with_actions=False, with_arguments=False):
+    print(f"{' '*4}{service.short_service_id}")
+
+
+def report_services(fi, args):
+    upnp_services = fi.get_upnp_services().values()
+    tr64_services = fi.get_tr64_services().values()
+    no_services_message = "no services available"
+    for name, services in zip(("UPnP", "TR64"), (upnp_services, tr64_services)):
+        print(f"{' '*2}{name} services:\n")
+        if not services:
+            print(f"{' '*4}{no_services_message}")
+        for service in sorted(services, key=lambda s: s.short_service_id):
+            report_service(service)
+
+        print()
+
+
+def report_complete_api(fi, args):
+    """
+    Write the complete api to stdout.
+    """
+
 
 
 def get_common_arguments(parser):
@@ -109,6 +177,7 @@ def get_arguments():
         description=PROGRAM_DESCRIPTION,
     )
     subparsers = parser.add_subparsers(help="Available subcommands")
+
     services = subparsers.add_parser("services")
     get_common_arguments(services)
     services.set_defaults(func=report_services)
@@ -128,53 +197,12 @@ def get_arguments():
         help='list arguments for actions.'
     )
     actions.set_defaults(func=report_actions)
+
+    complete = subparsers.add_parser("complete")
+    get_common_arguments(complete)
+    complete.set_defaults(func=report_complete_api)
+
     return parser.parse_args()
-
-
-def report_actions(fi, args):
-    services = fi.get_services()
-    service_name = args.service_name
-    try:
-        service = services[service_name]
-    except KeyError:
-        print(f"  Error: service '{service_name}' not available\n")
-        return
-    print(f"  Actions for Service '{service_name}':\n")
-    actions = service.actions.values()
-    if actions:
-        for action in actions:
-            print(f"{' '*4}{action.name}")
-            if args.arguments:
-                for argument in action.arguments.values():
-                    name = argument.name
-                    d = "<-- out" if argument.direction == "out" else "-->  in"
-                    print(f"{' '*8}{name:32}{d}")
-    else:
-        print("  Error: no actions available")
-    print()
-
-
-def report_services(fi, args):
-    services = fi.get_services()
-    upnp_services = [
-        service for service in services.values()
-        if "upnp" in service.serviceType
-    ]
-    tr64_services = [
-        service for service in services.values()
-        if "dslforum" in service.serviceType
-    ]
-    no_services_message = "no services available"
-    print(f"{' '*2}UPnP services:\n")
-    if not upnp_services:
-        print(f"{' '*4}{no_services_message}")
-    for service in sorted(upnp_services, key=lambda s: s.short_service_id):
-        print(f"{' '*4}{service.short_service_id}")
-    print("\n  TR64 services:\n")
-    if not tr64_services:
-        print(f"{' '*4}{no_services_message}")
-    for service in sorted(tr64_services, key=lambda s: s.short_service_id):
-        print(f"{' '*4}{service.short_service_id}")
 
 
 def main():
@@ -195,6 +223,7 @@ def main():
             "  status",
             "  services",
             "  actions",
+            "  complete",
             "",
             "use -h for help",
             "",
