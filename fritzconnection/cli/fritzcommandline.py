@@ -17,6 +17,7 @@ PROGRAM_DESCRIPTION = textwrap.dedent(f"""\
     command line interface for {PROGRAM_NAME}
     version: {_version_}
 """)
+SERVICE_HEADER_LINE = f"\n{' '*4}{'='*52}\n"
 
 
 class FritzInspection:
@@ -72,52 +73,72 @@ class FritzInspection:
         return service.actions
 
 
-def report_actions(fi, args):
-    services = fi.get_services()
-    service_name = args.service_name
-    try:
-        service = services[service_name]
-    except KeyError:
-        print(f"  Error: service '{service_name}' not available\n")
-        return
-    print(f"  Actions for Service '{service_name}':\n")
-    actions = service.actions.values()
-    if actions:
+def print_service(service, indent=2, with_actions=False, with_args=False):
+    postfix = ":\n" if with_actions else ""
+    name = f"{' '*indent}{service.short_service_id}{postfix}"
+    if postfix:
+        print(SERVICE_HEADER_LINE)
+    print(name)
+    if with_actions:
+        argument_textlen = service.get_max_argument_name_len() + 2
+        actions = service.actions.values()
         for action in actions:
-            print(f"{' '*4}{action.name}:")
-            if args.arguments:
-                for argument in action.arguments.values():
-                    name = argument.name
-                    d = "<-- out" if argument.direction == "out" else "-->  in"
-                    print(f"{' '*8}{name:35}{d}")
-            print()
-    else:
-        print("  Error: no actions available\n")
+            print(
+                action.get_report(
+                    indentation=indent + 2,
+                    argument_textlen=argument_textlen,
+                    report_arguments=with_args
+                )
+            )
+            if with_args:
+                print()
+        if not actions:
+            print("  Error: no actions available\n")
 
 
-def report_service(service, with_actions=False, with_arguments=False):
-    print(f"{' '*4}{service.short_service_id}")
-
-
-def report_services(fi, args):
+def print_services(fi, with_actions=False, with_args=False):
     upnp_services = fi.get_upnp_services().values()
     tr64_services = fi.get_tr64_services().values()
-    no_services_message = "no services available"
     for name, services in zip(("UPnP", "TR64"), (upnp_services, tr64_services)):
-        print(f"{' '*2}{name} services:\n")
+        print(f"\n{' '*2}{name} services:\n")
         if not services:
             print(f"{' '*4}{no_services_message}")
         for service in sorted(services, key=lambda s: s.short_service_id):
-            report_service(service)
+            print_service(
+                service,
+                indent=4,
+                with_actions=with_actions,
+                with_args=with_args,
+            )
 
-        print()
+
+def report_services(fi, args):
+    """
+    Entry point to report all services
+    """
+    print_services(fi)
+
+
+def report_service(fi, args):
+    """
+    Entry point to report the actions of a single service optional with
+    the action-arguments
+    """
+    services = fi.get_services()
+    try:
+        service = services[args.service_name]
+    except KeyError:
+        print("  Error: unknown service")
+    else:
+        print_service(service, with_actions=True, with_args=args.arguments)
 
 
 def report_complete_api(fi, args):
     """
-    Write the complete api to stdout.
+    Entry point to report the complete api. This can be lengthy, so a
+    redirect of stdout to a file could be a good idea.
     """
-
+    print_services(fi, with_actions=True, with_args=True)
 
 
 def get_common_arguments(parser):
@@ -182,7 +203,7 @@ def get_arguments():
     get_common_arguments(services)
     services.set_defaults(func=report_services)
 
-    actions = subparsers.add_parser("actions")
+    actions = subparsers.add_parser("service")
     get_common_arguments(actions)
     actions.add_argument(
         '-s', '--service-name',
@@ -196,7 +217,7 @@ def get_arguments():
         action='store_true',
         help='list arguments for actions.'
     )
-    actions.set_defaults(func=report_actions)
+    actions.set_defaults(func=report_service)
 
     complete = subparsers.add_parser("complete")
     get_common_arguments(complete)
@@ -221,8 +242,8 @@ def main():
             "Available subcommands are:",
             "",
             "  status",
+            "  service",
             "  services",
-            "  actions",
             "  complete",
             "",
             "use -h for help",

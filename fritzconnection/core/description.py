@@ -190,6 +190,12 @@ class Service:
                 self._state_variables[state_variable.name] = state_variable
         return self._state_variables
 
+    def get_max_argument_name_len(self) -> int:
+        """
+        Returns the length of the longest agrument-name from all actions.
+        """
+        return max(a.get_max_argument_name_len() for a in self.actions.values())
+
 
 @description
 class SpecVersion:
@@ -297,6 +303,17 @@ class Argument:
     direction: str = ""
     relatedStateVariable: str = ""
 
+    def get_report(self, indent=0, argument_textlen=0) -> str:
+        """
+        Returns a line describing the argument with name and direction.
+        """
+        if not argument_textlen:
+            argument_textlen = len(self.name) + 1
+        prefix = " " * indent
+        # direction is in|out
+        arrow = "-->  in" if len(self.direction) == 2 else "<-- out"
+        return f"{prefix}{self.name:<{argument_textlen}}{arrow}"
+
 
 @description
 class ActionList(ListItemIteratorMixin):
@@ -321,6 +338,34 @@ class Action:
             for argument in self.argumentList:
                 self._arguments[argument.name] = argument
         return self._arguments
+
+    def get_max_argument_name_len(self) -> int:
+        try:
+            return len(max(self.arguments.keys(), key=lambda x: len(x)))
+        except ValueError:
+            return 0
+
+    def get_report(
+        self,
+        indentation=0,
+        argument_indentation=0,
+        argument_textlen=0,
+        report_arguments=False
+    ) -> str:
+        """
+        Returns a multiline-string with the name of the action and a
+        list of all arguments, line by line.
+        """
+        if not argument_indentation:
+            argument_indentation = indentation + 2
+        indentation = " " * indentation
+        lines = [f"{indentation}{self.name}{':' if report_arguments else ''}"]
+        if report_arguments:
+            for argument in self.arguments.values():
+                lines.append(
+                    argument.get_report(argument_indentation, argument_textlen)
+                )
+        return "\n".join(lines)
 
 
 @description
