@@ -8,6 +8,9 @@ import textwrap
 import fritzconnection
 from fritzconnection.core.description import Service
 
+import logging
+# from fritzconnection.core.logger import activate_local_debug_mode
+
 _author_ = "Klaus Bremer"
 _version_ = fritzconnection.__version__
 
@@ -142,7 +145,9 @@ def report_complete_api(fi, args):
 
 
 def report_hosts(fi, args):
-    pass
+#     activate_local_debug_mode(handler=logging.FileHandler("debug.txt"))
+    result = fi.fc.call_action("Hosts1", "X_AVM-DE_GetHostListPath")
+    print(result)
 
 
 def get_common_arguments(parser):
@@ -162,14 +167,12 @@ def get_common_arguments(parser):
     )
     parser.add_argument(
         '-u', '--username',
-        nargs='?',
         dest='username',
         default=None,
         help='Fritzbox authentication username'
     )
     parser.add_argument(
         '-p', '--password',
-        nargs='?',
         dest='password',
         default=None,
         help='Fritzbox authentication password'

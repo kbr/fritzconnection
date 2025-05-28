@@ -294,7 +294,8 @@ class Soaper:
         )
         body = self.get_body(service, action_name, arguments)
         envelope = self.envelope.format(body=body).encode("utf-8")
-        url = f"{self.address}:{self.port}{service.controlURL}"
+#         url = f"{self.address}:{self.port}{service.controlURL}"
+        url = f"{self.address}{service.controlURL}"
         fritzlogger.debug(f"\n{url}")
         fritzlogger.debug(envelope)
         if self.session:

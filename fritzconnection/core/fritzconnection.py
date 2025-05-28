@@ -15,6 +15,7 @@ import requests
 
 from pathlib import Path
 from requests.auth import HTTPDigestAuth
+from typing import Any
 
 from fritzconnection.core.fritzdescription import FritzDescription
 from fritzconnection.core.fritzhttp import FritzHttp
@@ -152,7 +153,6 @@ class FritzConnection:
         self.ip_address = get_argument(address, FRITZ_ENV_IPADDRESS, FRITZ_IP_ADDRESS)
         self.user = get_argument(user, FRITZ_ENV_USERNAME, FRITZ_USERNAME)
         self.password = get_argument(password, FRITZ_ENV_PASSWORD, "")
-
         if use_tls:
             port = get_argument(port, FRITZ_ENV_PORT, FRITZ_TLS_PORT)
             protocol = "https://"
@@ -171,8 +171,8 @@ class FritzConnection:
         # and is required to change the default poolsize:
         session = requests.Session()
         session.verify = False
-        if password:
-            session.auth = HTTPDigestAuth(user, password)
+        if self.password:
+            session.auth = HTTPDigestAuth(self.user, self.password)
         adapter = requests.adapters.HTTPAdapter(
             pool_connections=pool_connections,
             pool_maxsize=pool_maxsize
@@ -181,7 +181,7 @@ class FritzConnection:
 
         # the Soaper is the interface for the TR64-Services (via soap)
         self.soaper = Soaper(
-            address, port, user, password,
+            self.address, self.port, self.user, self.password,
             timeout=timeout, session=session, redact_debug_log=redact_debug_log
         )
 
@@ -212,3 +212,30 @@ class FritzConnection:
         Returns system version if known.
         """
         return self.description.system_version
+
+    def call_action(
+        self,
+        service_name: str,
+        action_name: str,
+        *,
+        arguments: dict | None = None,
+        **kwargs
+    ) -> dict[str, Any]:
+        """
+        Makes a tr64-call by calling the action of the given service.
+        Both arguments `servive_name` and `action_name` are required.
+        `arguments` is an optional dictionary with arguments send to the
+        action. Arguments can also be provided as keyword-arguments. If
+        an arguments-dictionary and keyword-arguments are given, they
+        will get combined. A keyword argument with the same name as an
+        argument in the `arguments` dictionary will overwrite the value
+        in the dictionary.
+        """
+        arguments = arguments if arguments else {}
+        arguments.update(kwargs)
+        try:
+            service = self.description.services[service_name]
+        except KeyError:
+            raise FritzServiceError(f'unknown service: "{service_name}"')
+        return self.soaper.execute(service, action_name, arguments)
+
