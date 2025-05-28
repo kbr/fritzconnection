@@ -430,3 +430,32 @@ class TR64Description(DeviceDescriptionMixin):
     @property
     def ident(self):
         return self.systemVersion.ident
+
+
+# --------------------------------------------------------
+# helper classes for xml-content returned from lua-scripts
+
+class AttributeCollectorMixin:
+    """
+    Class that creates new attributes on attribute-access instead of
+    raising a KeyError.
+    """
+    def __getattr__(self, name):
+        setattr(self, name, None)
+        return getattr(self, name)
+
+
+@nodeloader
+class HostItem(AttributeCollectorMixin):
+    pass
+
+
+@description
+class HostItems(ListItemIteratorMixin):
+    list_items: list[HostItem] = field(default_factory=list)
+
+    @property
+    def Item(self):
+        item = HostItem()
+        self.list_items.append(item)
+        return item

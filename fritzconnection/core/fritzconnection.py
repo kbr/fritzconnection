@@ -178,6 +178,7 @@ class FritzConnection:
             pool_maxsize=pool_maxsize
         )
         session.mount(self.protocol, adapter)
+        self.session = session
 
         # the Soaper is the interface for the TR64-Services (via soap)
         self.soaper = Soaper(

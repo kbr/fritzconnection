@@ -4,12 +4,14 @@ command-line interface for fritzconnection.
 
 import argparse
 import textwrap
+import types
 
 import fritzconnection
-from fritzconnection.core.description import Service
+from fritzconnection.core.description import Service, HostItems
+from fritzconnection.core.utils import get_xml_root
 
 import logging
-# from fritzconnection.core.logger import activate_local_debug_mode
+from fritzconnection.core.logger import activate_local_debug_mode
 
 _author_ = "Klaus Bremer"
 _version_ = fritzconnection.__version__
@@ -147,7 +149,28 @@ def report_complete_api(fi, args):
 def report_hosts(fi, args):
 #     activate_local_debug_mode(handler=logging.FileHandler("debug.txt"))
     result = fi.fc.call_action("Hosts1", "X_AVM-DE_GetHostListPath")
-    print(result)
+    path = result["NewX_AVM-DE_HostListPath"]
+    url = fi.fc.address + path
+    root = get_xml_root(source=url, session=fi.fc.session)
+    hosts = HostItems()
+    hosts.load(root)
+
+    if args.active:
+        hosts = [host for host in hosts if host.Active == "1"]
+    max_hostname_len = 0
+    for host in hosts:
+        if host.IPAddress is None:
+            host.IPAddress = "-"
+        max_hostname_len = max(len(host.HostName), max_hostname_len)
+    max_hostname_len += 2
+    h_ip = "ip-address"
+    h_hn = "hostname"
+    header = f"\n     {h_ip:18}{h_hn:{max_hostname_len-4}}active\n"
+    print(header)
+    for i, host in enumerate(hosts, start=1):
+        line = f"{i:>2d}   {host.IPAddress:18}{host.HostName:{max_hostname_len}}"\
+               f"{host.Active:>2}"
+        print(line)
 
 
 def get_common_arguments(parser):
@@ -232,6 +255,12 @@ def get_arguments():
 
     hosts = subparsers.add_parser("hosts")
     get_common_arguments(hosts)
+    hosts.add_argument(
+        '-a', '--active',
+        dest='active',
+        action='store_true',
+        help='list only active hosts.'
+    )
     hosts.set_defaults(func=report_hosts)
 
     return parser.parse_args()
