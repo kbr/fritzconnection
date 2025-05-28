@@ -17,7 +17,7 @@ PROGRAM_DESCRIPTION = textwrap.dedent(f"""\
     command line interface for {PROGRAM_NAME}
     version: {_version_}
 """)
-SERVICE_HEADER_LINE = f"\n{' '*4}{'='*52}\n"
+SERVICE_HEADER_LINE = "=" * 54
 
 
 class FritzInspection:
@@ -77,7 +77,7 @@ def print_service(service, indent=2, with_actions=False, with_args=False):
     postfix = ":\n" if with_actions else ""
     name = f"{' '*indent}{service.short_service_id}{postfix}"
     if postfix:
-        print(SERVICE_HEADER_LINE)
+        print(f"\n{' '*indent}{SERVICE_HEADER_LINE}\n")
     print(name)
     if with_actions:
         argument_textlen = service.get_max_argument_name_len() + 2
@@ -139,6 +139,10 @@ def report_complete_api(fi, args):
     redirect of stdout to a file could be a good idea.
     """
     print_services(fi, with_actions=True, with_args=True)
+
+
+def report_hosts(fi, args):
+    pass
 
 
 def get_common_arguments(parser):
@@ -223,6 +227,10 @@ def get_arguments():
     get_common_arguments(complete)
     complete.set_defaults(func=report_complete_api)
 
+    hosts = subparsers.add_parser("hosts")
+    get_common_arguments(hosts)
+    hosts.set_defaults(func=report_hosts)
+
     return parser.parse_args()
 
 
@@ -242,9 +250,10 @@ def main():
             "Available subcommands are:",
             "",
             "  status",
-            "  service",
-            "  services",
-            "  complete",
+            "  service      list actions and arguments for a single service",
+            "  services     list all available services",
+            "  hosts        list the connected hosts",
+            "  complete     list the complete API (output could be huge)",
             "",
             "use -h for help",
             "",
