@@ -255,9 +255,8 @@ class Soaper:
         "ui4": int,
     }
 
-    def __init__(self, address, port, user, password, timeout=None, session=None, redact_debug_log=False):
+    def __init__(self, address, user, password, timeout=None, session=None, redact_debug_log=False):
         self.address = address
-        self.port = port
         self.user = user
         self.password = password
         self.timeout = timeout

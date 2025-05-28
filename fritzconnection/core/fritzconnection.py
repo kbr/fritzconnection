@@ -181,7 +181,7 @@ class FritzConnection:
 
         # the Soaper is the interface for the TR64-Services (via soap)
         self.soaper = Soaper(
-            self.address, self.port, self.user, self.password,
+            self.address, self.user, self.password,
             timeout=timeout, session=session, redact_debug_log=redact_debug_log
         )
 
