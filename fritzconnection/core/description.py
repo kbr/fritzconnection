@@ -123,6 +123,16 @@ class BoxInfo:
     def ident(self):
         return "-".join((self.HW, self.Version, self.Revision))
 
+    @property
+    def version(self):
+        try:
+            major, minor, patch = self.Version.split(".")
+        except ValueError:
+            version = ""
+        else:
+            version = f"{minor}.{patch}".lstrip("0")
+        return version
+
 
 @description
 class IconList(ListItemIteratorMixin):
@@ -223,7 +233,7 @@ class SystemVersion:
         version = f"{self.Minor}.{patch}"
         if len(version) == 1:
             # just the dot
-            version = "not available"
+            version = ""
         return version
 
     @property

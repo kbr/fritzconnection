@@ -7,8 +7,12 @@ import textwrap
 import types
 
 import fritzconnection
-from fritzconnection.core.description import Service, HostItems
+from fritzconnection.core.description import HostItems
+from fritzconnection.core.description import Service
+from fritzconnection.core.exceptions import FritzConnectionException
+from fritzconnection.core.exceptions import FritzServiceError
 from fritzconnection.core.utils import get_xml_root
+from fritzconnection.lib.fritzwan import FritzStatus
 
 import logging
 from fritzconnection.core.logger import activate_local_debug_mode
@@ -23,17 +27,22 @@ PROGRAM_DESCRIPTION = textwrap.dedent(f"""\
     version: {_version_}
 """)
 SERVICE_HEADER_LINE = "=" * 54
+DEFAULT_TIMEOUT = 3  # the device should respond at least after 3 seconds
 
 
 class FritzInspection:
 
     def __init__(self, args):
         self.args = args  # this is the namespace-object from argparse
+
+        # activate_local_debug_mode(handler=logging.FileHandler("debug.txt"))
+
         self.fc = fritzconnection.core.fritzconnection.FritzConnection(
             address=args.address,
             port= args.port,
             user=args.username,
             password=args.password,
+            timeout=DEFAULT_TIMEOUT,
             use_tls=args.encrypt,
             use_cache=not(args.ignore_cache),
             cache_directory=args.cache_directory,
@@ -98,7 +107,7 @@ def print_service(service, indent=2, with_actions=False, with_args=False):
             if with_args:
                 print()
         if not actions:
-            print("  Error: no actions available\n")
+            print_error_message("no actions available")
 
 
 def print_services(fi, with_actions=False, with_args=False):
@@ -117,6 +126,11 @@ def print_services(fi, with_actions=False, with_args=False):
             )
 
 
+def print_error_message(message):
+    """use same format for all error-messages"""
+    print(f"\n  Error: {message}\n")
+
+
 def report_services(fi, args):
     """
     Entry point to report all services
@@ -133,7 +147,7 @@ def report_service(fi, args):
     try:
         service = services[args.service_name]
     except KeyError:
-        print("  Error: unknown service")
+        print_error_message("unknown service")
     else:
         print_service(service, with_actions=True, with_args=args.arguments)
 
@@ -171,6 +185,22 @@ def report_hosts(fi, args):
         line = f"{i:>2d}   {host.IPAddress:18}{host.HostName:{max_hostname_len}}"\
                f"{host.Active:>2}"
         print(line)
+
+
+def report_status(fi, args):
+    """
+    Report the WAN status of a device
+    """
+    try:
+        fs = FritzStatus(fi.fc)
+    except FritzServiceError:
+        # call to 'Layer3Forwarding1' fails on non-WAN devices:
+        print_error_message("the device is not a WAN-device")
+    else:
+        result = fs.get_status_information()
+        max_key_len = len(max(result.keys(), key=len))
+        for key, value in result.items():
+            print(f"  {key:{max_key_len + 1}}:  {value}")
 
 
 def get_common_arguments(parser):
@@ -263,6 +293,10 @@ def get_arguments():
     )
     hosts.set_defaults(func=report_hosts)
 
+    status = subparsers.add_parser("status")
+    get_common_arguments(status)
+    status.set_defaults(func=report_status)
+
     return parser.parse_args()
 
 
@@ -270,18 +304,22 @@ def main():
     args = get_arguments()
 
     if hasattr(args, "func"):
-        fi = FritzInspection(args)
-        header = fi.get_header()
-        print(header)
-        args.func(fi, args)
-        print()
+        try:
+            fi = FritzInspection(args)
+        except FritzConnectionException:
+            print_error_message("unable to connect to the device")
+        else:
+            header = fi.get_header()
+            print(header)
+            args.func(fi, args)
+            print()
     else:
         msg = (
             "",
             "Please specify a subcommand to run.",
             "Available subcommands are:",
             "",
-            "  status",
+            "  status       list information about the current wan status",
             "  service      list actions and arguments for a single service",
             "  services     list all available services",
             "  hosts        list the connected hosts",

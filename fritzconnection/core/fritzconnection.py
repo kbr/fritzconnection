@@ -17,6 +17,7 @@ from pathlib import Path
 from requests.auth import HTTPDigestAuth
 from typing import Any
 
+from fritzconnection.core.exceptions import FritzServiceError
 from fritzconnection.core.fritzdescription import FritzDescription
 from fritzconnection.core.fritzhttp import FritzHttp
 from fritzconnection.core.soaper import Soaper
@@ -37,6 +38,9 @@ FRITZ_ENV_CACHEDIRECTORY = "FRITZ_CACHEDIRECTORY"
 # same defaults as used by requests:
 DEFAULT_POOL_CONNECTIONS = 10
 DEFAULT_POOL_MAXSIZE = 10
+
+import urllib3
+urllib3.disable_warnings()
 
 
 def get_argument(value, env_name, default):
@@ -190,6 +194,7 @@ class FritzConnection:
             ip_address=self.ip_address,
             uri=self.address,  # TODO: is uri a missleading name?
             session=session,
+            timeout=timeout,
             use_cache=use_cache,
             cache_directory=cache_directory
         )

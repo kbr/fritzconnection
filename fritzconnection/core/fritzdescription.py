@@ -37,7 +37,7 @@ class FritzDescription:
     All arguments are optional for testing
     """
 
-    def __init__(self, ip_address=None, uri=None, session=None,
+    def __init__(self, ip_address=None, uri=None, session=None, timeout=None,
                  use_cache=True, cache_directory=None):
         self.descriptions = {
             IGD_DEVICE: UPnPInternetGatewayDescription(),
@@ -46,9 +46,11 @@ class FritzDescription:
         self.ip_address = ip_address
         self.uri = uri
         self.session = session
+        self.timeout = timeout
         self.use_cache = use_cache
         self.cache_directory = cache_directory
         self._services = {}
+        self._boxinfo = None
 
     def __eq__(self, other):
         """
@@ -88,9 +90,26 @@ class FritzDescription:
         """
         return self.descriptions[TR64_DEVICE].device_name
 
+    def get_boxinfo(self, source=None):
+        if self._boxinfo is None:
+            if source is None:
+                # uri without the port because
+                # FRITZ_BOXINFO_FILE is provided via port 80
+                uri, _ = self.uri.rsplit(":", 1)
+                source = f"{uri}/{FRITZ_BOXINFO_FILE}"
+            root = get_xml_root(source, session=self.session)
+            self._boxinfo = BoxInfo()
+            self._boxinfo.load(root)
+        return self._boxinfo
+
     @property
     def system_version(self):
-        return self.descriptions[TR64_DEVICE].system_version
+        version = self.descriptions[TR64_DEVICE].system_version
+        if not version:
+            # try to get the version from boxinfo:
+            boxinfo = self.get_boxinfo()
+            version = boxinfo.version
+        return version
 
     def load_descriptions(self):
         if self.use_cache:
@@ -103,7 +122,9 @@ class FritzDescription:
             scpd_source = self.uri + service.SCPDURL
             scpd = SCPD()
             try:
-                root = get_xml_root(scpd_source, session=self.session)
+                root = get_xml_root(
+                    scpd_source, session=self.session, timeout=self.timeout
+                )
             except FritzResourceError:
                 # unable to read the requestet resource: skip this
                 pass
@@ -142,7 +163,9 @@ class FritzDescription:
         self.descriptions[TR64_DEVICE] = TR64Description()
         if igd_source:
             try:
-                root = get_xml_root(igd_source, session=self.session)
+                root = get_xml_root(
+                    igd_source, session=self.session, timeout=self.timeout
+                )
             except FritzResourceError:
                 # can happen if the device does not support
                 # an igd_file (i.e. it is not a WAN device)
@@ -151,7 +174,7 @@ class FritzDescription:
                 self.descriptions[IGD_DEVICE].load(root)
         if tr64_source:
             # it is an error if this source is not available
-            root = get_xml_root(tr64_source, session=self.session)
+            root = get_xml_root(tr64_source, session=self.session, timeout=self.timeout)
             self.descriptions[TR64_DEVICE].load(root)
         # after loading the services load the scpd-data,
         # but don't do this if self.uri is None
@@ -190,16 +213,9 @@ class FritzDescription:
         Returns True if the description data are valid, otherwise
         returns False.
         """
-        if source is None:
-            # uri without the port because
-            # FRITZ_BOXINFO_FILE is provided via port 80
-            uri, _ = self.uri.rsplit(":", 1)
-            source = f"{uri}/{FRITZ_BOXINFO_FILE}"
-        root = get_xml_root(source, session=self.session)
-        boxinfo = BoxInfo()
-        boxinfo.load(root)
         # compare the loaded identification with the separate
         # loaded box-information. The cache is valid if both are the same.
+        boxinfo = self.get_boxinfo(source=source)
         return boxinfo.ident == self.descriptions[TR64_DEVICE].ident
 
     def _get_cache_path(self, create_cache_dir=True) -> pathlib.Path:
