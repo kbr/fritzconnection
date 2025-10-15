@@ -204,7 +204,7 @@ def redact_response(redact: bool, input: str):
     redacted = re.sub(r"(<{0}>)(.*)(</{0}>)".format(ext_ip_keys), r"\1******\4", redacted)
 
     # redact wifi passwords
-    wifi_pwd_keys = 'New(WEPKey\d+|PreSharedKey|KeyPassphrase)'
+    wifi_pwd_keys = 'New(WEPKey\\d+|PreSharedKey|KeyPassphrase)'
     redacted = re.sub(r"(<{0}>)(.*)(</{0}>)".format(wifi_pwd_keys), r"\1******\4", redacted)
     return redacted
 
