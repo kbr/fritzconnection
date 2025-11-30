@@ -434,13 +434,13 @@ def test_redact_debug_log_wifi_passwords():
 
 def test_header_empty():
     """This case covers the situation where there is nothing to add into the header block."""
-    soaper = Soaper("1.1.1.1", 12345, "xxxunam", "xxxpwd")
+    soaper = Soaper("192.0.2.33", 12345, "xxxunam", "xxxpwd")
     actual_header = soaper.get_header(multi_factor_token = None)
     assert actual_header == ""
 
 def test_header_token():
     """This case covers the situation where there is nothing to add into the header block."""
-    soaper = Soaper("1.1.1.1", 12345, "xxxunam", "xxxpwd")
+    soaper = Soaper("192.0.2.33", 12345, "xxxunam", "xxxpwd")
     actual_header = soaper.get_header(multi_factor_token = "abcdef<>\"\"")
     expected_header = "<s:Header><avm:token xmlns:avm=\"avm.de\" s:mustUnderstand=\"1\">abcdef&lt;&gt;&quot;&quot;</avm:token></s:Header>"
     assert actual_header == expected_header
