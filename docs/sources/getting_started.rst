@@ -286,12 +286,14 @@ Here just one argument is listed for the in-direction. That means that this argu
 
 This call will deactivate the network (beware: don't deactivate a wireless network by not having a backup cable connection). As there are no arguments listed for the out-direction, `call_action` will return an empty dictionary.
 
+In some cases an action may require that a multi-factor token be provided. You can find you more about this in the official `documentation https://fritz.support/resources/TR-064_Authentication.pdf`_. To supply a multi-factor token for an action, use the keyword argument `multi_factor_token`.
+
 In some cases it can happen that there is a dash in an argument-name. Then this argument-name is not usable as a keyword-parameter. Therefore the `call_action` method also accepts a keyword-only argument with the name `arguments` that must be a dictionary with all input-parameters as key-value pairs (*new in 1.0*): ::
 
     arguments = {'NewEnable': False}
     fc.call_action('WLANConfiguration1', 'SetEnable', arguments=arguments)
 
-If `arguments` is given, the values of all further keyword-parameters are ignored; you can use just one way to provide arguments.
+If `arguments` or `multi_factor_token` are supplied, the values of all further keyword-parameters are ignored; you can use just one way to provide arguments.
 
 .. note ::
     Prior to version 1.3 booleans must be given as numeric values 1 and 0. Since version 1.3 `True` and `False` can get used.

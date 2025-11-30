@@ -226,7 +226,7 @@ class Soaper:
         """
         <?xml version="1.0" encoding="utf-8"?>
         <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-                    xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">{body}
+                    xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">{header}{body}
         </s:Envelope>
         """,
     ).replace('/"xmlns:', '/" xmlns:')
@@ -240,6 +240,16 @@ class Soaper:
         </u:{action_name}>
         </s:Body>
         """,
+    )
+
+    header_template = re.sub(
+        r"\s +",
+        "",
+        """
+        <s:Header>
+        {headers}
+        </s:Header>
+        """
     )
 
     argument_template = "<{name}>{value}</{name}>"
@@ -272,11 +282,37 @@ class Soaper:
             arguments=arguments,
         )
 
-    def execute(self, service, action_name, arguments):
+    def get_header(self, multi_factor_token):
+        """Returns the header by template substitution.
+
+        If the supplied arguments mean that here are no header entries required then
+        this function will return the empty string.
+        """
+
+        headers = []
+
+        if multi_factor_token:
+            headers.append("<avm:token xmlns:avm=\"avm.de\" s:mustUnderstand=\"1\">{token}</avm:token>".format(
+                token = get_html_safe_value(multi_factor_token),
+            ))
+
+        if headers:
+            return self.header_template.format(headers="".join(headers))
+
+        return ""
+
+    def execute(self, service, action_name, arguments, *, multi_factor_token):
         """
         Builds the soap request and returns the response as dictionary.
         Numeric and boolean values are converted from strings to Python
         datatypes.
+
+        The argument 'multi_factor_token' is a multi-factor authentication
+        token required for some API calls and is an optional argument.
+        See [here](https://fritz.support/resources/TR-064_Authentication.pdf)
+        for details about this. If supplied, additional SOAP header data will
+        form part of the SOAP envelope sent to the router. The expected type
+        of this field is `str` or `None`.
         """
 
         def handle_response(response):
@@ -293,7 +329,8 @@ class Soaper:
             self.argument_template.format(name=k, value=v) for k, v in arguments.items()
         )
         body = self.get_body(service, action_name, arguments)
-        envelope = self.envelope.format(body=body).encode("utf-8")
+        header = self.get_header(multi_factor_token)
+        envelope = self.envelope.format(body=body, header=header).encode("utf-8")
         url = f"{self.address}:{self.port}{service.controlURL}"
         fritzlogger.debug(f"\n{url}")
         fritzlogger.debug(envelope)
