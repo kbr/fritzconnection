@@ -429,15 +429,23 @@ class FritzConnection:
         service_name: str,
         action_name: str,
         *,
+        multi_factor_token: str | None = None,
         arguments: dict | None = None,
         **kwargs
     ) -> dict[str, Any]:
         """
         Executes the given action of the given service. Both parameters
-        are required. Arguments are optional and can be provided as a
-        dictionary given to 'arguments' or as separate keyword
-        parameters. If 'arguments' is given additional
-        keyword-parameters as further arguments are ignored.
+        are required.
+
+        The argument 'multi_factor_token' is a multi-factor authentication
+        token required for some API calls and is an optional argument.
+        See [here](https://fritz.support/resources/TR-064_Authentication.pdf)
+        for details about this.
+
+        Arguments are optional and can be provided as a dictionary given
+        to 'arguments' or as separate keyword parameters. If 'arguments'
+        or 'multi_factor_token' are given, additional keyword-parameters as
+        further arguments are ignored.
 
         The argument values can be of type *str*, *int* or *bool*.
         (Note: *bool* is provided since 1.3. In former versions booleans
@@ -456,14 +464,14 @@ class FritzConnection:
         values are converted from strings to Python datatypes.
         """
         arguments = arguments if arguments else dict()
-        if not arguments:
+        if not arguments and not multi_factor_token:
             arguments.update(kwargs)
         service_name = self.normalize_name(service_name)
         try:
             service = self.device_manager.services[service_name]
         except KeyError:
             raise FritzServiceError(f'unknown service: "{service_name}"')
-        return self.soaper.execute(service, action_name, arguments)
+        return self.soaper.execute(service, action_name, arguments, multi_factor_token = multi_factor_token)
 
     def call_http(
         self,
