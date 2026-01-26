@@ -56,7 +56,7 @@ class FritzHttp:
     @property
     def router_url(self):
         """Returns the combination of router address and port."""
-        return f"{self.fc.address}:{self.remote_port}"
+        return f"{self.fc.protocol}{self.fc.ip_address}:{self.remote_port}"
 
     @property
     def login_url(self):
