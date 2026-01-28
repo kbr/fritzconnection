@@ -381,7 +381,7 @@ The command "getswitchlist" returns a dictionary as result. The content is a str
     # create a list of HomeAutomationDevice instances:
     devices = [d for d in fh.get_homeautomation_devices() if d.is_switchable]
     for device in devices:
-        temperatur = device.TemperatureCelsius * 0.1
+        temperature = device.TemperatureCelsius * 0.1
         print(temperature)
 
 This example makes use of the fritzhomeauto library-module providing the `FritzHomeAutomation` and `HomeAutomationDevice` classes.

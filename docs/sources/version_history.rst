@@ -3,6 +3,13 @@
 Version History
 ===============
 
+1.15.1 - 2026-01-26
+-------------------
+
+- bugfix: remove syntax-warning from error in redaction regex. (#244, #249)
+- bugfix: corrected typo in documentation (#252)
+- documentation: reset colors to furo-default for better readability in dark mode
+
 
 1.15.0 - 2025-05-17
 -------------------

@@ -43,7 +43,7 @@ def mypy(session):
 @nox.session
 def sphinx(session):
     session.install("-e", ".")
-    session.install("pip-tools==7.3.0")
+    session.install("pip-tools==7.5.2")
     session.run(
         "pip-compile",
         "--strip-extras",

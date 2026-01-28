@@ -99,17 +99,17 @@ html_theme = 'furo'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-html_theme_options = {
-    "light_css_variables": {
-        "admonition-font-size": "0.9375em",
-        "color-link": "#005493",
-        "color-link-underline": "#005493",
-        "color-link--hover": "#941100",
-        "color-link-underline--hover": "#941100",
-        "color-sidebar-link-text--top-level": "#941100",
-        "color-toc-item-text--active": "#941100",
-    }
-}
+# html_theme_options = {
+#     "light_css_variables": {
+#         "admonition-font-size": "0.9375em",
+#         "color-link": "#005493",
+#         "color-link-underline": "#005493",
+#         "color-link--hover": "#941100",
+#         "color-link-underline--hover": "#941100",
+#         "color-sidebar-link-text--top-level": "#941100",
+#         "color-toc-item-text--active": "#941100",
+#     }
+# }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
