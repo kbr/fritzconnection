@@ -5,7 +5,7 @@ h1 {
 }
 
 h2 {
-    border-top: 2px solid #EBEBEB;
+    border-top: 1px solid #EBEBEB;
     border-radius: 0;
     margin-top: 3.0rem;
     margin-bottom: 1.0rem;
@@ -32,7 +32,7 @@ h3 {
 }
 
 code.docutils span {
-    color: #941100;
+/*     color: #941100; */
     font-weight: 800;
 }
 

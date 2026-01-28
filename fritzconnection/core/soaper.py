@@ -200,11 +200,11 @@ def redact_response(redact: bool, input: str):
     redacted = re.sub(r"([\s\[\(])\d{5,}([\s\]\)])", r"\1******\2", input)
 
     # redact external ip addresses
-    ext_ip_keys = 'New(ExternalIPAddress|ExternalIPv6Address)'
+    ext_ip_keys = r'New(ExternalIPAddress|ExternalIPv6Address)'
     redacted = re.sub(r"(<{0}>)(.*)(</{0}>)".format(ext_ip_keys), r"\1******\4", redacted)
 
     # redact wifi passwords
-    wifi_pwd_keys = 'New(WEPKey\d+|PreSharedKey|KeyPassphrase)'
+    wifi_pwd_keys = r'New(WEPKey\d+|PreSharedKey|KeyPassphrase)'
     redacted = re.sub(r"(<{0}>)(.*)(</{0}>)".format(wifi_pwd_keys), r"\1******\4", redacted)
     return redacted
 
