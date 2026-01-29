@@ -1,4 +1,5 @@
 import datetime
+import logging
 import types
 from xml.etree import ElementTree as etree
 
@@ -21,6 +22,7 @@ from ..core.exceptions import (
     FritzArgumentCharacterError,
     FritzInternalError,
 )
+from ..core.logger import fritzlogger
 
 from ..core.soaper import (
     boolean_convert,
@@ -287,8 +289,22 @@ def test_get_converted_value(data_type, value, expected_value):
 def test_get_converted_value_fails(data_type, value):
     with pytest.raises(ValueError):
         get_converted_value(data_type, value)
+        
+        
+# for the next redact tests a fixture is needed:
+# readaction should only run the regex code in case the logging state
+# is DEBUG and the redact flag is set. So for the next tests to run 
+# the fritzlogger must set to DEBUG
 
-def test_redact_debug_log_phone_numbers():
+@pytest.fixture
+def run_in_debug_mode():
+    stored_level = fritzlogger.level
+    fritzlogger.setLevel(logging.DEBUG)
+    yield
+    fritzlogger.setLevel(stored_level)
+    
+
+def test_redact_debug_log_phone_numbers(run_in_debug_mode):
     response = """
     <?xml version="1.0"?>
     <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
@@ -317,7 +333,7 @@ def test_redact_debug_log_phone_numbers():
 
     result = redact_response(False, response)
     assert result == response
-
+    
     result = redact_response(True, response)
     assert result == """
     <?xml version="1.0"?>
@@ -345,7 +361,7 @@ def test_redact_debug_log_phone_numbers():
     </s:Envelope>
     """
 
-def test_redact_debug_log_external_ip_addresses():
+def test_redact_debug_log_external_ip_addresses(run_in_debug_mode):
     response = """
     <?xml version="1.0" encoding="utf-8"?>
     <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
@@ -394,7 +410,7 @@ def test_redact_debug_log_external_ip_addresses():
     </s:Envelope>
     """
 
-def test_redact_debug_log_wifi_passwords():
+def test_redact_debug_log_wifi_passwords(run_in_debug_mode):
     response = """
     <?xml version="1.0"?>
     <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
