@@ -9,6 +9,9 @@ PYTHON_DEVELOPMENT_VERSION = "3.13"
 def test(session):
     session.install("-e", ".")
     session.install("requests", "pytest")
+    # for *session.posargs:
+    # provide the files to test after a double dash, like
+    # nox -s test -- path/to/testfile
     session.run("pytest", "-m", "not routertest", *session.posargs)
 
 
@@ -19,8 +22,15 @@ def test_versions(session):
     session.run("pytest", "-m", "not routertest", *session.posargs)
 
 
-@nox.session(python=PYTHON_TEST_VERSIONS)
+@nox.session(python=PYTHON_DEVELOPMENT_VERSION)
 def test_router(session):
+    session.install("-e", ".")
+    session.install("requests", "pytest")
+    session.run("pytest", "-m", "routertest")
+
+
+@nox.session(python=PYTHON_TEST_VERSIONS)
+def test_router_versions(session):
     session.install("-e", ".")
     session.install("requests", "pytest")
     session.run("pytest", "-m", "routertest")
