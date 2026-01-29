@@ -256,6 +256,19 @@ class FritzConnection:
                 self.soaper.session = self.session
                 self.description.session = self.session
 
+    @staticmethod
+    def _get_normalized_service_name(name):
+        """
+        Returns the normalized service name, i.e. `WLANConfiguration` or
+        `WLANConfiguration:1` will get converted to `WLANConfiguration1`.
+        """
+        if ":" in name:
+            name, number = name.split(":", 1)
+            name = f"{name}{number}"
+        elif name[-1] not in string.digits:
+            name = f"{name}1"
+        return name
+
     @property
     def device_name(self) -> str:
         """
@@ -313,12 +326,12 @@ class FritzConnection:
         Invalid service names will raise a ServiceError and invalid
         action names will raise an ActionError.
 
-        Legathy-feature: If the service_name does not end with a
-        number-character (like "1"), a "1" gets added by default. If the
-        service_name ends with a colon and a number, the colon gets
-        removed. So i.e. "WLANConfiguration" expands to
-        "WLANConfiguration1" and "WLANConfiguration:2" converts to
-        "WLANConfiguration2". Newer code should avoid this calling style.
+        Legathy-feature: If the service_name does not end with a digit
+        (like "1"), a "1" gets added by default. If the service_name
+        ends with a colon and a digit, the colon gets removed. So i.e.
+        "WLANConfiguration" expands to "WLANConfiguration1" and
+        "WLANConfiguration:2" converts to "WLANConfiguration2".
+        Newer code should avoid this calling style.
         
         The method returns a dictionary with argument-names as keys and
         the corresponding information as values. Numeric and boolean
@@ -333,16 +346,39 @@ class FritzConnection:
             raise FritzServiceError(f'unknown service: "{service_name}"')
         return self.soaper.execute(service, action_name, arguments)
     
-    @staticmethod
-    def _get_normalized_service_name(name):
+    def call_http(
+        self,
+        command: str,
+        identifier: str | None = None,
+        **kwargs
+    ) -> dict[str, str]:
         """
-        Returns the normalized service name, i.e. `WLANConfiguration` and
-        `WLANConfiguration:1` will get converted to `WLANConfiguration1`.
+        Executes the given command according to the AHA-HTTP-Interface.
+        The `identifier` represents the `ain` of a target-device.
+        `kwargs` can hold additional parameters depending on the device.
+
+        The method returns a dictionary of strings with three items: the
+        `content-type`, the `encoding` and the corresponding result (the
+        `content`). The content-type is typically "text/plain" or
+        "text/xml", the encoding, typically "utf-8".
+
+        The method will raise a FritzAuthorizationError in case of
+        missing credentials. In case of an unknown command or identifier
+        a FritzHttpInterfaceError will get raised.
+
+        .. versionadded:: 1.12
         """
-        if ":" in name:
-            name, number = name.split(":", 1)
-            name = f"{name}{number}"
-        elif name[-1] not in string.digits:
-            name = f"{name}1"
-        return name
-        
+        header, content = self.http_interface.execute(
+            command,
+            identifier,
+            **kwargs
+        )
+        content_type, charset = [item.strip() for item in header.split(";")]
+        # extract the encoding from the charset-information
+        encoding = charset.split("=")[-1].strip()
+        return {
+            "content-type": content_type,
+            "encoding": encoding,
+            "content": content
+        }
+      
