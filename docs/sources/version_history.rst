@@ -9,6 +9,7 @@ Version History
 
 - new commandline interface replacing multiple tools by a single console script `fritzconnection` with subcommands.
 - new internal description parser 
+- minimal Python requirement now >= 3.10
 
 - **removed**:
 

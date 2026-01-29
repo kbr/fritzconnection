@@ -48,7 +48,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     keywords="AVM FRITZ!Box fritzbox fritz TR-064 AHA-HTTP homeautomation",
-    python_requires=">= 3.7",
+    python_requires=">= 3.10",
     install_requires=["requests>=2.22.0",],
     extras_require={
         "qr": ["segno>=1.4.1",],
