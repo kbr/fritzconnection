@@ -261,6 +261,16 @@ class FritzConnection:
         Returns the name of the device.
         """
         return self.description.device_name
+        
+    @property
+    def modelname(self):
+        """
+        Returns the name of the device.
+        
+        .. version-deprecated:: 2.0
+           Use :py:func:`device_name` instead.
+        """
+        return self.device_name
 
     @property
     def system_version(self) -> str:
