@@ -64,7 +64,7 @@ class FritzDescription:
         )
 
     @property
-    def upnp_services(self):
+    def igd_services(self):
         return self.descriptions[IGD_DEVICE].services
 
     @property
