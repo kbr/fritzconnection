@@ -18,6 +18,7 @@ from pathlib import Path
 from requests.auth import HTTPDigestAuth
 from typing import Any
 
+from fritzconnection import __version__
 from fritzconnection.core.exceptions import FritzServiceError
 from fritzconnection.core.fritzdescription import FritzDescription
 from fritzconnection.core.fritzhttp import FritzHttp
@@ -28,6 +29,7 @@ FRITZ_IP_ADDRESS = "169.254.1.1"
 FRITZ_TCP_PORT = 49000
 FRITZ_TLS_PORT = 49443
 FRITZ_USERNAME = "dslf-config"  # for Fritz!OS < 7.24
+FRITZ_USERNAME_REQUIRED_VERSION = 7.24
 
 FRITZ_ENV_IPADDRESS = "FRITZ_IPADDRESS"
 FRITZ_ENV_PORT = "FRITZ_PORT"
@@ -210,6 +212,48 @@ class FritzConnection:
         #self._reset_user(user, password)
         # provide the http-interface
         self.http_interface = FritzHttp(self)
+        
+    def __str__(self):
+        return (
+            f"{self.__class__.__name__} [version {__version__}]\n"
+            f"Device: {self.device_name}\n"
+            f"System: {self.system_version}"
+        )
+
+    def _reset_user(self, user, password):
+        """
+        For Fritz!OS >= 7.24: if a password is given and the username is
+        the historic FRITZ_USERNAME, then check for the last logged-in
+        username and use this username for the soaper. Also recreate the
+        session used by the soaper and the device_manager.
+
+        This may not guarantee a valid user/password combination, but is
+        the way AVM recommends setting the required username in case a
+        username is not provided.
+        """
+        try:
+            sys_version = float(self.system_version)
+        except (ValueError, TypeError):
+            # version not available: don't do anything
+            return
+        if (sys_version >= FRITZ_USERNAME_REQUIRED_VERSION
+            and user == FRITZ_USERNAME
+            and password
+        ):
+            last_user = None
+            response = self.call_action(
+                'LANConfigSecurity1', 'X_AVM-DE_GetUserList'
+            )
+            root = ElementTree.fromstring(response['NewX_AVM-DE_UserList'])
+            for node in root:
+                if node.tag == 'Username' and node.attrib['last_user'] == '1':
+                    last_user = node.text
+                    break
+            if last_user is not None:
+                self.session.auth = HTTPDigestAuth(last_user, password)
+                self.soaper.user = last_user
+                self.soaper.session = self.session
+                self.description.session = self.session
 
     @property
     def device_name(self) -> str:
