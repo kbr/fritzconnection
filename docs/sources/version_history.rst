@@ -3,6 +3,18 @@
 Version History
 ===============
 
+
+2.0 - 2026-mm-dd
+----------------
+
+- new commandline interface replacing multiple tools by a single console script `fritzconnection` with subcommands.
+- new internal description parser 
+
+- **removed**:
+
+  - store cache as json, deprecated in 1.14.0
+
+
 1.15.1 - 2026-01-26
 -------------------
 
