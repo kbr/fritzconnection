@@ -291,10 +291,10 @@ def test_get_converted_value_fails(data_type, value):
         get_converted_value(data_type, value)
         
         
-# for the next redact tests a fixture is needed:
+# for the next redact-tests a fixture is needed:
 # readaction should only run the regex code in case the logging state
 # is DEBUG and the redact flag is set. So for the next tests to run 
-# the fritzlogger must set to DEBUG
+# properly the fritzlogger must be set to DEBUG
 
 @pytest.fixture
 def run_in_debug_mode():
