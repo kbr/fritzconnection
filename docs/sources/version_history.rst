@@ -7,13 +7,24 @@ Version History
 2.0 - 2026-mm-dd
 ----------------
 
+This version has major changes of some older internals. Depending on the usecases there can be breaking changes:
+
+- minimal Python requirement now >= 3.10
 - new commandline interface replacing multiple tools by a single console script `fritzconnection` with subcommands.
 - new internal description parser 
 - minimal Python requirement now >= 3.10
 
-- **removed**:
+- FritzConnection:
 
-  - store cache as json, deprecated in 1.14.0
+  - argument `use_cache` now defaults to `True`
+  - new attribute `device_name` to replace `modelname`
+  - attribute `modelname` is deprectated
+
+  - **removed**:
+
+    - store cache as json, deprecated in 1.14.0
+    - argument `cache_format` removed
+    - attribute `device_description` removed. Use the attributes `device_name` and `system_version` instead.
 
 
 1.15.1 - 2026-01-26
