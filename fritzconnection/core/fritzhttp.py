@@ -180,3 +180,18 @@ class FritzHttp:
             root = etree.fromstring(response.text)
             sid_node = root.find("SID")
             return sid_node.text
+
+    # -----------------------------------------
+    # experimental feature
+    def get_cpu_temperatures(self) -> list[int]:
+        """
+        Returns a list of the last measured cpu-temperatures.
+        The most recent entry is the first one in the list.
+        NOTE: this method is experimental as it is based on a
+        non-public API. 
+        (it may get removed without deprecation warning.)
+        """
+        url = f"{self.router_url}/query.lua"
+        payload = {"CPUTEMP": "cpu:status/StatTemperature"}
+        response = self.call_url(url, payload)
+        return list(map(int, response.json()["CPUTEMP"].split(",")))

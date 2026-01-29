@@ -381,4 +381,19 @@ class FritzConnection:
             "encoding": encoding,
             "content": content
         }
+
+    def get_cpu_temperatures(self) -> list[int]:
+        """
+        Returns a list of the last measured cpu-temperatures.
+        The most recent entry is the first one in the list.
+        NOTE: this function call is experimental as it is based on a
+        non-public API. It may work or not and may get removed if the
+        API changes (even without a deprecation warning).
+        """
+        return self.http_interface.get_cpu_temperatures()
       
+    def reboot(self) -> None:
+        """
+        Reboot the system.
+        """
+        self.call_action("DeviceConfig1", "Reboot")
