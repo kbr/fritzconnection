@@ -19,6 +19,7 @@ from requests.auth import HTTPDigestAuth
 from typing import Any
 
 from fritzconnection import __version__
+from fritzconnection.core.description import Service
 from fritzconnection.core.exceptions import FritzServiceError
 from fritzconnection.core.fritzdescription import FritzDescription
 from fritzconnection.core.fritzhttp import FritzHttp
@@ -278,6 +279,14 @@ class FritzConnection:
         Returns system version if known.
         """
         return self.description.system_version
+        
+    @property
+    def services(self) -> dict[str, Service]:
+        """
+        Returns a dictionary with the available services. The keys are
+        the service-names and the values are the service-instances.
+        """
+        return self.description.services
 
     def call_action(
         self,
