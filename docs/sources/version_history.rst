@@ -11,6 +11,11 @@ Version History
 - new internal description parser 
 - minimal Python requirement now >= 3.10
 
+- FritzConnection:
+
+  - argument `use_cache` now defaults to `True`
+  - argument `cache_format` removed
+
 - **removed**:
 
   - store cache as json, deprecated in 1.14.0

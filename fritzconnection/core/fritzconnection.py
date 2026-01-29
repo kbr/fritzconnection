@@ -137,6 +137,10 @@ class FritzConnection:
     data (i.e. phone numbers) in debug outputs. Default is `False`.
 
     .. versionadded:: 1.15
+    
+    `use_cache` now defaults to `True`. `cache_format` has been removed.
+    
+    .. versionadded:: 2.0
 
     """
 
