@@ -8,6 +8,7 @@ typography in the xml-sources.
 
 from __future__ import annotations
 
+import datetime
 import xml.etree.ElementTree as ET
 
 from dataclasses import dataclass
@@ -469,3 +470,29 @@ class HostItems(ListItemIteratorMixin):
         item = HostItem()
         self.list_items.append(item)
         return item
+
+
+# --------------------------------------------------------
+# helper classes for xml-content describing the device-log
+
+@description
+class Event:
+    id: str = ""
+    group: str = ""
+    date: str = ""
+    time: str = ""
+    msg: str = ""
+
+    @property
+    def datetime(self) -> datetime.datetime:
+        return datetime.datetime.strptime(f"{self.date}{self.time}", "%d.%m.%y%H:%M:%S")
+
+@description
+class DeviceLog(ListItemIteratorMixin):
+    list_items: list[Event] = field(default_factory=list)
+    
+    @property
+    def Event(self) -> Event:
+        event = Event()
+        self.list_items.append(event)
+        return event

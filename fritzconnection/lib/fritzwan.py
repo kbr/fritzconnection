@@ -5,39 +5,15 @@ Access to the WAN information and settings of the router.
 from fritzconnection.core.fritzconnection import FritzConnection
 
 
-class FritzWAN:
+class BaseWAN:
     """
     Common attributes and methods for all FritzBox routers with
     integrated WAN capabilities, regardless of the connection type (dsl,
     cable, fibre, lte).
-
-    `fc`: instance of FritzConnection
-    `service_prefix, connection_service, service_postfix` are the layer3
-     information parts of the default connection service (as strings).
     """
-
-    def __init__(self,
-        fc: FritzConnection,
-        service_prefix: str,
-        connection_service: str,
-        service_postfix: str,
-        *args, **kwargs
-    ):
+    
+    def __init__(self, fc):
         self.fc = fc
-        self.service_prefix = service_prefix
-        self.connection_service = connection_service
-        self.service_postfix = service_postfix
-        self.connection_service_name = connection_service + service_postfix
-        self.args = args
-        self.kwargs = kwargs
-
-    @property
-    def modelname(self) -> str:
-        """
-        The device modelname.
-        Keep this property for backward compatibility.
-        """
-        return self.fc.device_name
 
     @property
     def is_linked(self) -> bool:
@@ -153,7 +129,17 @@ class DSLCableCommonMixin:
     are connection-specific, but the action names are identic as well as
     the return values.
     """
-
+    
+    def __init__(self, fc, prefix, service, postfix):
+        # idealwise a mixin should not have an __init__ method.
+        # however, this mixin is not a general purpose mixin and introduce
+        # an instance attribute `connection_service_name`.
+        super().__init__(fc)
+        self.prefix = prefix
+        self.service = service
+        self.postfix = postfix
+        self.connection_service_name = f"{service}{postfix}"
+    
     @property
     def connection_uptime(self) -> int:
         """
@@ -184,31 +170,36 @@ class DSLCableCommonMixin:
         return status_information
 
 
-class FritzStatus:
+class DSLConnection:
+
+    def __str__(self):
+        return f"WAN: DSL connection\n{self.fc}"
+
+
+class CableConnection:
+
+    def __str__(self):
+        return f"WAN: Cable connection\n{self.fc}"
+
+
+class FritzWAN:
     """
-    Class returning an instance of a matching status class for the
-    router connection type.
+    Class returning an instance matching the router connection type.
     """
 
-    def __new__(cls, fc=None, *args, **kwargs):
+    def __new__(cls, fc=None, **kwargs):
         # Adapting the class to the router connection-type would normalwise
         # be a usecase for a metaclass or class-decorator.
         # But in this case the information about the connection-type is provided
         # by the router at runtime.
         if fc is None:
-            fc = FritzConnection(*args, **kwargs)
+            fc = FritzConnection(**kwargs)
         # this will raise a FritzServiceError if the device is not a WAN-device:
         result = fc.call_action("Layer3Forwarding1", "GetDefaultConnectionService")
-        service_prefix, connection_service, service_postfix =\
-            result["NewDefaultConnectionService"].split(".")
-        if connection_service == "WANPPPConnection":
-            # dsl-connection:
-            bases = (DSLCableCommonMixin, FritzWAN)
-        elif connection_service == "WANIPConnection":
-            # cable-connection:
-            bases = (DSLCableCommonMixin, FritzWAN)
-        else:
-            bases = (FritzWAN,)
-        return type(cls.__name__, bases, {})(
-            fc, service_prefix, connection_service, service_postfix, *args, **kwargs
-        )
+        prefix, service, postfix = result["NewDefaultConnectionService"].split(".")
+        bases = {
+            "WANPPPConnection": (DSLConnection, DSLCableCommonMixin, BaseWAN),
+            "WANIPConnection": (CableConnection, DSLCableCommonMixin, BaseWAN),
+        }.get(service, (BaseWAN,))
+        connection_service_name = f"{service}{postfix}"
+        return type(cls.__name__, bases, {})(fc, prefix, service, postfix)

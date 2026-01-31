@@ -7,17 +7,16 @@ Version History
 2.0 - 2026-mm-dd
 ----------------
 
-This version has major changes of some older internals. Depending on the usecases there can be breaking changes:
+This version has some major rewrites of the core-modules. The library-API is unchanged, but there  can still be breaking changes:
 
-- minimal Python requirement now >= 3.10
-- new commandline interface replacing multiple tools by a single console script `fritzconnection` with subcommands.
-- new internal description parser 
-- minimal Python requirement now >= 3.10
+- required Python version >= 3.10
 
 - FritzConnection:
 
   - argument `use_cache` now defaults to `True`
-  - new attribute `device_name` to replace `modelname`
+  - new property `has_wan_support`
+  - new property `has_mesh_support`
+  - new property `device_name` to replace `modelname`
   - attribute `modelname` is deprectated
 
   - **removed**:
@@ -25,6 +24,21 @@ This version has major changes of some older internals. Depending on the usecase
     - store cache as json, deprecated in 1.14.0
     - argument `cache_format` removed
     - attribute `device_description` removed. Use the attributes `device_name` and `system_version` instead.
+    
+- FritzWAN:
+
+  New library module providing WAN connection-specific instances. 
+
+- FritzStatus:
+
+  Most of the functionality of this module is implemented elsewere in the library. 
+
+  - **removed**:
+  
+    - `get_default_connection_service`. Use FritzWAN module instead
+    - `get_cpu_temperatures`. Redundant attribute of FritzConnection
+    
+- new commandline interface replacing multiple tools by a single console script `fritzconnection` with subcommands.
 
 
 1.15.1 - 2026-01-26

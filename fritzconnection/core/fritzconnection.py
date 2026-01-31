@@ -277,7 +277,7 @@ class FritzConnection:
         return self.description.device_name
         
     @property
-    def modelname(self):
+    def modelname(self) -> str:
         """
         Returns the name of the device.
         
@@ -285,6 +285,20 @@ class FritzConnection:
            Use :py:func:`device_name` instead.
         """
         return self.device_name
+    
+    @property
+    def has_wan_support(self) -> bool:
+        """
+        True if the device support a WAN interface.
+        """
+        return "Layer3Forwarding1" in self.description.services
+        
+    @property
+    def has_mesh_support(self) -> bool:
+        """
+        True if the device supports mesh, otherwise False.
+        """
+        return "X_AVM-DE_GetMeshListPath" in self.description.services["Hosts1"].actions
 
     @property
     def system_version(self) -> str:
