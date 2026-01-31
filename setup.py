@@ -63,6 +63,7 @@ setup(
             "fritzphonebook = fritzconnection.cli.fritzphonebook:main",
             "fritzstatus = fritzconnection.cli.fritzstatus:main",
             "fritzwlan = fritzconnection.cli.fritzwlan:main",
+            "fritzwol = fritzconnection.cli.fritzwol:main",
         ]
     },
 )
