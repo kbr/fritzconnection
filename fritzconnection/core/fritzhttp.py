@@ -116,7 +116,33 @@ class FritzHttp:
         # therefore include the payload in the message:
         msg = f"{msg}, payload: {payload}"
         raise FritzHttpInterfaceError(msg)
-
+        
+    def call_rest_api(self, method, path, base_path="api/v0", payload=None):
+        """
+        Makes a low level-call to the router REST-API.
+        Takes a method like i.e. `GET` or `POST`. An unimplemented
+        method will raise a KeyError. Depending on the REST-API call
+        `path` and `payload` must match.
+        Returns a response object (which is a Requests response).
+        """
+        if payload is None:
+            payload = {}
+        calls = {
+            "GET": self.fc.session.get,
+            "POST": self.fc.session.post,
+        }
+        call = calls[method.upper()]
+        url = f"{self.router_url}/{base_path}/{path}"
+        print(url)
+        headers = {}
+        for sid in self._get_sid():
+            headers['Authorization'] = sid
+            print(headers)
+            with call(url, params=payload, headers=headers) as response:
+                if response.status_code == HTTPStatus.OK:
+                    return response
+        return response
+        
     def _get_sid(self):
         """
         Generator to provide the sid two times in case the first try
