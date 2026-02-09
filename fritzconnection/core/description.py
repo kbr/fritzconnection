@@ -4,6 +4,380 @@ parsing.
 
 The classes may have attibutes violating PEP 8 representing the original
 typography in the xml-sources.
+
+
+
+Descriptive parsing of xml-structures
+=====================================
+
+
+This module defines helper functions to convert an xml-datastructure to
+Python datastructure of nested classes with attributes:
+
+- the decorator `@description`
+- the mixin class `ListItemIteratorMixin`
+
+The module also makes use of 
+
+    >>> from dataclasses import field
+
+
+Basic: a node with subnodes
+---------------------------
+
+Consider a simple xml-structure like:
+
+    xml_source = '''\
+    <User>
+        <Name>Tim</Name>
+        <location>Office</location>
+    </User>
+    '''
+
+that can be read from a string or a file to an ElementTree structure:
+
+    >>> from xml.etree import ElementTree as etree
+    >>> root = etree.fromstring(xml_source)
+
+
+Now the datastructure `User` can be represented by a Python class as the
+root-node and class attributes with the same names as the sub-nodes
+`Name` and `location` (case sensitivity matters). The `@description`
+decorater convertes the class to a `dataclass` so the instance
+attributes `Name` and `location` must be defined with type-annotations.
+All type-annotations of leaf-nodes should be of type `str` with default
+as an empty string:
+
+    @description
+    class User:
+        Name: str = ""
+        location: str = ""
+
+    >>> user = User()
+    >>> user.load(root)
+    >>> user
+    User(Name='Tim', location='Office', attrib={})
+    
+    
+The `@description` decorator also adds a `load`-function to the `User`
+class to read the xml-source and provides an additional attribute
+`attrib` for storing attributes of the nodes. Consider a modified
+xml-source with attributes for `User` and `location`:
+
+    <User admin="True">
+        <Name>Tim</Name>
+        <location type="work">Office</location>
+        <phone>123456</phone>
+    </User>
+    
+    
+The instance of `User` now holds the attribute in the `attrib` dictionary:
+    
+    >>> user = User()
+    >>> user.load(root)
+    >>> user
+    User(Name='Tim', location='Office', attrib={'admin': 'True'})
+    
+    
+The content of the subnodes are also accessible as attributes. The
+subnodes are leaf-nodes of type string but with an addtional attribute
+`attrib`:
+
+    >>> user.Name
+    'Tim'
+
+    >>> user.Name.attrib
+    {}
+
+    >>> user.location
+    'Office'
+    
+    >>> user.location.attrib
+    {'type': 'work'}
+    
+
+Handling missing or undefined content:
+--------------------------------------
+
+Undefined or missing content is simply ignored. Consider that the
+xml-source has more nodes than the Python description defines, i.e.
+a phone-node:
+
+    <User admin="True">
+        <Name>Tim</Name>
+        <location type="work">Office</location>
+        <phone>123456</phone>
+    </User>
+
+
+Next consider the Python description defines an attribute `email` which
+is not part of the xml-source:
+
+    @description
+    class User:
+        Name: str = ""
+        location: str = ""
+        email: str = ""
+
+    >>> user = User()
+    >>> user.load(root)
+    >>> user
+    User(Name='Tim', location='Office', attrib={'admin': 'True'})
+
+
+This will give the same datastructure as before: nodes given in the
+xml-source, but not defined in the class-description, are ignored – and
+attributes defined in the class description, but not represented by the
+xml-source, will hold their default-values.
+
+
+Handling sequences:
+-------------------
+
+Sequences are recuring subnodes, which are not leafs, i.e. multiple
+`User` nodes as subnodes in a `Users` node. So consider a more nested
+structure describing a set of users by a root-node `Users`:
+
+    <Users>
+        <User admin="True">
+            <Name>Tim</Name>
+            <location type="work">Office</location>
+        </User>
+        <User>
+            <Name>Susan</Name>
+            <location type="leasure">Garden</location>
+        </User>
+    </Users>
+
+
+The description of the User does not change but now there is a new class
+`Users` defining a sequence of users:
+
+    @description
+    class User:
+        Name: str = ""
+        location: str = ""
+
+    @description
+    class Users:
+        users: list[User] = field(default_factory=list)
+    
+        @property
+        def User(self):
+            user = User()
+            self.users.append(user)
+            return user
+
+    >>> users = Users()
+    >>> users.load(root)
+    >>> users
+    Users(users=[User(Name='Tim', location='Office', attrib={'admin': 'True'}), User(Name='Susan', location='Garden', attrib={})], attrib={})
+    
+    
+Because multiple `User`s must get stored in the `Users`-class, every
+time when `User` is accessed as an attribute of `Users`, a new `User`
+instance must get returned. This is the reason why the attribute `User`
+is implemented as a property.  To keep a reference to the new `User`
+instance, the instance is added to an internal `users`-list. This
+`users`-list can have any name as long as it does not match a node-name.
+
+Because the decorator `@description` converts a class into a dataclass,
+mutable class attributes like lists or dicts must be declared as field
+(imported from dataclasses) with a default_factory.
+
+Iterating over all users can be done by iterating over all items of
+`Users.users`:
+
+    >>> for user in users.users:
+    >>>     print(user)
+    
+    User(Name='Tim', location='Office', attrib={'admin': 'True'})
+    User(Name='Susan', location='Garden', attrib={})
+    
+
+However it may feel more pythonic to iterate over the `users` instead of
+`users.users`. This can be archieved by the help of the mixin class
+`ListItemIteratorMixin`:
+
+    @description
+    class Users(ListItemIteratorMixin):
+        list_items: list[User] = field(default_factory=list)
+    
+        @property
+        def User(self):
+            user = User()
+            self.list_items.append(user)
+            return user
+
+
+Here `Users` inherit from `ListItemIteratorMixin` and the attribute
+`users` changed to `list_items`. Now `Users` is an iterable:
+
+    >>> for user in users:
+    >>>     print(user)
+    
+    User(Name='Tim', location='Office', attrib={'admin': 'True'})
+    User(Name='Susan', location='Garden', attrib={})
+
+
+Handling mutable attributes
+---------------------------
+
+Let's take to following xml-structure describing users for a department:
+
+    <department>
+        <name>Research</name>
+        <Users>
+            <User admin="True">
+                <Name>Tim</Name>
+                <location type="work">Office</location>
+            </User>
+            <User>
+                <Name>Susan</Name>
+                <location type="leasure">Garden</location>
+            </User>
+        </Users>
+    </department>
+
+
+The `department`-node has two attributes: `name` which is of type str
+and `Users` which is a sequence holding `User`-nodes. So `Users` is a
+mutable for which a default-factory is needed:
+
+    @description
+    class Department:
+        name: str = ""
+        Users: Users = field(default_factory=Users)
+
+    >>> department = Department()
+    >>> department.load(root)
+    >>> for user in department.Users:
+    >>>     print(user)
+    User(Name='Tim', location='Office', attrib={'admin': 'True'})
+    User(Name='Susan', location='Garden', attrib={})
+    
+    
+Again, the attribute `Users` is in uppercase, because it must match the
+node-name. And because it is a mutable class-attribute of a dataclass,
+it must be defined as a field with a default-factory.
+
+
+Handling repetitions
+--------------------
+
+There is a subtle difference between sequences and repetitons. The
+example with sequences works, because the `User` attribute represents a
+node with subnodes. But if an attribute is a leaf-node, the value is
+stored in the node directly, because a leaf node is inherited from type
+string. Let's have an example:
+
+    <collection>
+        <name>Tim</name>
+        <position>cook</position>
+        <name>Susan</name>
+        <position>chief</position>
+    </collection>
+
+
+    @description
+    class Collection:
+        name: str = ""
+        position: str = ""
+    
+    >>> collection = Collection()
+    >>> collection.load(root)
+    >>> collection
+    Collection(name='Susan', position='chief', attrib={})
+
+
+Here the values of the attributes are overwritten one after the other
+and just the last node-content will get stored (susan/chief). Also note
+that the describing class of the root-node must not match the node-name.
+So here the root-node `collection` is described by the `Collection`
+class, but instead of `Collection` it could also be any name.
+(That is, because .load() is called on the root-node which is already
+instanciated.)
+
+To store repetitions the leaf-names must be represented by propterties
+storing the values in separate lists. So the properties must provide
+getters and setters:
+
+    @description
+    class Collection:
+        names: list = field(default_factory=list)
+        positions: list = field(default_factory=list)
+    
+        # use property as decorator with a setter:
+        @property
+        def name(self):
+            return ""
+    
+        @name.setter
+        def name(self, value):
+            self.names.append(value)
+    
+        # use property as a function with getter and setter as arguments:
+        position = property(
+            lambda self: "",
+            lambda self, value: self.positions.append(value)
+        ) 
+
+    >>> collection = Collection()
+    >>> collection.load(root)
+    >>> collection
+    Collection(names=['Tim', 'Susan'], positions=['cook', 'chief'], attrib={})
+
+
+The attributes `name` and `position` are now implemented as properties
+returning the default value (an empty string) and adding the value to an
+internal list. This is also an example where it can be more convenient
+to use property as a function, because it takes less code and fewer
+lines. Now all attributes are stored – changing the xml to: 
+
+    <collection type="kitchen">
+        <name>Tim</name>
+        <position location="Cologne">cook</position>
+        <name>Susan</name>
+        <position location="Berlin">chief</position>
+    </collection>
+    
+    
+Running the same code as before will result in     
+
+    >>> collection = Collection()
+    >>> collection.load(root)
+    >>> collection
+    Collection(names=['Tim', 'Susan'], positions=['cook', 'chief'], attrib={'type': 'kitchen'})
+
+
+To iterate over the items, assuming that `name` and `position` are in
+synchron order, just add an according method or property to the
+Collection class:
+
+    @description
+    class Collection:
+        names: list = field(default_factory=list)
+        positions: list = field(default_factory=list)
+        ...
+        @property
+        def entries(self):
+            return zip(self.names, self.positions)
+
+
+Now it is possible to iterate over the entries:
+
+    >>> collection = Collection()
+    >>> collection.load(root)
+    >>> for name, position in collection.entries:
+    >>>     print(f"Name: {name}, Position: {position}, {position.attrib}")
+    
+    Name: Tim, Position: cook, {'location': 'Cologne'}
+    Name: Susan, Position: chief, {'location': 'Berlin'}
+
+
+The additional methods and properties in a class decorated with
+`@description` can have any names as long as they do not match an
+xml-node name.
 """
 
 from __future__ import annotations
@@ -14,6 +388,21 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from dataclasses import field
 from fritzconnection.core.utils import localname
+
+
+class _UnknownNode:
+    """
+    Marker class for unknown node names.
+    Used internally.
+    """
+
+
+class Leaf(str):
+    """
+    String type with an additional attribute `attrib` for storing
+    node-attributes.
+    """
+    __slots__ = ("attrib",)
 
 
 def nodeloader(cls):
@@ -35,11 +424,14 @@ def nodeloader(cls):
             if hasattr(attr, "load") and callable(attr.load):
                 attr.load(node)
             else:
+                # node is a Leaf: -> str with attrib-attribute
                 value = node.text
                 if isinstance(value, str):  # should always be True
                     value = value.strip()
-                setattr(self, node_name, value)
-
+                leaf = Leaf(value)
+                leaf.attrib = node.attrib
+                setattr(self, node_name, leaf)
+               
     # for a dataclass the annotation for an instance attribute
     # must be added explicitly:
     cls.attrib = field(default_factory=dict)
@@ -59,19 +451,12 @@ def description(cls):
     return cls
 
 
-class _UnknownNode:
-    """
-    Marker class for unknown node names.
-    Used internally.
-    """
-
-
 class ListItemIteratorMixin:
     """
     Provides an __iter__ method for classes with a list_items attribute
     of type list, so that the instances are iterables with regard to the
     list_item list.
-    """
+    """    
     def __iter__(self):
         return iter(self.list_items)
 
@@ -291,7 +676,6 @@ class Device:
         for device in self.deviceList:
             devices.update(device.devices)
         return devices
-
 
     def __str__(self):
         return f"{self.friendlyName}, {self.deviceType}"

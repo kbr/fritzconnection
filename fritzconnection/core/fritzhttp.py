@@ -133,7 +133,6 @@ class FritzHttp:
         }
         call = calls[method.upper()]
         url = f"{self.router_url}/{base_path}/{path}"
-        print(url)
         headers = {}
         for sid in self._get_sid():
             headers['Authorization'] = sid
