@@ -136,8 +136,8 @@ class FritzHttp:
         headers = {}
         for sid in self._get_sid():
             headers['Authorization'] = sid
-            print(headers)
-            with call(url, params=payload, headers=headers) as response:
+            headers['Content-Type'] = "application/json"
+            with call(url, params=payload, headers=headers, verify=False) as response:
                 if response.status_code == HTTPStatus.OK:
                     return response
         return response
