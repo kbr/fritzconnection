@@ -6,6 +6,9 @@ The classes may have attibutes violating PEP 8 representing the original
 typography in the xml-sources.
 
 
+.. NOTE::
+   this module should only implement classes used by the core-modules. Library modules should define description-classes inside the library.
+
 
 Descriptive parsing of xml-structures
 =====================================
@@ -14,10 +17,10 @@ Descriptive parsing of xml-structures
 This module defines helper functions to convert an xml-datastructure to
 Python datastructure of nested classes with attributes:
 
-- the decorator `@description`
-- the mixin class `ListItemIteratorMixin`
+* the decorator `@description`
+* the mixin class `ListItemIteratorMixin`
 
-The module also makes use of 
+The module also makes use of::
 
     >>> from dataclasses import field
 
@@ -25,7 +28,7 @@ The module also makes use of
 Basic: a node with subnodes
 ---------------------------
 
-Consider a simple xml-structure like:
+Consider a simple xml-structure like::
 
     xml_source = '''\
     <User>
@@ -34,7 +37,7 @@ Consider a simple xml-structure like:
     </User>
     '''
 
-that can be read from a string or a file to an ElementTree structure:
+that can be read from a string or a file to an ElementTree structure::
 
     >>> from xml.etree import ElementTree as etree
     >>> root = etree.fromstring(xml_source)
@@ -880,3 +883,57 @@ class DeviceLog(ListItemIteratorMixin):
         event = Event()
         self.list_items.append(event)
         return event
+
+
+# --------------------------------------------------------
+# helper classes for SessionInfo extracting
+# (for session-ids)
+
+@description
+class Rights:
+    names: list = field(default_factory=list)
+    accesses: list = field(default_factory=list)
+
+    Name = property(lambda self: "", lambda self, value: self.names.append(value))
+    Access = property(lambda self: "", lambda self, value: self.accesses.append(value))
+
+    def get(self):
+        return {k: v for k, v in zip(self.names, self.accesses)}
+
+
+@description
+class Users(ListItemIteratorMixin):
+    list_items: list = field(default_factory=list)
+    User = property(lambda self: "", lambda self, value: self.list_items.append(value))
+    
+
+@description
+class SessionInfo:
+    SID: str = ""
+    Challenge: str = ""
+    BlockTime: str = ""
+    users: Users | None = None
+    _rights: Rights | None = None
+
+    @property
+    def rights(self):
+        return self._rights.get()
+
+    @property
+    def last_user(self):
+        for user in self.users:
+            if user.attrib.get("last") == "1":
+                return user
+        return None
+    
+    @property
+    def Rights(self):
+        self._rights = Rights()
+        return self._rights
+
+    @property
+    def Users(self):
+        self.users = Users()
+        return self.users
+    
+
