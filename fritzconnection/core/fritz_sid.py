@@ -1,5 +1,8 @@
 """
 fritzsid.py
+
+Defines the FritzSID class to get valid session ids, verify session ids
+and logout (invalidate) session ids.
 """
 
 from __future__ import annotations
@@ -10,7 +13,7 @@ import re
 from dataclasses import field
 from http import HTTPStatus
 
-from fritzconnection.core.description import description, ListItemIteratorMixin
+from fritzconnection.core.description import SessionInfo
 from fritzconnection.core.utils import get_xml_root
 
 
@@ -23,54 +26,6 @@ PBKDF2_CHALLENGE = "pbkdf2"
 PBKDF2_CHALLENGE_INDICATOR = "2$"
 MD5_CHALLENGE_OS_VERSION = 7.24
 
-
-@description
-class Rights:
-    names: list = field(default_factory=list)
-    accesses: list = field(default_factory=list)
-
-    Name = property(lambda self: "", lambda self, value: self.names.append(value))
-    Access = property(lambda self: "", lambda self, value: self.accesses.append(value))
-
-    def get(self):
-        return {k: v for k, v in zip(self.names, self.accesses)}
-
-
-@description
-class Users(ListItemIteratorMixin):
-    list_items: list = field(default_factory=list)
-    User = property(lambda self: "", lambda self, value: self.list_items.append(value))
-    
-
-@description
-class SessionInfo:
-    SID: str = ""
-    Challenge: str = ""
-    BlockTime: str = ""
-    users: Users | None = None
-    _rights: Rights | None = None
-
-    @property
-    def rights(self):
-        return self._rights.get()
-
-    @property
-    def last_user(self):
-        for user in self.users:
-            if user.attrib.get("last") == "1":
-                return user
-        return None
-    
-    @property
-    def Rights(self):
-        self._rights = Rights()
-        return self._rights
-
-    @property
-    def Users(self):
-        self.users = Users()
-        return self.users
-    
 
 class FritzSID:
     """
@@ -113,6 +68,16 @@ class FritzSID:
             challenge_hash = self.get_hash_from_MD5_challenge(challenge)
         return self.get_sid_from_challenge_hash(challenge_hash)
         
+    def logout_session_id(self, session_id: str) -> None:
+        """
+        Makes the given session_id invalid.
+        """
+        data = {
+            "logout": session_id,
+            "sid": session_id
+        }
+        self._do_post_request(data)
+        
     def check_session_id(self, session_id: str) -> str:
         """
         Checks whether the given sessioon id is still valid.
@@ -122,14 +87,7 @@ class FritzSID:
         data = {
             "sid": session_id
         }
-        headers = {
-            "Content-Type": "application/x-www-form-urlencoded"
-        }
-        with self.fc.session.post(
-            self.login_url, headers=headers, data=data
-        ) as response:
-            session_info = SessionInfo()
-            session_info.load(get_xml_root(response.text))
+        session_info = self._do_post_request(data)
         return session_info.SID
         
     def is_valid_session_id(self, session_id: str) -> bool:
@@ -197,6 +155,14 @@ class FritzSID:
             "username": self.fc.soaper.user,
             "response": challenge_hash
         }
+        session_info = self._do_post_request(data)
+        return session_info.SID
+
+    def _do_post_request(self, data: dict) -> SessionInfo:
+        """
+        Makes a post-request with the given data and returns a
+        SessionInfo instance.
+        """
         headers = {
             "Content-Type": "application/x-www-form-urlencoded"
         }
@@ -206,4 +172,4 @@ class FritzSID:
             # TODO: error handling necessary here?
             session_info = SessionInfo()
             session_info.load(get_xml_root(response.text))
-        return session_info.SID
+        return session_info
