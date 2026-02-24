@@ -123,8 +123,6 @@ class FritzHttp:
         `path` and `payload` must match.
         Returns a response object (which is a Requests response).
         """
-#         if payload is None:
-#             payload = {}
         calls = {
             "GET": self.fc.session.get,
             "POST": self.fc.session.post,
@@ -136,9 +134,7 @@ class FritzHttp:
             'Content-Type': "application/json",
         }
         with call(url, params=payload, headers=headers, verify=False) as response:
-            if response.status_code == HTTPStatus.OK:
-                return response
-        return response
+            return response
         
     def get_sid(self):
         """
