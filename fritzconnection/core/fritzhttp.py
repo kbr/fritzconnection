@@ -9,20 +9,19 @@ Access the AVM Fritz!Box AHA-HTTP-Interface
 # Author: Klaus Bremer
 
 
-import hashlib
 from http import HTTPStatus
 from http.client import HTTP_PORT
 from xml.etree import ElementTree as etree
 
-from fritzconnection.core.exceptions import (
-    FritzHttpInterfaceError,
-    FritzAuthorizationError,
-)
+from fritzconnection.core.exceptions import FritzAuthorizationError
+from fritzconnection.core.exceptions import FritzHttpInterfaceError
+from fritzconnection.core.fritz_sid import FritzSID
+from fritzconnection.core.utils import get_xml_root
 
 
-URL_LOGIN = "/login_sid.lua?version=2"
+BASE_LOGIN_URL = "/login_sid.lua"
+URL_LOGIN = f"{BASE_LOGIN_URL}?version=2"
 URL_HOMEAUTOSWITCH = "/webservices/homeautoswitch.lua"
-PBKDF2_CHALLENGE_INDICATOR = "2$"
 
 
 class FritzHttp:
@@ -41,7 +40,7 @@ class FritzHttp:
     """
     def __init__(self, fc):
         self.fc = fc  # the active fritzconnection instance
-        self.sid = None
+        self.fs = FritzSID(fc)
 
     @property
     def remote_port(self):
@@ -100,11 +99,10 @@ class FritzHttp:
         use undocumented endpoints because they can change any time without
         notice. So an application may not survive a router OS update.
         """
-        for sid in self._get_sid():
-            payload['sid'] = sid
-            with self.fc.session.get(url, params=payload) as response:
-                if response.status_code == HTTPStatus.OK:
-                    return response
+        payload['sid'] = self.get_sid()
+        with self.fc.session.get(url, params=payload) as response:
+            if response.status_code == HTTPStatus.OK:
+                return response
 
         msg = f"Request failed: http error code '{response.status_code}'"
         if response.status_code == HTTPStatus.FORBIDDEN:
@@ -125,98 +123,25 @@ class FritzHttp:
         `path` and `payload` must match.
         Returns a response object (which is a Requests response).
         """
-        if payload is None:
-            payload = {}
+#         if payload is None:
+#             payload = {}
         calls = {
             "GET": self.fc.session.get,
             "POST": self.fc.session.post,
         }
         call = calls[method.upper()]
         url = f"{self.router_url}/{base_path}/{path}"
-        headers = {}
-        for sid in self._get_sid():
-            headers['Authorization'] = sid
-            headers['Content-Type'] = "application/json"
-            with call(url, params=payload, headers=headers, verify=False) as response:
-                if response.status_code == HTTPStatus.OK:
-                    return response
+        headers = {
+            'Authorization': self.get_sid(),
+            'Content-Type': "application/json",
+        }
+        with call(url, params=payload, headers=headers, verify=False) as response:
+            if response.status_code == HTTPStatus.OK:
+                return response
         return response
         
-    def _get_sid(self):
+    def get_sid(self):
         """
-        Generator to provide the sid two times in case the first try
-        failed. This can happen on an invalide or expired sid. In this
-        case the sid gets regenerated for the second try.
+        Returns a new valid session id.
         """
-        if self.sid is None:
-            # a session id of None can lead to irritation
-            self._set_sid_from_box()
-        yield self.sid
-        self._set_sid_from_box()
-        yield self.sid
-
-    def _set_sid_from_box(self):
-        """
-        Read a session id from the box and store it in self.sid
-        As long as self.sid holds a valid sid, the user is logged in.
-        """
-        with self.fc.session.get(self.login_url) as response:
-            challenge = etree.fromstring(response.text).find('Challenge').text
-        if challenge.startswith(PBKDF2_CHALLENGE_INDICATOR):
-            challenge_hash = self._get_pbkdf2_hash(challenge)
-        else:
-            challenge_hash = self._get_md5_hash(challenge)
-        self.sid = self._request_sid(challenge_hash)
-
-    def _get_pbkdf2_hash(self, challenge):
-        """Returns the vendor-recommended pbkdf2 challenge hash."""
-        _, iterations_1, salt_1, iterations_2, salt_2 = challenge.split('$')
-        static_hash = hashlib.pbkdf2_hmac(
-            "sha256",
-            self.fc.soaper.password.encode(),
-            bytes.fromhex(salt_1),
-            int(iterations_1)
-        )
-        dynamic_hash = hashlib.pbkdf2_hmac(
-            "sha256",
-            static_hash,
-            bytes.fromhex(salt_2),
-            int(iterations_2)
-        )
-        return f"{salt_2}${dynamic_hash.hex()}"
-
-    def _get_md5_hash(self, challenge):
-        """Returns the legathy md5 challenge hash."""
-        hash = hashlib.md5(
-            f"{challenge}-{self.fc.soaper.password}".encode("utf-16-le")
-        )
-        return f"{challenge}-{hash.hexdigest()}"
-
-    def _request_sid(self, challenge_hash):
-        """
-        Takes the challenge_hash to request and return a new session id.
-        """
-        # TODO: handle blocktime
-        with self.fc.session.post(
-            self.login_url,
-            data={"username": self.fc.soaper.user, "response": challenge_hash},
-            headers={"Content-Type": "application/x-www-form-urlencoded"}
-        ) as response:
-            root = etree.fromstring(response.text)
-            sid_node = root.find("SID")
-            return sid_node.text
-
-    # -----------------------------------------
-    # experimental feature
-    def get_cpu_temperatures(self) -> list[int]:
-        """
-        Returns a list of the last measured cpu-temperatures.
-        The most recent entry is the first one in the list.
-        NOTE: this method is experimental as it is based on a
-        non-public API. 
-        (it may get removed without deprecation warning.)
-        """
-        url = f"{self.router_url}/query.lua"
-        payload = {"CPUTEMP": "cpu:status/StatTemperature"}
-        response = self.call_url(url, payload)
-        return list(map(int, response.json()["CPUTEMP"].split(",")))
+        return self.fs.get_session_id()
