@@ -33,6 +33,7 @@ class FritzSID:
     """
     def __init__(self, fc: FritzConnection):
         self.fc = fc
+        self.session_id = None
         self.challenge_method = self.get_challenge_method()
     
     @property
@@ -55,18 +56,15 @@ class FritzSID:
         """
         Return a valid session id
         """
-        si = self.get_session_info()
-        session_id = si.SID
-        if self.is_valid_session_id(session_id):
-            return session_id
-            
-        # invlid id: get a new one by challenge
-        challenge = si.Challenge
-        if challenge.startswith(PBKDF2_CHALLENGE_INDICATOR):
-            challenge_hash = self.get_hash_from_PBKDF2_challenge(challenge)
-        else:
-            challenge_hash = self.get_hash_from_MD5_challenge(challenge)
-        return self.get_sid_from_challenge_hash(challenge_hash)
+        if not self.is_valid_session_id(self.session_id):
+            si = self.get_session_info()
+            challenge = si.Challenge
+            if challenge.startswith(PBKDF2_CHALLENGE_INDICATOR):
+                challenge_hash = self.get_hash_from_PBKDF2_challenge(challenge)
+            else:
+                challenge_hash = self.get_hash_from_MD5_challenge(challenge)
+            self.session_id = self.get_sid_from_challenge_hash(challenge_hash)
+        return self.session_id
         
     def logout_session_id(self, session_id: str) -> None:
         """
@@ -90,10 +88,13 @@ class FritzSID:
         session_info = self._do_post_request(data)
         return session_info.SID
         
-    def is_valid_session_id(self, session_id: str) -> bool:
+    def is_valid_session_id(self, session_id: str|None) -> bool:
         """
         Return a boolean whether the given session is is valid.
         """
+        if not session_id:
+            # None or empty
+            return False
         sid = self.check_session_id(session_id)
         mo = re.match(r"0*$", sid)  
         return not bool(mo)
