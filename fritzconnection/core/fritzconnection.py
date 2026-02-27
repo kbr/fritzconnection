@@ -395,6 +395,13 @@ class FritzConnection:
             "encoding": encoding,
             "content": content
         }
+        
+    def call_rest_api(self, method, path, base_path=None, payload=None):
+        """
+        Returns a response instance (from the requests library) with the
+        result of the call. 
+        """
+        return self.http_interface.call_rest_api(method, path, base_path, payload)
 
     def get_cpu_temperatures(self) -> list[int]:
         """

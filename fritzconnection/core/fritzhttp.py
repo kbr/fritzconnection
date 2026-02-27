@@ -22,6 +22,8 @@ from fritzconnection.core.utils import get_xml_root
 BASE_LOGIN_URL = "/login_sid.lua"
 URL_LOGIN = f"{BASE_LOGIN_URL}?version=2"
 URL_HOMEAUTOSWITCH = "/webservices/homeautoswitch.lua"
+REST_API_BASEPATH = "api/v0"
+AUTHORIZATION_PREFIX = "AVM-SID"
 
 
 class FritzHttp:
@@ -115,23 +117,26 @@ class FritzHttp:
         msg = f"{msg}, payload: {payload}"
         raise FritzHttpInterfaceError(msg)
         
-    def call_rest_api(self, method, path, base_path="api/v0", payload=None):
+    def call_rest_api(self, method, path, base_path=None, payload=None):
         """
         Makes a low level-call to the router REST-API.
         Takes a method like i.e. `GET` or `POST`. An unimplemented
         method will raise a KeyError. Depending on the REST-API call
         `path` and `payload` must match.
-        Returns a response object (which is a Requests response).
+        Returns a response object (which is a Requests response) with
+        status_code and text as properties (or json() as callable).
         """
+        if base_path is None:
+            base_path = REST_API_BASEPATH
         calls = {
             "GET": self.fc.session.get,
             "POST": self.fc.session.post,
         }
         call = calls[method.upper()]
         url = f"{self.router_url}/{base_path}/{path}"
+        sid = self.get_sid()
         headers = {
-            'Authorization': self.get_sid(),
-            'Content-Type': "application/json",
+            'Authorization': f"{AUTHORIZATION_PREFIX} {sid}",
         }
         with call(url, params=payload, headers=headers, verify=False) as response:
             return response
