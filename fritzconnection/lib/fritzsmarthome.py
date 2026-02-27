@@ -63,7 +63,13 @@ class FritzRESTApi:
         """
         return self._get(path=f"{OVERVIEW_PREFIX}/groups")
         
-    def get_units(self) -> list:
+    def get_group(self, uid) -> dict:
+        """
+        Returns a description of the group with the given uid.
+        """
+        return self._get(path=f"{OVERVIEW_PREFIX}/groups", uid=uid)
+        
+    def get_units(self) -> list[dict]:
         """
         Returns a list of known units.
         """
