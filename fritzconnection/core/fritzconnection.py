@@ -24,6 +24,7 @@ from fritzconnection.core.exceptions import FritzServiceError
 from fritzconnection.core.fritzdescription import FritzDescription
 from fritzconnection.core.fritzhttp import FritzHttp
 from fritzconnection.core.soaper import Soaper
+from fritzconnection.core.exceptions import FritzArgumentError 
 
 # FritzConnection defaults:
 FRITZ_IP_ADDRESS = "169.254.1.1"
@@ -396,12 +397,45 @@ class FritzConnection:
             "content": content
         }
         
-    def call_rest_api(self, method, path, base_path=None, payload=None):
+    def call_rest_api(self, method, path, base_path=None, payload=None, uid=None, serial=None):
         """
         Returns a response instance (from the requests library) with the
         result of the call. 
+        `method`: required action type like get, put, del.
+        `path`: api path like "smarthome/overview"
+        `base_path`: path prefix (default "api/v0")
+        `payload`: serializable object with arguments send to the api -
+        typically a dict, according to the openapi 3 specification.
+        `uid`: id of a unit
+        `serial`: serial id for an action
+        Refer to the vendor documentation when to provide a `uid` or a `serial`.
+        It is an error to provide both arguments in the same call.b
+        
+        Example:
+        
+        `call_rest_api("get", "smarthome/overview/devices")` will return
+        a list of device information.
+        
+        `call_rest_api("get", "smarthome/overview/devices", uid='11657 0240192')`
+        will return the information about the specified device.
         """
-        return self.http_interface.call_rest_api(method, path, base_path, payload)
+        # uri and serial are both path-parameters
+        # and given here as separate arguments for clarity
+        # (to be closer to the rest-api documentation)
+        if uid and serial:
+            msg = "only 'uid' or 'serial' allowed as arguments, not both"
+            raise FritzArgumentError(msg)
+        if uid or serial:
+            path_param = uid if uid else serial
+        else:
+            path_param = None
+        return self.http_interface.call_rest_api(
+            method=method, 
+            path=path,
+            base_path=base_path,
+            path_param=path_param,
+            payload=payload
+        )
 
     def get_cpu_temperatures(self) -> list[int]:
         """

@@ -117,28 +117,37 @@ class FritzHttp:
         msg = f"{msg}, payload: {payload}"
         raise FritzHttpInterfaceError(msg)
         
-    def call_rest_api(self, method, path, base_path=None, payload=None):
+    def call_rest_api(self, method, path, base_path=None, path_param=None, payload=None):
         """
-        Makes a low level-call to the router REST-API.
-        Takes a method like i.e. `GET` or `POST`. An unimplemented
-        method will raise a KeyError. Depending on the REST-API call
-        `path` and `payload` must match.
-        Returns a response object (which is a Requests response) with
-        status_code and text as properties (or json() as callable).
+        Makes a low level-call to the router REST-API. Takes a method
+        like i.e. `GET` or `POST`. An unimplemented method will raise a
+        KeyError. Depending on the REST-API call `path` and `path_param`
+        must match. `path_param` can be a UID or a serial, depending on
+        the call. If payload is given it should be an object convertible
+        to json (typically a dict). All given arguments are expected to
+        follow the openapi 3 specification.
+        Returns a response object (which is a Requests
+        response) with status_code and text as properties (or json() as
+        callable).
         """
         if base_path is None:
             base_path = REST_API_BASEPATH
         calls = {
             "GET": self.fc.session.get,
             "POST": self.fc.session.post,
+            "PUT": self.fc.session.put,
         }
         call = calls[method.upper()]
         url = f"{self.router_url}/{base_path}/{path}"
+        if path_param:
+            url = f"{url}/{path_param}"
         sid = self.get_sid()
         headers = {
             'Authorization': f"{AUTHORIZATION_PREFIX} {sid}",
         }
-        with call(url, params=payload, headers=headers, verify=False) as response:
+        if payload:
+            headers["content-type"] = "application/json"
+        with call(url, headers=headers, json=payload, verify=False) as response:
             return response
         
     def get_sid(self):
