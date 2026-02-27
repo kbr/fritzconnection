@@ -134,8 +134,9 @@ class FritzHttp:
             base_path = REST_API_BASEPATH
         calls = {
             "GET": self.fc.session.get,
-            "POST": self.fc.session.post,
             "PUT": self.fc.session.put,
+            "POST": self.fc.session.post,
+            "DEL": self.fc.session.delete,
         }
         call = calls[method.upper()]
         url = f"{self.router_url}/{base_path}/{path}"
