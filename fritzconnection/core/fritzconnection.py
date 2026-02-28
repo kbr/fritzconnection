@@ -397,19 +397,30 @@ class FritzConnection:
             "content": content
         }
         
-    def call_rest_api(self, method, path, base_path=None, payload=None, uid=None, serial=None):
+    def call_rest_api(
+        self, 
+        method: str,
+        path: str, 
+        base_path: str|None = None,
+        params: dict|list[tuple]|bytes = None,
+        payload: dict|None =None,
+        uid: str|None = None,
+        serial: str|None =None
+    ):
         """
         Returns a response instance (from the requests library) with the
         result of the call. 
         `method`: required action type like get, put, del.
         `path`: api path like "smarthome/overview"
         `base_path`: path prefix (default "api/v0")
+        `params`: (optional) Dictionary, list of tuples or bytes to send
+        in the query string for the Request.
         `payload`: serializable object with arguments send to the api -
         typically a dict, according to the openapi 3 specification.
         `uid`: id of a unit
         `serial`: serial id for an action
         Refer to the vendor documentation when to provide a `uid` or a `serial`.
-        It is an error to provide both arguments in the same call.b
+        It is an error to provide both arguments in the same call.
         
         Example:
         
@@ -426,14 +437,14 @@ class FritzConnection:
             msg = "only 'uid' or 'serial' allowed as arguments, not both"
             raise FritzArgumentError(msg)
         if uid or serial:
-            path_param = uid if uid else serial
+            path_extension = uid if uid else serial
         else:
-            path_param = None
+            path_extension = None
         return self.http_interface.call_rest_api(
             method=method, 
             path=path,
             base_path=base_path,
-            path_param=path_param,
+            path_extension=path_extension,
             payload=payload
         )
 

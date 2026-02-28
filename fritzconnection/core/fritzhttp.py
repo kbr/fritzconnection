@@ -117,12 +117,20 @@ class FritzHttp:
         msg = f"{msg}, payload: {payload}"
         raise FritzHttpInterfaceError(msg)
         
-    def call_rest_api(self, method, path, base_path=None, path_param=None, payload=None):
+    def call_rest_api(
+        self, 
+        method, 
+        path, 
+        base_path=None, 
+        path_extension=None,
+        params=None,
+        payload=None
+    ):
         """
         Makes a low level-call to the router REST-API. Takes a method
         like i.e. `GET` or `POST`. An unimplemented method will raise a
-        KeyError. Depending on the REST-API call `path` and `path_param`
-        must match. `path_param` can be a UID or a serial, depending on
+        KeyError. Depending on the REST-API call `path` and `path_extension`
+        must match. `path_extension` can be a UID or a serial, depending on
         the call. If payload is given it should be an object convertible
         to json (typically a dict). All given arguments are expected to
         follow the openapi 3 specification.
@@ -140,15 +148,17 @@ class FritzHttp:
         }
         call = calls[method.upper()]
         url = f"{self.router_url}/{base_path}/{path}"
-        if path_param:
-            url = f"{url}/{path_param}"
+        if path_extension:
+            url = f"{url}/{path_extension}"
         sid = self.get_sid()
         headers = {
             'Authorization': f"{AUTHORIZATION_PREFIX} {sid}",
         }
         if payload:
             headers["content-type"] = "application/json"
-        with call(url, headers=headers, json=payload, verify=False) as response:
+        with call(
+            url, headers=headers, params=params, json=payload, verify=False
+        ) as response:
             return response
         
     def get_sid(self):
