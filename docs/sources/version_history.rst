@@ -7,13 +7,14 @@ Version History
 2.0 - 2026-mm-dd
 ----------------
 
-This version has some major rewrites of the core-modules. The library-API is unchanged, but there  can still be breaking changes:
+This version adds support for the new FRITZ! Smart Home REST API-Interface. There have been some major rewrites and additions to the core-modules. The library-API is mostly unchanged, but there can still be breaking changes:
 
 - required Python version >= 3.10
 
 - FritzConnection:
 
   - argument `use_cache` now defaults to `True`
+  - new method `call_rest_api()`
   - new property `has_wan_support`
   - new property `has_mesh_support`
   - new property `device_name` to replace `modelname`
@@ -21,13 +22,19 @@ This version has some major rewrites of the core-modules. The library-API is unc
 
   - **removed**:
 
-    - store cache as json, deprecated in 1.14.0
+    - store cache in json format, deprecated in 1.14.0
     - argument `cache_format` removed
     - attribute `device_description` removed. Use the attributes `device_name` and `system_version` instead.
     
+- FritzRESTApi:
+
+    New class defined in the new module `lib.fritzrestapi`. This class is mainly a wrapper for the new low-level `FritzConnection.call_rest_api` method. The class FritzRESTApi provides the `get`, `put`, `post` and `delete` methods as well as convenience methods for the REST API endpoints.
+
+
 - FritzWAN:
 
-  New library module providing WAN connection-specific instances. 
+  New class providing an instance matching the router connection type. Defined in the new library module `lib.fritzwan`.
+
 
 - FritzStatus:
 
@@ -35,10 +42,12 @@ This version has some major rewrites of the core-modules. The library-API is unc
 
   - **removed**:
   
-    - `get_default_connection_service`. Use FritzWAN module instead
-    - `get_cpu_temperatures`. Redundant attribute of FritzConnection
-    
-- new commandline interface replacing multiple tools by a single console script `fritzconnection` with subcommands.
+    - `get_default_connection_service`: use FritzWAN module instead
+    - `get_cpu_temperatures`: redundant method also defined in the FritzConnection class
+
+
+- new command-line interface replacing the former multiple tools by a single console script `fritzconnection` with subcommands.
+
 
 
 1.15.1 - 2026-01-26
