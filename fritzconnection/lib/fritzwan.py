@@ -11,9 +11,17 @@ class BaseWAN:
     integrated WAN capabilities, regardless of the connection type (dsl,
     cable, fibre, lte).
     """
-    
-    def __init__(self, fc):
+    # Note: 
+    # - the service WANIPConn1 is an alias for igd.WANIPConnection:1
+    # - the service WANCommonIFC1 is an alias for igd.WANCommonInterfaceConfig:1
+    # to prevent a name clash with the corresponding tr064 services.
+            
+    def __init__(self, fc, prefix, service, postfix):
         self.fc = fc
+        self.prefix = prefix
+        self.service = service
+        self.postfix = postfix
+        self.connection_service_name = f"{service}{postfix}"
 
     @property
     def is_linked(self) -> bool:
@@ -34,19 +42,79 @@ class BaseWAN:
             info["NewLayer1UpstreamMaxBitRate"],
             info["NewLayer1DownstreamMaxBitRate"]
         )
+    
+    @property
+    def external_ip(self):
+        """
+        Returns the external ipv4 address.
+        This call is faster than via `get_status_information`.
+        """
+        result = self.fc.call_action("WANIPConn", "GetExternalIPAddress")
+        return result["NewExternalIPAddress"]
+        
+    @property
+    def external_ipv6(self) -> str:
+        """The external v6 ip-address."""
+        return self.external_ipv6_info["NewExternalIPv6Address"]
 
     @property
-    def str_max_linked_bit_rate(self) -> tuple[str, str]:
+    def external_ipv6_info(self) -> dict:
         """
-        Human-readable maximum of the physical upstream- and
-        downstream-rate in bits/sec. Value is a tuple, first item is
-        upstream, second item is downstream.
+        Returns the ipv6 external address information as a dictionary with the keys:
+        NewExternalIPv6Address                   out ->     string
+        NewPrefixLength                          out ->     ui1
+        NewValidLifetime                         out ->     ui4
+        NewPreferedLifetime                      out ->     ui4
         """
-        upstream, downstream = self.max_linked_bit_rate
-        return (
-            format_rate(upstream, unit="bits"),
-            format_rate(downstream, unit="bits"),
-        )
+        return self.fc.call_action("WANIPConn", "X_AVM_DE_GetExternalIPv6Address")
+
+    @property
+    def ipv6_prefix(self):
+        """The internal v6 prefix."""
+        return self.ipv6_prefix_info["NewIPv6Prefix"]
+
+    @property
+    def ipv6_prefix_info(self) -> dict:
+        """
+        Returns the ipv6 prefix information as a dictionary with the keys:
+        NewIPv6Prefix                            out ->     string
+        NewPrefixLength                          out ->     ui1
+        NewValidLifetime                         out ->     ui4
+        NewPreferedLifetime                      out ->     ui4
+        """
+        return self.fc.call_action("WANIPConn", "X_AVM_DE_GetIPv6Prefix")
+
+    @property
+    def connection_uptime(self) -> int:
+        """Connection uptime in seconds."""
+        status = self.fc.call_action("WANIPConn", "GetStatusInfo")
+        return status["NewUptime"]
+        
+    def get_addon_info(self) -> dict:
+        """
+        Returns a dictionary with the following information:
+        
+            'NewByteSendRate'
+            'NewByteReceiveRate'
+            'NewPacketSendRate'
+            'NewPacketReceiveRate'
+            'NewTotalBytesSent'
+            'NewTotalBytesReceived'
+            'NewAutoDisconnectTime'
+            'NewIdleDisconnectTime'
+            'NewDNSServer1'
+            'NewDNSServer2'
+            'NewVoipDNSServer1'
+            'NewVoipDNSServer2'
+            'NewUpnpControlEnabled'
+            'NewRoutedBridgedModeBoth'
+            'NewX_AVM_DE_TotalBytesSent64'
+            'NewX_AVM_DE_TotalBytesReceived64'
+            'NewX_AVM_DE_WANAccessType'
+            'NewX_AVM_DE_Layer1UpstreamMaxBitRate64'
+            'NewX_AVM_DE_Layer1DownstreamMaxBitRate64'
+        """
+        return self.fc.call_action("WANCommonIFC1", "GetAddonInfos")
 
     def get_common_link_properties(self) -> dict:
         """
@@ -56,14 +124,34 @@ class BaseWAN:
             'NewLayer1UpstreamMaxBitRate'
             'NewLayer1DownstreamMaxBitRate'
             'NewPhysicalLinkStatus'
+            
+        This method utilizes the igd.WANCommonInterfaceConfig service.
+        The bit rates are the synchronized rates between the router and
+        provider.
+        """
+        return self.fc.call_action(
+            "WANCommonIFC1", "GetCommonLinkProperties"
+        )
+        
+    def get_avm_common_link_properties(self) -> dict:
+        """
+        Returns a dictionary with the following information:
+        
+            'NewWANAccessType'
+            'NewLayer1UpstreamMaxBitRate'
+            'NewLayer1DownstreamMaxBitRate'
+            'NewPhysicalLinkStatus'
             'NewX_AVM-DE_DownstreamCurrentUtilization'
             'NewX_AVM-DE_UpstreamCurrentUtilization'
             'NewX_AVM-DE_DownstreamCurrentMaxSpeed'
-            'NewX_AVM-DE_UpstreamCurrentMaxSpeed'
+            'NewX_AVM-DE_UpstreamCurrentMaxSpeed'        
 
-         """
+        This method utilizes the tr064.WANCommonInterfaceConfig service.
+        The bit rates are the physical possible rates between the router
+        and provider.
+        """
         return self.fc.call_action(
-            "WANCommonInterfaceConfig1", "GetCommonLinkProperties"
+            "WANCommonInterfaceConfig", "GetCommonLinkProperties"
         )
 
     def get_application_remote_info(self) -> dict:
@@ -94,6 +182,8 @@ class BaseWAN:
         status_information = {
             "connection type": info["NewWANAccessType"],
             "is physical linked": info["NewPhysicalLinkStatus"],
+            "downstream_max_bitrate": info["NewLayer1DownstreamMaxBitRate"],
+            "upstream_max_bitrate": info["NewLayer1UpstreamMaxBitRate"],
             "max. downstream": bit_to_megabit(info["NewLayer1DownstreamMaxBitRate"]),
             "max. upstream": bit_to_megabit(info["NewLayer1UpstreamMaxBitRate"]),
         }
@@ -130,16 +220,15 @@ class DSLCableCommonMixin:
     the return values.
     """
     
-    def __init__(self, fc, prefix, service, postfix):
-        # idealwise a mixin should not have an __init__ method.
-        # however, this mixin is not a general purpose mixin and introduce
-        # an instance attribute `connection_service_name`.
-        super().__init__(fc)
-        self.prefix = prefix
-        self.service = service
-        self.postfix = postfix
-        self.connection_service_name = f"{service}{postfix}"
-    
+    @property
+    def is_connected(self) -> bool:
+        """
+        True if wan is enabled otherwise False.
+        This is not the same as is_linked, which is the physical link.
+        """
+        info = self.fc.call_action(self.connection_service_name, "GetInfo")
+        return info["NewEnable"]
+        
     @property
     def connection_uptime(self) -> int:
         """
@@ -174,13 +263,35 @@ class DSLConnection:
 
     def __str__(self):
         return f"WAN: DSL connection\n{self.fc}"
+        
+    @property
+    def noise_margin(self) -> tuple[int, int]:
+        """
+        Tuple of noise margin. First item
+        is upstream, second item downstream.
+        """
+        status = self.fc.call_action("WANDSLInterfaceConfig1", "GetInfo")
+        upstream = status["NewUpstreamNoiseMargin"]
+        downstream = status["NewDownstreamNoiseMargin"]
+        return upstream, downstream
+
+    @property
+    def attenuation(self) -> tuple[int, int]:
+        """
+        Tuple of attenuation. First item
+        is upstream, second item downstream.
+        """
+        status = self.fc.call_action("WANDSLInterfaceConfig1", "GetInfo")
+        upstream = status["NewUpstreamAttenuation"]
+        downstream = status["NewDownstreamAttenuation"]
+        return upstream, downstream
 
 
 class CableConnection:
 
     def __str__(self):
         return f"WAN: Cable connection\n{self.fc}"
-
+        
 
 class FritzWAN:
     """
@@ -201,5 +312,4 @@ class FritzWAN:
             "WANPPPConnection": (DSLConnection, DSLCableCommonMixin, BaseWAN),
             "WANIPConnection": (CableConnection, DSLCableCommonMixin, BaseWAN),
         }.get(service, (BaseWAN,))
-        connection_service_name = f"{service}{postfix}"
         return type(cls.__name__, bases, {})(fc, prefix, service, postfix)

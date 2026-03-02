@@ -276,7 +276,13 @@ class FritzConnection:
         Returns the name of the device.
         """
         return self.description.device_name
-        
+
+    @property
+    def device_uptime(self) -> int:
+        """Device uptime in seconds."""
+        status = self.call_action("DeviceInfo1", "GetInfo")
+        return status["NewUpTime"]
+       
     @property
     def modelname(self) -> str:
         """
@@ -307,6 +313,21 @@ class FritzConnection:
         Returns system version if known.
         """
         return self.description.system_version
+    
+    @property
+    def upnp_enabled(self) -> bool:
+        """
+        Returns whether UPnP is enabled on the device.
+        """
+        return self.call_action("X_AVM-DE_UPnP1", "GetInfo")["NewEnable"]
+        
+    @property
+    def media_server_enabled(self) -> bool:
+        """
+        Returns whether the buildin media server (also a UPnP device) is
+        enabled.
+        """
+        return self.call_action("X_AVM-DE_UPnP1", "GetInfo")["NewUPnPMediaServer"]
         
     @property
     def services(self) -> dict[str, Service]:
