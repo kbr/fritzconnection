@@ -67,8 +67,8 @@ class FritzRESTApi:
         ) -> list[dict]|dict:
         """
         Makes a `get` request to the given endpoint. `uid` and `serial`
-        a mutual exclusive. `payload` can hold additonal data to send to
-        the unit.
+        are mutual exclusive. `payload` can hold additonal data to send
+        to the unit.
         """
         return self._call_rest_api(
             method="get", 
@@ -86,8 +86,8 @@ class FritzRESTApi:
         ) -> list[dict]|dict:
         """
         Makes a `put` request to the given endpoint. `uid` and `serial`
-        a mutual exclusive. `payload` can hold additonal data to send to
-        the unit.
+        are mutual exclusive. `payload` can hold additonal data to send
+        to the unit.
         """
         return self._call_rest_api(
             method="put", 
@@ -106,9 +106,9 @@ class FritzRESTApi:
         ) -> list[dict]|dict:
         """
         Makes a `post` request to the given endpoint. `uid` and `serial`
-        a mutual exclusive. `payload` can hold additonal data to send to
-        the unit. `params` is a dictionary, list of tuples or bytes to
-        send in the query string for the Request.
+        are mutual exclusive. `payload` can hold additonal data to send
+        to the unit. `params` is a dictionary, list of tuples or bytes
+        to send in the query string for the Request.
         """
         return self._call_rest_api(
             method="post", 
@@ -127,8 +127,8 @@ class FritzRESTApi:
         ) -> list[dict]|dict:
         """
         Makes a `del` request to the given endpoint. `uid` and `serial`
-        a mutual exclusive. `payload` can hold additonal data to send to
-        the unit.
+        are mutual exclusive. `payload` can hold additonal data to send
+        to the unit.
         """
         return self._call_rest_api(
             method="del", 
