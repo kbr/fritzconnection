@@ -319,13 +319,6 @@ class FritzStatus:
         """
         return self.fwan.service
 
-
-
-
-
-
-
-
     @property
     def update_available(self) -> str:
         """

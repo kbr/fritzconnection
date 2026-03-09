@@ -15,8 +15,11 @@ This version adds support for the new FRITZ! Smart Home REST API-Interface. Ther
 
   - argument `use_cache` now defaults to `True`
   - new method `call_rest_api()`
+  - new property `device_uptime`
   - new property `has_wan_support`
   - new property `has_mesh_support`
+  - new property `upnp_enabled`
+  - new property `media_server_enabled`
   - new property `device_name` to replace `modelname`
   - attribute `modelname` is deprectated
 
@@ -38,12 +41,11 @@ This version adds support for the new FRITZ! Smart Home REST API-Interface. Ther
 
 - FritzStatus:
 
-  Most of the functionality of this module is implemented elsewere in the library. 
+  Got a refactoring, because most of the functionality of this module is implemented elsewere in the library. The API is still the same but mostly with references to the real implementations.
 
-  - **removed**:
+  - **deprecated**:
   
-    - `get_default_connection_service`: use FritzWAN module instead
-    - `get_cpu_temperatures`: redundant method also defined in the FritzConnection class
+    - `get_default_connection_service()`: has been simplified and renamed to the `connection_service` property.
 
 
 - new command-line interface replacing the former multiple tools by a single console script `fritzconnection` with subcommands.
