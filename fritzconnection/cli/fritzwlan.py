@@ -11,6 +11,7 @@ Author: Klaus Bremer
 """
 
 import itertools
+import argparse
 
 from ..core.exceptions import FritzServiceError, FritzAuthorizationError
 from ..lib.fritzwlan import FritzWLAN, SERVICE
@@ -22,7 +23,7 @@ from . utils import (
 )
 
 
-def get_header():
+def get_header() -> str:
     index = 'index'
     status = 'active'
     mac = 'mac'
@@ -32,7 +33,7 @@ def get_header():
     return f'{index:>5}{status:>8}{mac:>20}{ip:>18}{signal:>8}{speed:>8}'
 
 
-def report_wlanconfiguration(fw, extension):
+def report_wlanconfiguration(fw: FritzWLAN, extension: int) -> None:
     fw.service = extension
     hosts_info = fw.get_hosts_info()
     if hosts_info:
@@ -51,7 +52,7 @@ def report_wlanconfiguration(fw, extension):
         print()
 
 
-def report_devices(fw, args):
+def report_devices(fw: FritzWLAN, args: argparse.Namespace) -> None:
     if args.service:
         try:
             report_wlanconfiguration(fw, args.service)
@@ -65,20 +66,20 @@ def report_devices(fw, args):
                 break
 
 
-def add_arguments(parser):
+def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('-s', '--service',
                         nargs='?', default=0, const=None,
                         help='WLANConfiguration service number')
 
 
-def execute():
+def execute() -> None:
     arguments = get_cli_arguments(add_arguments)
     fritz_wlan = get_instance(FritzWLAN, arguments)
     print_header(fritz_wlan)
     report_devices(fritz_wlan, arguments)
 
 
-def main():
+def main() -> None:
     try:
         execute()
     except FritzAuthorizationError as err:

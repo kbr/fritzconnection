@@ -10,6 +10,8 @@ License: MIT (https://opensource.org/licenses/MIT)
 Authors: Klaus Bremer, David M. Straub
 """
 
+import argparse
+
 from ..core.exceptions import FritzAuthorizationError
 from ..lib.fritzphonebook import FritzPhonebook
 from .utils import (
@@ -20,7 +22,7 @@ from .utils import (
 )
 
 
-def print_phonebooks(fpb):
+def print_phonebooks(fpb: FritzPhonebook) -> None:
     for id in fpb.phonebook_ids:
         info = fpb.phonebook_info(id)
         print(f"Content of phonebook: {info['name']} ")
@@ -29,7 +31,7 @@ def print_phonebooks(fpb):
         print()
 
 
-def print_search_name(fpb, arguments):
+def print_search_name(fpb: FritzPhonebook, arguments: argparse.Namespace) -> None:
     found = False
     for id in fpb.phonebook_ids:
         contacts = fpb.get_all_names(id)
@@ -41,7 +43,7 @@ def print_search_name(fpb, arguments):
         print(f"name {arguments.name} not found.")
 
 
-def print_search_number(fpb, arguments):
+def print_search_number(fpb: FritzPhonebook, arguments: argparse.Namespace) -> None:
     found = False
     for id in fpb.phonebook_ids:
         numbers = fpb.get_all_numbers(id)
@@ -52,7 +54,7 @@ def print_search_number(fpb, arguments):
         print(f'number {arguments.number} not found.')
 
 
-def add_arguments(parser):
+def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('-a', '--all',
                         action='store_true',
                         help='List all phone books ')
@@ -64,7 +66,7 @@ def add_arguments(parser):
                         help='Number for name search')
 
 
-def execute():
+def execute() -> None:
     arguments = get_cli_arguments(add_arguments)
     fpb = get_instance(FritzPhonebook, arguments)
     print_header(fpb)
@@ -78,7 +80,7 @@ def execute():
     print()  # blank line for better readability
 
 
-def main():
+def main() -> None:
     try:
         execute()
     except FritzAuthorizationError as err:

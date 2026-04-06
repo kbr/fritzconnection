@@ -10,16 +10,22 @@ Module to get information about WLAN devices.
 from __future__ import annotations
 
 import io
+import importlib
 import itertools
 import random
 import string
+from typing import Any, cast
+from warnings import warn
 
 from ..core.exceptions import FritzServiceError
 from .fritzbase import AbstractLibraryBase
 
+segno_helpers: Any
+
 try:
-    import segno.helpers
+    segno_helpers = importlib.import_module('segno.helpers')
 except ImportError:
+    segno_helpers = None
     SEGNO_INSTALLED = False
 else:
     SEGNO_INSTALLED = True
@@ -43,7 +49,13 @@ _BEACONTYPE_TO_QR_SECURITY = {
 }
 
 
-def _get_wifi_qr_code(instance, kind='svg', security=None, scale=4, border=0):
+def _get_wifi_qr_code(
+    instance: Any,
+    kind: str = 'svg',
+    security: str | None = None,
+    scale: int = 4,
+    border: int = 0,
+) -> Any:
     """
     Returns a file-like object providing a bytestring representing a
     qr-code for wlan access. `instance` is a FritzWLAN or FritzGuestWLAN
@@ -100,12 +112,13 @@ def _get_wifi_qr_code(instance, kind='svg', security=None, scale=4, border=0):
         security = _BEACONTYPE_TO_QR_SECURITY.get(instance.beacontype,
                                                   _QR_SECURITY_NO_PASS)
     password = instance.get_password() if security != _QR_SECURITY_NO_PASS else None
-    qr_code = segno.helpers.make_wifi(
+    qr_code = segno_helpers.make_wifi(
         ssid=instance.ssid,
         password=password,
         security=security,
         hidden=instance.is_hidden
     )
+    stream: io.BytesIO | io.StringIO
     if kind in ['text', 'text-compact']:
         stream = io.StringIO()
         compact = kind != 'text'
@@ -117,7 +130,7 @@ def _get_wifi_qr_code(instance, kind='svg', security=None, scale=4, border=0):
     return stream
 
 
-def _qr_code_enabler(cls):
+def _qr_code_enabler(cls: type[Any]) -> type[Any]:
     """Classdecorator to inject qr-capabilities at import time."""
     if SEGNO_INSTALLED:
         cls.get_wifi_qr_code = _get_wifi_qr_code
@@ -137,11 +150,11 @@ class FritzWLAN(AbstractLibraryBase):
     for 2.4 GHz, 2 for 5 GHz and 3 for a guest network. This can vary
     depending on the router model and change with future standards.
     """
-    def __init__(self, *args, service=1, **kwargs):
+    def __init__(self, *args: Any, service: int = 1, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.service = service
 
-    def _action(self, actionname, **kwargs):
+    def _action(self, actionname: str, **kwargs: Any) -> dict[str, Any]:
         service = f'{SERVICE}{self.service}'
         return self.fc.call_action(service, actionname, **kwargs)
 
@@ -152,7 +165,7 @@ class FritzWLAN(AbstractLibraryBase):
         WLANConfiguration.
         """
         result = self._action('GetTotalAssociations')
-        return result['NewTotalAssociations']
+        return cast(int, result['NewTotalAssociations'])
 
     @property
     def total_host_number(self) -> int:
@@ -175,7 +188,7 @@ class FritzWLAN(AbstractLibraryBase):
     def ssid(self) -> str:
         """The WLAN SSID"""
         result = self._action('GetSSID')
-        return result['NewSSID']
+        return cast(str, result['NewSSID'])
 
     @ssid.setter
     def ssid(self, value: str) -> None:
@@ -190,7 +203,7 @@ class FritzWLAN(AbstractLibraryBase):
         settings and `None, 11i, 11iandWPA3, OWETrans` for the guest
         network.
         """
-        return self.get_info()['NewBeaconType']
+        return cast(str, self.get_info()['NewBeaconType'])
 
     @property
     def is_hidden(self) -> bool:
@@ -200,14 +213,22 @@ class FritzWLAN(AbstractLibraryBase):
     @property
     def channel(self) -> int:
         """The WLAN channel in use"""
-        return self.channel_info()['NewChannel']
+        return cast(int, self.channel_info()['NewChannel'])
 
     @property
     def alternative_channels(self) -> str:
         """Alternative channels (as string)"""
-        return self.channel_info()['NewPossibleChannels']
+        return cast(str, self.channel_info()['NewPossibleChannels'])
 
-    def channel_info(self) -> dict:
+    def channel_infos(self) -> dict[str, Any]:
+        """
+        .. deprecated:: 1.9.0
+           Use :func:`channel_info` instead.
+        """
+        warn('This method is deprecated. Use "channel_info" instead.', DeprecationWarning)
+        return self.channel_info()
+
+    def channel_info(self) -> dict[str, Any]:
         """
         Return a dictionary with the keys *NewChannel* and
         *NewPossibleChannels* indicating the active channel and
@@ -222,7 +243,7 @@ class FritzWLAN(AbstractLibraryBase):
         """
         self._action('SetChannel', NewChannel=number)
 
-    def get_generic_host_entry(self, index: int) -> dict:
+    def get_generic_host_entry(self, index: int) -> dict[str, Any]:
         """
         Return a dictionary with information about the device
         internally stored at the position 'index'.
@@ -233,7 +254,7 @@ class FritzWLAN(AbstractLibraryBase):
         )
         return result
 
-    def get_specific_host_entry(self, mac_address: str) -> dict:
+    def get_specific_host_entry(self, mac_address: str) -> dict[str, Any]:
         """
         Return a dictionary with information about the device
         with the given 'mac_address'.
@@ -244,13 +265,13 @@ class FritzWLAN(AbstractLibraryBase):
         )
         return result
 
-    def get_hosts_info(self) -> list[dict]:
+    def get_hosts_info(self) -> list[dict[str, Any]]:
         """
         Returns a list of dictionaries with information about the known
         hosts. The dict-keys are: 'service', 'index', 'status', 'mac',
         'ip', 'signal', 'speed'
         """
-        information = []
+        information: list[dict[str, Any]] = []
         for index in itertools.count():
             try:
                 host = self.get_generic_host_entry(index)
@@ -267,7 +288,7 @@ class FritzWLAN(AbstractLibraryBase):
             })
         return information
 
-    def get_info(self) -> dict:
+    def get_info(self) -> dict[str, Any]:
         """
         Returns a dictionary with general internal information about
         the current wlan network according to the AVM documentation.
@@ -277,7 +298,7 @@ class FritzWLAN(AbstractLibraryBase):
     @property
     def is_enabled(self) -> bool:
         """Returns whether the network is enabled."""
-        return self.get_info()["NewEnable"]
+        return cast(bool, self.get_info()["NewEnable"])
 
     def enable(self) -> None:
         """Enables the associated network."""
@@ -287,13 +308,14 @@ class FritzWLAN(AbstractLibraryBase):
         """Disables the associated network."""
         self._set_enable(False)
 
-    def _set_enable(self, status):
+    def _set_enable(self, status: bool) -> None:
         """Helper function for enable|disable."""
         self._action("SetEnable", arguments={"NewEnable": status})
 
     def get_password(self) -> str:
         """Returns the current password of the associated wlan."""
-        return self._action("GetSecurityKeys")["NewKeyPassphrase"]
+        result = self._action("GetSecurityKeys")
+        return cast(str, result["NewKeyPassphrase"])
 
     def set_password(
         self,
@@ -318,19 +340,19 @@ class FritzWLAN(AbstractLibraryBase):
         }
         self._action("SetSecurityKeys", arguments=arguments)
 
-    def _create_preshared_key(self):
+    def _create_preshared_key(self) -> str:
         """
         Returns a new pre-shared key for setting a new password.
         The sequence is of uppercase characters as this is default on FritzOS
         at time of writing.
         """
         info = self.get_info()
-        characters = info["NewAllowedCharsPSK"]
-        length = info["NewMaxCharsPSK"]
+        characters = cast(str, info["NewAllowedCharsPSK"])
+        length = cast(int, info["NewMaxCharsPSK"])
         return "".join(random.choices(characters, k=length)).upper()
 
     @staticmethod
-    def _create_password(length):
+    def _create_password(length: int) -> str:
         """
         Returns a human-readable password with the given length.
         """
@@ -356,7 +378,7 @@ class FritzGuestWLAN(FritzWLAN):
     number in seconds, `use_tls` a boolean indicating to use TLS
     (default False).
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the guest wlan instance. All parameters are
         optional. If given, they have the following meaning: `fc` is an

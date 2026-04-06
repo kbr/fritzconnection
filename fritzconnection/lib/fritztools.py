@@ -5,12 +5,13 @@ Some helpers for the library.
 import math
 import re
 from types import SimpleNamespace
+from typing import Any, Iterable
 
 
 RE_UPPER_CASE = re.compile(r"([A-Z]+)")
 
 
-def byte_formatter(value):
+def byte_formatter(value: int | float) -> tuple[float, str]:
     """
     Gets a large integer als value and returns a tuple with the value as
     float and the matching dimension as string, i.e.
@@ -34,7 +35,7 @@ def byte_formatter(value):
     return num, dimension
 
 
-def format_num(num, unit='bytes'):
+def format_num(num: int | float, unit: str = 'bytes') -> str:
     """
     Returns a human-readable string of a byte-value.
     If 'num' is bits, set unit='bits'.
@@ -45,7 +46,7 @@ def format_num(num, unit='bytes'):
     return f'{num:3.1f} {dim}'
 
 
-def format_rate(num, unit='bytes'):
+def format_rate(num: int | float, unit: str = 'bytes') -> str:
     """
     Returns a human-readable string of a byte/bits per second.
     If 'num' is bits, set unit='bits'.
@@ -53,7 +54,7 @@ def format_rate(num, unit='bytes'):
     return format_num(num, unit=unit) + '/s'
 
 
-def format_dB(num):
+def format_dB(num: int | float) -> str:
     """
     Returns a human-readable string of dB. The value is divided
     by 10 to get first decimal digit
@@ -147,7 +148,13 @@ class ArgumentNamespace(SimpleNamespace):
 
     """
 
-    def __init__(self, source, mapping=None, extract=None, suppress_new=True):
+    def __init__(
+        self,
+        source: dict[str, Any],
+        mapping: dict[str, str] | None = None,
+        extract: Iterable[str] | None = None,
+        suppress_new: bool = True,
+    ) -> None:
         if mapping is None:
             keys = extract if extract else source.keys()
             mapping = {
@@ -157,13 +164,13 @@ class ArgumentNamespace(SimpleNamespace):
             **{name: source[attribute] for name, attribute in mapping.items()}
         )
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: Any) -> None:
         setattr(self, key, value)
 
-    def __len__(self):
+    def __len__(self) -> int:
         # should provide len() as dict-like object
         return len(self.__dict__)
 

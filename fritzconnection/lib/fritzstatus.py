@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import datetime
 from collections import namedtuple
+from typing import Any, Iterator, cast
+from warnings import warn
 
 from fritzconnection.core.processor import (
     Storage,
@@ -27,8 +29,7 @@ DefaultConnectionService = namedtuple(
     "DefaultConnectionService", "prefix connection_service postfix"
 )
 
-
-def _integer_or_original(value):
+def _integer_or_original(value: Any) -> int | str:
     """
     Tries to convert value to an integer. Returns this integer on
     success, otherwise returns the original value.
@@ -36,7 +37,7 @@ def _integer_or_original(value):
     try:
         return int(value)
     except ValueError:
-        return value
+        return cast(str, value)
 
 
 @processor
@@ -54,7 +55,7 @@ class Event:
     msg = None
 
     @property
-    def datetime(self):
+    def datetime(self) -> datetime.datetime:
         return datetime.datetime.strptime(f"{self.date}{self.time}", "%d.%m.%y%H:%M:%S")
 
 
@@ -67,12 +68,12 @@ class DeviceLog(Storage):
 
     Event = InstanceAttributeFactory(Event)
 
-    def __init__(self, root):
-        self.events = list()
+    def __init__(self, root: Any) -> None:
+        self.events: list[Event] = []
         super().__init__(self.events)
         process_node(self, root)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         for event in self.events:
             yield event
 
@@ -95,7 +96,7 @@ class FritzStatus(AbstractLibraryBase):
         the provider.
         """
         status = self.fc.call_action("WANCommonIFC", "GetCommonLinkProperties")
-        return status["NewPhysicalLinkStatus"] == "Up"
+        return cast(str, status["NewPhysicalLinkStatus"]) == "Up"
 
     @property
     def is_connected(self) -> bool:
@@ -104,22 +105,21 @@ class FritzStatus(AbstractLibraryBase):
         internet-connection.
         """
         status = self.fc.call_action("WANIPConn", "GetStatusInfo")
-        return status["NewConnectionStatus"] == "Connected"
+        return cast(str, status["NewConnectionStatus"]) == "Connected"
 
     @property
     def external_ip(self) -> str:
         """The external v4 ip-address."""
-        return self.fc.call_action("WANIPConn", "GetExternalIPAddress")[
-            "NewExternalIPAddress"
-        ]
+        result = self.fc.call_action("WANIPConn", "GetExternalIPAddress")
+        return cast(str, result["NewExternalIPAddress"])
 
     @property
     def external_ipv6(self) -> str:
         """The external v6 ip-address."""
-        return self.external_ipv6_info["NewExternalIPv6Address"]
+        return cast(str, self.external_ipv6_info["NewExternalIPv6Address"])
 
     @property
-    def external_ipv6_info(self) -> dict:
+    def external_ipv6_info(self) -> dict[str, Any]:
         """
         Returns the ipv6 external address information as a dictionary with the keys:
         NewExternalIPv6Address                   out ->     string
@@ -130,12 +130,12 @@ class FritzStatus(AbstractLibraryBase):
         return self.fc.call_action("WANIPConn", "X_AVM_DE_GetExternalIPv6Address")
 
     @property
-    def ipv6_prefix(self):
+    def ipv6_prefix(self) -> str:
         """The internal v6 prefix."""
-        return self.ipv6_prefix_info["NewIPv6Prefix"]
+        return cast(str, self.ipv6_prefix_info["NewIPv6Prefix"])
 
     @property
-    def ipv6_prefix_info(self) -> dict:
+    def ipv6_prefix_info(self) -> dict[str, Any]:
         """
         Returns the ipv6 prefix information as a dictionary with the keys:
         NewIPv6Prefix                            out ->     string
@@ -149,13 +149,13 @@ class FritzStatus(AbstractLibraryBase):
     def connection_uptime(self) -> int:
         """Connection uptime in seconds."""
         status = self.fc.call_action("WANIPConn", "GetStatusInfo")
-        return status["NewUptime"]
+        return cast(int, status["NewUptime"])
 
     @property
     def device_uptime(self) -> int:
         """Device uptime in seconds."""
         status = self.fc.call_action("DeviceInfo1", "GetInfo")
-        return status["NewUpTime"]
+        return cast(int, status["NewUpTime"])
 
     @property
     def str_uptime(self) -> str:
@@ -201,8 +201,8 @@ class FritzStatus(AbstractLibraryBase):
         second. Use this for periodical calling.
         """
         status = self.fc.call_action("WANCommonIFC1", "GetAddonInfos")
-        upstream = status["NewByteSendRate"]
-        downstream = status["NewByteReceiveRate"]
+        upstream = cast(int, status["NewByteSendRate"])
+        downstream = cast(int, status["NewByteReceiveRate"])
         return upstream, downstream
 
     @property
@@ -236,8 +236,8 @@ class FritzStatus(AbstractLibraryBase):
         different services of the WANCommonInterfaceConfig1 ServiceType.
         """
         status = self.fc.call_action(servicename, "GetCommonLinkProperties")
-        downstream = status["NewLayer1DownstreamMaxBitRate"]
-        upstream = status["NewLayer1UpstreamMaxBitRate"]
+        downstream = cast(int, status["NewLayer1DownstreamMaxBitRate"])
+        upstream = cast(int, status["NewLayer1UpstreamMaxBitRate"])
         return upstream, downstream
 
     @property
@@ -274,7 +274,7 @@ class FritzStatus(AbstractLibraryBase):
             format_rate(downstream, unit="bits"),
         )
 
-    def get_monitor_data(self, sync_group_index=0) -> dict:
+    def get_monitor_data(self, sync_group_index: int = 0) -> dict[str, Any]:
         """
         Returns a dictionary with realtime data about the current up-
         and downstream rates.
@@ -292,7 +292,7 @@ class FritzStatus(AbstractLibraryBase):
                     # ignore and keep value as is:
                     pass
                 else:
-                    monitor_data[key] = items  # type: ignore
+                    monitor_data[key] = items
         return monitor_data
 
     def reconnect(self) -> None:
@@ -306,8 +306,8 @@ class FritzStatus(AbstractLibraryBase):
         is upstream, second item downstream.
         """
         status = self.fc.call_action("WANDSLInterfaceConfig1", "GetInfo")
-        upstream = status["NewUpstreamNoiseMargin"]
-        downstream = status["NewDownstreamNoiseMargin"]
+        upstream = cast(int, status["NewUpstreamNoiseMargin"])
+        downstream = cast(int, status["NewDownstreamNoiseMargin"])
         return upstream, downstream
 
     @property
@@ -326,8 +326,8 @@ class FritzStatus(AbstractLibraryBase):
         is upstream, second item downstream.
         """
         status = self.fc.call_action("WANDSLInterfaceConfig1", "GetInfo")
-        upstream = status["NewUpstreamAttenuation"]
-        downstream = status["NewDownstreamAttenuation"]
+        upstream = cast(int, status["NewUpstreamAttenuation"])
+        downstream = cast(int, status["NewDownstreamAttenuation"])
         return upstream, downstream
 
     @property
@@ -346,7 +346,7 @@ class FritzStatus(AbstractLibraryBase):
         FritzServiceError in case the service is not available.
         """
         status = self.fc.call_action("X_AVM-DE_UPnP1", "GetInfo")
-        return status["NewEnable"]
+        return cast(bool, status["NewEnable"])
 
     @property
     def device_has_mesh_support(self) -> bool:
@@ -372,7 +372,8 @@ class FritzStatus(AbstractLibraryBase):
         .. versionadded:: 1.10
 
         """
-        return ArgumentNamespace(self.fc.call_action("DeviceInfo1", "GetInfo"))
+        result = self.fc.call_action("DeviceInfo1", "GetInfo")
+        return ArgumentNamespace(result)
 
     def get_avm_device_log(self, filter: str | None = None) -> DeviceLog:
         """
@@ -392,7 +393,7 @@ class FritzStatus(AbstractLibraryBase):
         group-name as filter-argument.
         """
         result = self.fc.call_action("DeviceInfo1", "X_AVM-DE_GetDeviceLogPath")
-        path = result["NewDeviceLogPath"]
+        path = cast(str, result["NewDeviceLogPath"])
         if filter:
             path = f"{path}&filter={filter}"
         url = f"{self.fc.address}:{self.fc.port}{path}"
@@ -418,11 +419,14 @@ class FritzStatus(AbstractLibraryBase):
         `device_connection` -> str (like "WANPPPConnection")
         `postfix` -> str
         """
-        result = self.fc.call_action("Layer3Forwarding1", "GetDefaultConnectionService")
-        prefix, connection_service, postfix = result[
-            "NewDefaultConnectionService"
-        ].split(".", 2)
-        return DefaultConnectionService(prefix, connection_service, postfix)
+        result = self.fc.call_action(
+                "Layer3Forwarding1", "GetDefaultConnectionService"
+        )
+        prefix, connection_service, postfix = \
+            cast(str, result["NewDefaultConnectionService"]).split('.', 2)
+        return DefaultConnectionService(
+            prefix, connection_service, postfix
+        )
 
     @property
     def connection_service(self) -> str:
@@ -431,7 +435,7 @@ class FritzStatus(AbstractLibraryBase):
         get_default_connection_service().
         """
         result = self.get_default_connection_service()
-        return result.connection_service
+        return cast(str, result.connection_service)
 
     @property
     def update_available(self) -> str:
@@ -439,14 +443,16 @@ class FritzStatus(AbstractLibraryBase):
         The new version number (as a string) if an update is available or an
         empty string if no update is avilable.
         """
-        return self.fc.call_action("UserInterface1", "GetInfo")["NewX_AVM-DE_Version"]
+        result = self.fc.call_action("UserInterface1", "GetInfo")
+        return cast(str, result["NewX_AVM-DE_Version"])
 
     @property
     def has_wan_enabled(self) -> bool:
         """
         True if wan is enabled otherwise False.
         """
-        return self.fc.call_action(self.connection_service, "GetInfo")["NewEnable"]
+        result = self.fc.call_action(self.connection_service, "GetInfo")
+        return cast(bool, result["NewEnable"])
 
     @property
     def has_wan_support(self) -> bool:

@@ -10,11 +10,13 @@ License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
 
+import argparse
+
 from ..lib.fritzhomeauto import FritzHomeAutomation
 from . utils import get_cli_arguments, get_instance, print_header
 
 
-def report_verbose(fh):
+def report_verbose(fh: FritzHomeAutomation) -> None:
     information = fh.device_information()
     for info in information:
         width = len(max(info.keys(), key=lambda x: len(x)))
@@ -24,7 +26,7 @@ def report_verbose(fh):
         print()  # add blank line between devices
 
 
-def report_compact(fh):
+def report_compact(fh: FritzHomeAutomation) -> None:
     name = 'Device Name'
     ain = 'AIN'
     power = 'Power[W]'
@@ -42,7 +44,7 @@ def report_compact(fh):
     print()
 
 
-def report_status(fh, arguments):
+def report_status(fh: FritzHomeAutomation, arguments: argparse.Namespace) -> None:
     print('FritzHomeautomation:')
     print('Status of registered home-automation devices:\n')
     if arguments.verbose:
@@ -51,13 +53,13 @@ def report_status(fh, arguments):
         report_compact(fh)
 
 
-def switch_device(fh, arguments):
+def switch_device(fh: FritzHomeAutomation, arguments: argparse.Namespace) -> None:
     ain = arguments.switch[0]
     state = arguments.switch[1].lower() == 'on'
     fh.set_switch(identifier=ain, on=state)
 
 
-def add_arguments(parser):
+def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('-v', '--verbose',
                         nargs='?', default=False, const=True,
                         help='report in verbose mode')
@@ -67,7 +69,7 @@ def add_arguments(parser):
                              'ain and state [on|off]')
 
 
-def main():
+def main() -> None:
     arguments = get_cli_arguments(add_arguments)
     if not arguments.password:
         print('Exit: password required.')

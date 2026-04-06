@@ -11,8 +11,10 @@ import datetime
 from logging import DEBUG
 import html
 import re
+from typing import Any, Callable
 
 import requests
+from requests import Response, Session
 from requests.auth import HTTPDigestAuth
 from xml.etree import ElementTree as etree
 
@@ -29,7 +31,7 @@ SOAP_NS = "http://schemas.xmlsoap.org/soap/envelope/"
 STATUS_UNAUTHORIZED = 401
 
 
-def datetime_convert(value):
+def datetime_convert(value: str) -> datetime.datetime:
     """
     Converts a string in ISO 8601 format to a datetime-object.
     Raise ValueError if value does not match ISO 8601.
@@ -37,7 +39,7 @@ def datetime_convert(value):
     return datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
 
 
-def boolean_convert(value):
+def boolean_convert(value: str) -> bool:
     """
     Converts a string like '1' or '0' to a boolean value.
     Raise ValueError if it is something else than '1' or '0', because
@@ -49,12 +51,12 @@ def boolean_convert(value):
     raise ValueError(msg)
 
 
-def uuid_convert(value):
+def uuid_convert(value: str) -> str:
     """Strips the leading 'uuid:' part from the string."""
     return value.split(":")[-1]
 
 
-CONVERSION_TABLE = {
+CONVERSION_TABLE: dict[str, Callable[[str], Any]] = {
     "datetime": datetime_convert,
     "boolean": boolean_convert,
     "uuid": uuid_convert,
@@ -65,7 +67,7 @@ CONVERSION_TABLE = {
 }
 
 
-def get_converted_value(data_type, value):
+def get_converted_value(data_type: str, value: str) -> Any:
     """
     Try to convert the value from string to the given data_type. The
     data_type is used as key in the CONVERSION_TABLE dictionary. In case
@@ -77,7 +79,7 @@ def get_converted_value(data_type, value):
         return value
 
 
-def encode_boolean(value):
+def encode_boolean(value: Any) -> Any:
     """
     Returns 1 or 0 if the value is True or False.
     None gets interpreted as False.
@@ -90,7 +92,7 @@ def encode_boolean(value):
     return value
 
 
-def get_html_safe_value(value):
+def get_html_safe_value(value: Any) -> Any:
     """
     Returns a xml `encoded value` if it's an encodable value.
     `value` can be of any type. If it is a boolean or None it
@@ -105,7 +107,7 @@ def get_html_safe_value(value):
     return value
 
 
-def preprocess_arguments(arguments):
+def preprocess_arguments(arguments: dict[str, Any]) -> dict[str, Any]:
     """
     Takes a dictionary with arguments for a soap call and converts all
     values which are True, False or None to the according integers:
@@ -115,7 +117,7 @@ def preprocess_arguments(arguments):
     return {k: get_html_safe_value(v) for k, v in arguments.items()}
 
 
-def get_argument_value(root, argument_name):
+def get_argument_value(root: etree.Element, argument_name: str) -> str:
     """
     Takes an etree-root object, which is a parsed soap-response from the
     Fritz!Box, and an argument_name, which corresponds to a node-name in
@@ -124,14 +126,17 @@ def get_argument_value(root, argument_name):
     Raise an AttributeError in case that a node is not found.
     """
     # root.find will() raise the AttributeError on unknown nodes
-    value = root.find(f".//{argument_name}").text
+    node = root.find(f".//{argument_name}")
+    if node is None:
+        raise AttributeError(argument_name)
+    value = node.text
     if value is None:
         # this will be the case on empty tags: <tag></tag>
         value = ""
     return value
 
 
-def is_html_response(text):
+def is_html_response(text: str) -> bool:
     """
     Returns a boolean whether the raw response text starts with an
     html-tag.
@@ -139,7 +144,7 @@ def is_html_response(text):
     return text.casefold().startswith("<html")
 
 
-def remove_html_tags(text):
+def remove_html_tags(text: str) -> str:
     """
     Returns the given string `response_text` with all tags removed.
     """
@@ -147,15 +152,15 @@ def remove_html_tags(text):
     return re.sub(r" +", " ", tag_free).strip()  # make it nice
 
 
-def raise_fritzconnection_error(response):
+def raise_fritzconnection_error(response: Response) -> None:
     """
     Handles all responses with status codes other than 200.
     Will raise a FritzConnectionException with the error code and
     description if available. Can also raise a FritzAuthorizationError
     in case of 401 html-response status code.
     """
-    parts = []
-    error_code = None
+    parts: list[str] = []
+    error_code: str | None = None
 
     if is_html_response(response.text):
         # if it is an html response, the error is described in the
@@ -176,22 +181,27 @@ def raise_fritzconnection_error(response):
         raise FritzConnectionException(str(err))
 
     # extract error information from the provided xml data
-    detail = root.find(".//detail")
-    children = detail.iter()
+    detail_node = root.find(".//detail")
+    if detail_node is None:
+        raise FritzConnectionException("Unable to extract SOAP error details")
+    children = detail_node.iter()
     next(children)  # skip detail itself
     for node in children:
         tag = localname(node)
-        text = node.text.strip()
+        text = node.text.strip() if isinstance(node.text, str) else ""
         if tag == "errorCode":
             error_code = text
         parts.append(f"{tag}: {text}")
     message = "\n".join(parts)
     # try except:KeyError not possible,
     # because one of the raised Exceptions may inherit from KeyError.
-    exception = FRITZ_ERRORS.get(error_code, FritzConnectionException)
+    if error_code is None:
+        exception = FritzConnectionException
+    else:
+        exception = FRITZ_ERRORS.get(error_code, FritzConnectionException)
     raise exception(message)
 
-def redact_response(redact: bool, input: str):
+def redact_response(redact: bool, input: str) -> str:
     # avoid expansive regex matching, when not neccessary
     if fritzlogger.level != DEBUG or not redact:
         return input
@@ -245,7 +255,7 @@ class Soaper:
     argument_template = "<{name}>{value}</{name}>"
     method = "post"
 
-    conversion_table = {
+    conversion_table: dict[str, Callable[[str], Any]] = {
         "datetime": datetime_convert,
         "boolean": boolean_convert,
         "uuid": uuid_convert,
@@ -255,7 +265,16 @@ class Soaper:
         "ui4": int,
     }
 
-    def __init__(self, address, port, user, password, timeout=None, session=None, redact_debug_log=False):
+    def __init__(
+        self,
+        address: str,
+        port: int,
+        user: str,
+        password: str,
+        timeout: float | None = None,
+        session: Session | None = None,
+        redact_debug_log: bool = False,
+    ) -> None:
         self.address = address
         self.port = port
         self.user = user
@@ -264,7 +283,7 @@ class Soaper:
         self.session = session
         self.redact_debug_log = redact_debug_log
 
-    def get_body(self, service, action_name, arguments):
+    def get_body(self, service: Any, action_name: str, arguments: str) -> str:
         """Returns the body by template substitution."""
         return self.body_template.format(
             service_type=service.serviceType,
@@ -272,14 +291,19 @@ class Soaper:
             arguments=arguments,
         )
 
-    def execute(self, service, action_name, arguments):
+    def execute(
+        self,
+        service: Any,
+        action_name: str,
+        arguments: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Builds the soap request and returns the response as dictionary.
         Numeric and boolean values are converted from strings to Python
         datatypes.
         """
 
-        def handle_response(response):
+        def handle_response(response: Response) -> dict[str, Any]:
             fritzlogger.debug(f"response status: {response.status_code}")
             fritzlogger.debug(redact_response(self.redact_debug_log, response.text))
             if response.status_code != 200:
@@ -288,11 +312,12 @@ class Soaper:
 
         headers = self.headers.copy()
         headers["soapaction"] = f"{service.serviceType}#{action_name}"
-        arguments = preprocess_arguments(arguments)
-        arguments = "".join(
-            self.argument_template.format(name=k, value=v) for k, v in arguments.items()
+        processed_arguments = preprocess_arguments(arguments)
+        rendered_arguments = "".join(
+            self.argument_template.format(name=k, value=v)
+            for k, v in processed_arguments.items()
         )
-        body = self.get_body(service, action_name, arguments)
+        body = self.get_body(service, action_name, rendered_arguments)
         envelope = self.envelope.format(body=body).encode("utf-8")
         url = f"{self.address}:{self.port}{service.controlURL}"
         fritzlogger.debug(f"\n{url}")
@@ -317,14 +342,19 @@ class Soaper:
             )
             return handle_response(response)
 
-    def parse_response(self, response, service, action_name):
+    def parse_response(
+        self,
+        response: Response,
+        service: Any,
+        action_name: str,
+    ) -> dict[str, Any]:
         """
         Extracts all known parameters of the given action from the
         response and returns this as a dictionary with the out-parameter
         names as keys and the corresponding response as values.
         Will raise an ActionError on unknown action_name.
         """
-        result = dict()
+        result: dict[str, Any] = {}
         action = service.actions[action_name]
         root = etree.fromstring(response.content)
         for argument_name in action.arguments:

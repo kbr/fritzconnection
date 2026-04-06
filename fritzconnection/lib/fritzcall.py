@@ -11,6 +11,7 @@ missed ones.
 from __future__ import annotations
 
 import datetime
+from typing import Any, Iterator, cast
 
 from ..core.processor import (
     processor,
@@ -37,13 +38,13 @@ ACTIVE_OUT_CALL_TYPE = 11
 SERVICE = 'X_AVM-DE_OnTel1'
 
 
-def datetime_converter(date_string):
+def datetime_converter(date_string: str | None) -> datetime.datetime | str | None:
     if not date_string:
         return date_string
     return datetime.datetime.strptime(date_string, '%d.%m.%y %H:%M')
 
 
-def timedelta_converter(duration_string):
+def timedelta_converter(duration_string: str | None) -> datetime.timedelta | str | None:
     if not duration_string:
         return duration_string
     hours, minutes = [int(part) for part in duration_string.split(':', 1)]
@@ -60,13 +61,13 @@ class FritzCall(AbstractLibraryBase):
     password, `timeout` a timeout as floating point number in seconds,
     `use_tls` a boolean indicating to use TLS (default False).
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.calls = None  # Instance of CallCollection to store Call-instances
+        self.calls: CallCollection | None = None  # store Call instances
 
-    def _update_calls(self, num=None, days=None):
+    def _update_calls(self, num: int | None = None, days: int | None = None) -> None:
         result = self.fc.call_action(SERVICE, 'GetCallList')
-        url = result['NewCallListURL']
+        url = cast(str, result['NewCallListURL'])
         if days:
             url += f'&days={days}'
         elif num:
@@ -92,6 +93,8 @@ class FritzCall(AbstractLibraryBase):
             update = True
         if update:
             self._update_calls(num, days)
+        if self.calls is None:
+            return []
         if calltype == ALL_CALL_TYPES:
             return self.calls.calls
         return [call for call in self.calls if call.type == calltype]
@@ -163,14 +166,14 @@ class AttributeConverter:
     """
     Data descriptor returning converted attribute values.
     """
-    def __init__(self, attribute_name, converter=str):
+    def __init__(self, attribute_name: str, converter: Any = str) -> None:
         self.attribute_name = attribute_name
         self.converter = converter
 
-    def __set__(self, obj, value):
+    def __set__(self, obj: Any, value: Any) -> Any:
         return NotImplemented
 
-    def __get__(self, obj, objtype):
+    def __get__(self, obj: Any, objtype: Any) -> Any:
         attr = getattr(obj, self.attribute_name)
         try:
             attr = self.converter(attr)
@@ -197,7 +200,7 @@ class Call:
     date = AttributeConverter('Date', datetime_converter)
     duration = AttributeConverter('Duration', timedelta_converter)
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.Id = None
         self.Type = None
         self.Called = None
@@ -212,12 +215,15 @@ class Call:
         self.Count = None
         self.Path = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         number = self.Called if self.type == 3 else self.Caller
         duration = self.Duration if self.type != 2 else "-"
         if not number:
             number = "-"
         return f'{self.Type:>6}   {number:24}{self.Date:>18}{duration:>12}'
+
+
+CallType = Call
 
 
 class CallCollection(Storage):
@@ -226,11 +232,11 @@ class CallCollection(Storage):
     """
     Call = InstanceAttributeFactory(Call)
 
-    def __init__(self, root):
+    def __init__(self, root: Any) -> None:
         self.timestamp = None
-        self.calls = list()
+        self.calls: list[CallType] = []
         super().__init__(self.calls)
         process_node(self, root)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[CallType]:
         return iter(self.calls)

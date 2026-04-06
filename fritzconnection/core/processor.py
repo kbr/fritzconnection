@@ -8,6 +8,10 @@ PEP8 representing node-names from xml description files.
 # License: MIT (https://opensource.org/licenses/MIT)
 # Author: Klaus Bremer
 
+from __future__ import annotations
+
+from typing import Any, Iterable, cast
+from xml.etree import ElementTree as etree
 
 from .utils import (
     get_xml_root,
@@ -19,7 +23,7 @@ from .utils import (
 # processor, decorator and descriptors here:
 # ---------------------------------------------------------
 
-def process_node(obj, root):
+def process_node(obj: Any, root: Iterable[etree.Element]) -> None:
     """
     Take an object and a root of nodes. The node.text of nodes with the
     same name as an instance-attribute of 'obj' are set as values for
@@ -39,19 +43,19 @@ def process_node(obj, root):
             attr(node)
         else:
             # node is an attribute: set value
-            if isinstance(node.text, str):
-                value = node.text.strip()
-            else:
-                value = node.text
+            value = node.text.strip() if isinstance(node.text, str) else node.text
             setattr(obj, node_name, value)
 
 
-def processor(cls):
+def processor(cls: type[Any]) -> type[Any]:
     """
     Class decorator to add the functionality of calling 'process_node'
     on invoking an instance as a callable.
     """
-    cls.__call__ = lambda obj, root: process_node(obj, root)
+    def _call(obj: Any, root: Iterable[etree.Element]) -> None:
+        process_node(obj, root)
+
+    setattr(cls, "__call__", _call)
     return cls
 
 
@@ -60,14 +64,14 @@ class ValueSequencer:
     Data descriptor storing a value (assigned as attribute value) in a
     given sequence.
     """
-    def __init__(self, sequence_name):
+    def __init__(self, sequence_name: str) -> None:
         self.sequence_name = sequence_name
 
-    def __get__(self, obj, objtype):
+    def __get__(self, obj: Any, objtype: Any) -> Any:
         # kind of set only attribute
         return NotImplemented
 
-    def __set__(self, obj, value):
+    def __set__(self, obj: Any, value: Any) -> None:
         sequence = getattr(obj, self.sequence_name)
         sequence.append(value)
 
@@ -77,10 +81,10 @@ class InstanceAttributeFactory:
     Non data descriptor returning instances of 'cls' and registering
     these instances in the '_storage' attribute of the calling instance.
     """
-    def __init__(self, cls):
+    def __init__(self, cls: type[Any]) -> None:
         self.cls = cls
 
-    def __get__(self, obj, objtype):
+    def __get__(self, obj: Any, objtype: Any) -> Any:
         instance = self.cls()
         obj._storage.append(instance)
         return instance
@@ -90,7 +94,7 @@ class Storage:
     """
     Baseclass for classes working with InstanceAttributeFactory.
     """
-    def __init__(self, storage):
+    def __init__(self, storage: list[Any]) -> None:
         self._storage = storage
 
 
@@ -108,21 +112,21 @@ class Serializer:
     This class and should not get instanciated.
     """
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if set(self.__dict__.keys()) ^ set(other.__dict__.keys()):
             # self and other have not the same set of instance attributes:
             return False
         # both instances must have all the same attribute values:
         return self._compare_attributes(other, self.__dict__.keys())
 
-    def _compare_attributes(self, other, attributes):
+    def _compare_attributes(self, other: Any, attributes: Iterable[str]) -> bool:
         # check for the same values in the attributes of self and other:
         for attribute in attributes:
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
         return True
 
-    def serialize(self, exclude=None):
+    def serialize(self, exclude: Any = None) -> dict[str, Any]:
         if exclude is None:
             exclude = []
         attribute_names = set(self.__dict__.keys()) - set(exclude)
@@ -130,11 +134,11 @@ class Serializer:
             {name: getattr(self, name) for name in attribute_names}
         )
 
-    def deserialize(self, data):
+    def deserialize(self, data: dict[str, Any]) -> None:
         self.__dict__.update(data)
 
     @staticmethod
-    def get_sorted_dict(dictionary):
+    def get_sorted_dict(dictionary: dict[str, Any]) -> dict[str, Any]:
         """
         Takes a dictionary and returns another one with all keys in
         alphabetical order.
@@ -143,15 +147,15 @@ class Serializer:
         return {key: dictionary[key] for key in sorted_keys}
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: dict[str, Any]) -> Any:
         """
         Return a new instance with attributes initialized from data.
         """
         try:
-            instance = cls()
+            instance = cast(Any, cls)()
         except TypeError:
             # will happen on classes expecting a list of nodes:
-            instance = cls(root=[])
+            instance = cast(Any, cls)(root=[])
         instance.deserialize(data)
         return instance
 
@@ -162,13 +166,13 @@ class SpecVersion(Serializer):
     Specification version from the schema device or service
     information.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         # attributes are case sensitive node names:
         self.major = None
         self.minor = None
 
     @property
-    def version(self):
+    def version(self) -> str:
         return f'{self.major}.{self.minor}'
 
 
@@ -178,7 +182,7 @@ class SystemVersion(Serializer):
     Information about the Fritz!OS version of the Fritz!Box.
     Information is just provided by the 'tr64desc.xml' file.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         # attributes are case sensitive node names
         self.HW = None
         self.Major = None
@@ -188,7 +192,7 @@ class SystemVersion(Serializer):
         self.Display = None
 
     @property
-    def version(self):
+    def version(self) -> str | None:
         """
         Returns system version as string like '7.10' or None if system
         version is unknown.
@@ -198,7 +202,7 @@ class SystemVersion(Serializer):
         return None
 
     @property
-    def info(self):
+    def info(self) -> tuple[Any, ...]:
         """
         Returns a tuple with all instance attributes 'HW, Major, Minor,
         Patch, Buildnumber, Display' in this order.
@@ -219,11 +223,11 @@ class Argument(Serializer):
     An argument with name, direction and relatedStateVariable
     attributes.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         # attributes are case sensitive node names
-        self.name = None
-        self.direction = None
-        self.relatedStateVariable = None
+        self.name: str | None = None
+        self.direction: str | None = None
+        self.relatedStateVariable: str | None = None
 
 
 @processor
@@ -240,14 +244,14 @@ class Action(Serializer):
     """
     Every Action has a name and a list of arguments.
     """
-    def __init__(self):
-        self._arguments = list()
-        self._arguments_storage = None
+    def __init__(self) -> None:
+        self._arguments: list[Argument] = []
+        self._arguments_storage: dict[Any, Argument] | None = None
         # attributes are case sensitive node names:
-        self.name = None
+        self.name: str | None = None
         self.argumentList = ArgumentList(self._arguments)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         # for testing: Action is equal to another if the name is the same
         # and the arguments in self._arguments are the same and in the
         # same order (because of the implementation).
@@ -259,7 +263,7 @@ class Action(Serializer):
         return False
 
     @property
-    def arguments(self):
+    def arguments(self) -> dict[Any, Argument]:
         """
         Returns the action-arguments as a dict. argument-names are the
         keys and the argument objects are the values. The dictionary
@@ -269,7 +273,7 @@ class Action(Serializer):
             self._arguments_storage = {arg.name: arg for arg in self._arguments}
         return self._arguments_storage
 
-    def serialize(self):
+    def serialize(self, exclude: Any = None) -> dict[str, Any]:
         """
         Return a dictionary with json serializable data: the name of the
         instance and a list of the serialized argument-instances in
@@ -280,7 +284,7 @@ class Action(Serializer):
         data['arguments'] = [arg.serialize() for arg in self._arguments]
         return data
 
-    def deserialize(self, data):
+    def deserialize(self, data: dict[str, Any]) -> None:
         """
         Deserialize the data back to an Action instance with a given
         name and defined Argument-instances.
@@ -302,11 +306,11 @@ class ActionList(Storage):
 @processor
 class ValueRange(Serializer):
 
-    def __init__(self):
+    def __init__(self) -> None:
         # attributes are case sensitive node names:
-        self.minimum = None
-        self.maximum = None
-        self.step = None
+        self.minimum: str | None = None
+        self.maximum: str | None = None
+        self.step: str | None = None
 
 
 @processor
@@ -318,23 +322,23 @@ class StateVariable(Serializer):
     # case sensitive node
     allowedValue = ValueSequencer('allowed_values')
 
-    def __init__(self):
+    def __init__(self) -> None:
         # attributes are case sensitive node names:
-        self.name = None
-        self.dataType = None
-        self.defaultValue = None
-        self.allowed_values = list()  # list of values as strings
+        self.name: str | None = None
+        self.dataType: str | None = None
+        self.defaultValue: str | None = None
+        self.allowed_values: list[str | None] = []
         self.allowedValueList = self
         self.allowedValueRange = ValueRange()
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         # two instances are equal on having the same attribute values.
         attributes = ["name", "dataType", "defaultValue", "allowed_values"]
         if not self._compare_attributes(other, attributes):
             return False
-        return self.allowedValueRange == other.allowedValueRange
+        return bool(self.allowedValueRange == other.allowedValueRange)
 
-    def serialize(self):
+    def serialize(self, exclude: Any = None) -> dict[str, Any]:
         """
         Returns a dictionary with json serializable attribute data.
         """
@@ -343,7 +347,7 @@ class StateVariable(Serializer):
         data["allowedValueRange"] = self.allowedValueRange.serialize()
         return data
 
-    def deserialize(self, data):
+    def deserialize(self, data: dict[str, Any]) -> None:
         """
         Deserialize the data back to a former state of a StateVariable
         instance.
@@ -369,13 +373,13 @@ class Scpd(Serializer):
     parameters.
     Root class for processing the content of an scpd-file.
     """
-    def __init__(self, root):
+    def __init__(self, root: Iterable[etree.Element]) -> None:
         """
         Starts interpreting the scpd-data. 'root' must be a xml.Element
         objects as returned from 'utils.get_xml_root'.
         """
-        self._actions = list()
-        self._state_variables = list()
+        self._actions: list[Action] = []
+        self._state_variables: list[StateVariable] = []
 
         # attributes are case sensitive node names:
         self.specVersion = SpecVersion()
@@ -385,16 +389,16 @@ class Scpd(Serializer):
         # start node processing:
         process_node(self, root)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         attributes = ["_actions", "_state_variables", "specVersion"]
         return self._compare_attributes(other, attributes)
 
     @property
-    def spec_version(self):
+    def spec_version(self) -> str:
         return self.specVersion.version
 
     @property
-    def actions(self):
+    def actions(self) -> dict[Any, Action]:
         """
         Returns a dictionary with the actions from the actions-list. The
         action-names are the keys and the actions themselves are the
@@ -403,20 +407,20 @@ class Scpd(Serializer):
         return {action.name: action for action in self._actions}
 
     @property
-    def state_variables(self):
+    def state_variables(self) -> dict[Any, StateVariable]:
         """
         Returns a dictionary with the state_variable name as keys and
         the StateVariable itself as value.
         """
         return {sv.name: sv for sv in self._state_variables}
 
-    def serialize(self):
-        data = {"actions": [action.serialize() for action in self._actions]}
+    def serialize(self, exclude: Any = None) -> dict[str, Any]:
+        data: dict[str, Any] = {"actions": [action.serialize() for action in self._actions]}
         data['state_variables'] = [sv.serialize() for sv in self._state_variables]
         data['specVersion'] = self.specVersion.serialize()
         return self.get_sorted_dict(data)
 
-    def deserialize(self, data):
+    def deserialize(self, data: dict[str, Any]) -> None:
         self._actions = [Action.from_data(d) for d in data['actions']]
         self._state_variables = [StateVariable.from_data(d) for d in data['state_variables']]
         self.specVersion.deserialize(data['specVersion'])
@@ -427,52 +431,58 @@ class Service(Serializer):
     """
     Class describing a service.
     """
-    def __init__(self):
-        self._scpd = None
-        self._actions = None
-        self._state_variables = None
+    def __init__(self) -> None:
+        self._scpd: Scpd | None = None
+        self._actions: dict[Any, Action] | None = None
+        self._state_variables: dict[Any, StateVariable] | None = None
         # attributes are case sensitive node names:
-        self.serviceType = None
-        self.serviceId = None
-        self.controlURL = None
-        self.eventSubURL = None
-        self.SCPDURL = None
+        self.serviceType: str | None = None
+        self.serviceId: str | None = None
+        self.controlURL: str | None = None
+        self.eventSubURL: str | None = None
+        self.SCPDURL: str | None = None
 
     @property
-    def name(self):
+    def name(self) -> str | None:
         if self.serviceId:
             return self.serviceId.split(':')[-1]
         return None
 
     @property
-    def actions(self):
+    def actions(self) -> dict[Any, Action]:
         """
         Returns all known actions of this service as a dictionary.
         Action names are keys, the action objects are the values. Caches
         the dictionary once retrieved from _scpd.
         """
         if self._actions is None:
-            self._actions = self._scpd.actions
+            self._actions = cast(Scpd, self._scpd).actions
         return self._actions
 
     @property
-    def state_variables(self):
+    def state_variables(self) -> dict[Any, StateVariable]:
         """
         Returns all known stateVariables of this service as a
         dictionary. Names are keys, the stateVariables objects are the
         values. Caches the dictionary once retrieved from _scpd.
         """
         if self._state_variables is None:
-            self._state_variables = self._scpd.state_variables
+            self._state_variables = cast(Scpd, self._scpd).state_variables
         return self._state_variables
 
-    def load_scpd(self, address, port, timeout=None, session=None):
+    def load_scpd(
+        self,
+        address: str,
+        port: int,
+        timeout: float | None = None,
+        session: Any = None,
+    ) -> None:
         """Loads the scpd data"""
         url = f'{address}:{port}{self.SCPDURL}'
         root = get_xml_root(url, timeout=timeout, session=session)
         self._scpd = Scpd(root)
 
-    def serialize(self):
+    def serialize(self, exclude: Any = None) -> dict[str, Any]:
         """
         Serialize the service instance attributes. Returns a dictionary
         with data that can be converted to json.
@@ -480,10 +490,10 @@ class Service(Serializer):
         exclude = ['_scpd', '_actions', '_state_variables']
         return {
             "attributes": super().serialize(exclude=exclude),
-            "scpd": self._scpd.serialize()
+            "scpd": cast(Scpd, self._scpd).serialize()
         }
 
-    def deserialize(self, data):
+    def deserialize(self, data: dict[str, Any]) -> None:
         """
         Inverse method for `serialize`. Takes the data (a dictionary)
         and populates the instance attributes extracted by `serialize`.
@@ -511,25 +521,25 @@ class Device(Serializer):
     Sub-devices are collected in devices.
     All instance attributes are public for read only use.
     """
-    def __init__(self):
-        self._services = list()
-        self.devices = list()
+    def __init__(self) -> None:
+        self._services: list[Service] = []
+        self.devices: list[Device] = []
         # attributes are case sensitive node names:
-        self.deviceType = None
-        self.friendlyName = None
-        self.manufacturer = None
-        self.manufacturerURL = None
-        self.modelDescription = None
-        self.modelName = None
-        self.modelNumber = None
-        self.modelURL = None
-        self.UDN = None
-        self.UPC = None
-        self.presentationURL = None
+        self.deviceType: str | None = None
+        self.friendlyName: str | None = None
+        self.manufacturer: str | None = None
+        self.manufacturerURL: str | None = None
+        self.modelDescription: str | None = None
+        self.modelName: str | None = None
+        self.modelNumber: str | None = None
+        self.modelURL: str | None = None
+        self.UDN: str | None = None
+        self.UPC: str | None = None
+        self.presentationURL: str | None = None
         self.serviceList = ServiceList(self._services)
         self.deviceList = DeviceList(self.devices)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         attributes = [
             "deviceType", "friendlyName", "manufacturer", "manufacturerURL",
             "modelDescription", "modelName", "modelNumber", "modelURL",
@@ -538,25 +548,25 @@ class Device(Serializer):
         return self._compare_attributes(other, attributes)
 
     @property
-    def services(self):
+    def services(self) -> dict[Any, Service]:
         services = {service.name: service for service in self._services}
         for device in self.devices:
             services.update(device.services)
         return services
 
-    def serialize(self):
+    def serialize(self, exclude: Any = None) -> dict[str, Any]:
         """
         Returns a dictionary with a subset of the instance attributes
         and a list of serialized services that can be transformed to
         json-format.
         """
         exclude = ["_services", "devices", "serviceList", "deviceList",]
-        data = {'attributes': super().serialize(exclude=exclude)}
+        data: dict[str, Any] = {'attributes': super().serialize(exclude=exclude)}
         data['services'] = [service.serialize() for service in self._services]
         data['devices'] = [device.serialize() for device in self.devices]
         return self.get_sorted_dict(data)
 
-    def deserialize(self, data):
+    def deserialize(self, data: dict[str, Any]) -> None:
         """
         Loads the data into the instance attributes. This is the
         reverse-function for serialize. No return value.
@@ -582,7 +592,7 @@ class Description(Serializer):
     Root class for a given description information as the content from
     the files igddesc.xml or tr64desc.xml.
     """
-    def __init__(self, root):
+    def __init__(self, root: Iterable[etree.Element]) -> None:
         """
         Starts data-processing. 'root' must be a xml.Element object as
         returned from 'utils.get_xml_root'.
@@ -596,15 +606,15 @@ class Description(Serializer):
         process_node(self, root)
 
     @property
-    def device_model_name(self):
+    def device_model_name(self) -> str | None:
         return self.device.modelName
 
     @property
-    def spec_version(self):
+    def spec_version(self) -> str:
         return self.specVersion.version
 
     @property
-    def system_version(self):
+    def system_version(self) -> str | None:
         """
         Returns the system version of the Fritz!Box as a string like
         '7.10' or None. This information is only available by the
@@ -613,7 +623,7 @@ class Description(Serializer):
         return self.systemVersion.version
 
     @property
-    def system_info(self):
+    def system_info(self) -> tuple[Any, ...]:
         """
         Returns the systemVersion attributes as a tuple:
         (HW, Major, Minor, Patch, Buildnumber, Display). This information
@@ -622,7 +632,7 @@ class Description(Serializer):
         return self.systemVersion.info
 
     @property
-    def system_buildnumber(self):
+    def system_buildnumber(self) -> str | None:
         """
         Returns the buildnumber or None. This information is only
         available by the 'tr64desc.xml' file.
@@ -630,7 +640,7 @@ class Description(Serializer):
         return self.systemVersion.Buildnumber
 
     @property
-    def system_display(self):
+    def system_display(self) -> str | None:
         """
         Returns the system display-string or None. This information is
         only available by the 'tr64desc.xml' file.
@@ -638,14 +648,14 @@ class Description(Serializer):
         return self.systemVersion.Display
 
     @property
-    def services(self):
+    def services(self) -> dict[str, Service]:
         """
         Returns dictionary with the known services as values and the
         according service-names as keys.
         """
         return self.device.services
 
-    def serialize(self):
+    def serialize(self, exclude: Any = None) -> dict[str, Any]:
         """
         Return serialized instance attributes as dictionary.
         """
@@ -655,7 +665,7 @@ class Description(Serializer):
             'systemVersion': self.systemVersion.serialize(),
         }
 
-    def deserialize(self, data):
+    def deserialize(self, data: dict[str, Any]) -> None:
         """
         Sets the instance attributes according to data.
         """
@@ -682,19 +692,19 @@ class Host:
         'X_AVM-DE_Disallow',
     }
 
-    def __getattr__(self, attr_name):
+    def __getattr__(self, attr_name: str) -> Any:
         # do the magic of not raising an AttributeError:
         setattr(self, attr_name, None)
         return getattr(self, attr_name)
 
     @property
-    def attributes(self):
+    def attributes(self) -> dict[str, Any]:
         """
         Provide all attributes of the instance as a dictionary with the
         attribute names as keys and the values converted to python
         datatypes.
         """
-        attrs = {}
+        attrs: dict[str, Any] = {}
         for name, value in self.__dict__.items():
             if name in self._int_values:
                 attrs[name] = int(value)
@@ -713,20 +723,21 @@ class HostStorage(Storage):
     """
     Item = InstanceAttributeFactory(Host)  # 'Item' must match node-name
 
-    def __init__(self, root):
-        self._hosts = list()
+    def __init__(self, root: Iterable[etree.Element]) -> None:
+        self._hosts: list[Host] = []
         super().__init__(self._hosts)
-        self(root)  # start process_node()
+        process_node(self, root)
 
     @property
-    def hosts_attributes(self):
+    def hosts_attributes(self) -> list[dict[str, Any]]:
         """
         Provide a list of dictionaries with the attributes of all hosts.
         The list is sorted with the lowest Index number first.
         """
         # list is already sorted from FritzOS,
         # but don't trust this for any time in the future.
+        host_attributes: list[dict[str, Any]] = [host.attributes for host in self._hosts]
         return sorted(
-            [host.attributes for host in self._hosts],
+            host_attributes,
             key = lambda attrs: attrs["Index"]
         )

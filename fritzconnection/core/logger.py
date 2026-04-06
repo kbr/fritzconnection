@@ -46,7 +46,10 @@ fritzlogger.setLevel(logging.INFO)
 fritzformatter = logging.Formatter(logging.BASIC_FORMAT)
 
 
-def activate_local_debug_mode(handler=None, propagate=False):
+def activate_local_debug_mode(
+    handler: logging.Handler | None = None,
+    propagate: bool = False,
+) -> None:
     """
     Activates all logging messages on debug level and don't propagate to
     parent-handlers. If no handler is given the NullHandler will get
@@ -66,7 +69,7 @@ def activate_local_debug_mode(handler=None, propagate=False):
     fritzlogger.setLevel(logging.DEBUG)
 
 
-def reset(keep_handlers=False, propagate=True):
+def reset(keep_handlers: bool = False, propagate: bool = True) -> None:
     """
     Resets the logger to the initial state, i.e. after calling
     `activate_local_debug_mode`. All handlers will be removed, except

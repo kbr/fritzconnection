@@ -9,6 +9,7 @@ Module for read-only access to the contents of the Fritz!Box phonebooks.
 
 from __future__ import annotations
 
+from typing import Any, cast
 from warnings import warn
 
 from ..core.processor import (
@@ -37,11 +38,11 @@ class FritzPhonebook(AbstractLibraryBase):
     password, `timeout` a timeout as floating point number in seconds,
     `use_tls` a boolean indicating to use TLS (default False).
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.phonebook = None
+        self.phonebook: Phonebook | None = None
 
-    def _action(self, actionname, **kwargs):
+    def _action(self, actionname: str, **kwargs: Any) -> dict[str, Any]:
         return self.fc.call_action(SERVICE, actionname, **kwargs)
 
     @property
@@ -54,11 +55,11 @@ class FritzPhonebook(AbstractLibraryBase):
         """
         result = self._action('GetPhonebookList')
         try:
-            res = result['NewPhonebookList'].split(',')
-            res = [int(x) for x in res]
+            raw_ids = cast(str, result['NewPhonebookList']).split(',')
+            ids = [int(x) for x in raw_ids]
         except KeyError:
             return []
-        return res
+        return ids
 
     # legathy api name for backward compatibility
     def list_phonebooks(self) -> list[int]:
@@ -69,7 +70,7 @@ class FritzPhonebook(AbstractLibraryBase):
         warn('This method is deprecated. Use "phonebook_ids" instead.', DeprecationWarning)
         return self.phonebook_ids
 
-    def phonebook_info(self, id: int) -> dict:
+    def phonebook_info(self, id: int) -> dict[str, Any]:
         """
         Get the `name`, `url` and an optional `extra id` of the
         phonebook with integer `id`. Returns a dictionary with the keys
@@ -82,7 +83,7 @@ class FritzPhonebook(AbstractLibraryBase):
             'xid': result.get('NewPhonebookExtraID')
         }
 
-    def get_all_name_numbers(self, id: int) -> list[tuple]:
+    def get_all_name_numbers(self, id: int) -> list[tuple[str, list[str]]]:
         """
         Returns all entries from the phonebook with the given id as a
         list of tuples. The first item of every tuple is the contact
@@ -90,13 +91,17 @@ class FritzPhonebook(AbstractLibraryBase):
         contact.
         """
         url = self.phonebook_info(id)['url']
+        if not isinstance(url, str):
+            return []
         self._read_phonebook(url)
+        if self.phonebook is None:
+            return []
         return [
             (contact.name, contact.numbers)
             for contact in self.phonebook.contacts
         ]
 
-    def get_all_names(self, id: int) -> dict:
+    def get_all_names(self, id: int) -> dict[str, list[str]]:
         """
         Get a dictionary with all names and their phone numbers for the
         phonebook with `id`. If a name is given more than once in a
@@ -108,7 +113,7 @@ class FritzPhonebook(AbstractLibraryBase):
         """
         return {name: number for name, number in self.get_all_name_numbers(id)}
 
-    def get_all_numbers(self, id: int) -> dict:
+    def get_all_numbers(self, id: int) -> dict[str, str]:
         """
         Get a dictionary with all phone numbers and the according names
         for the phonebook with `id`. This method is based on the method
@@ -136,7 +141,7 @@ class FritzPhonebook(AbstractLibraryBase):
         """
         return self.get_all_numbers(id)[number]
 
-    def _read_phonebook(self, url):
+    def _read_phonebook(self, url: str) -> None:
         """
         Read the content of the phonebook with the given `url`. This
         method sets the phone book instance attribute and has no return
@@ -152,7 +157,7 @@ class Services:
     """
     Services container. So far just for an associated email-address.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self.email = None
 
 
@@ -161,7 +166,7 @@ class Person:
     """
     Data storage for a contact name and an image.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self.realName = None
         self.imageURL = None
 
@@ -173,8 +178,8 @@ class Telephony:
     """
     number = ValueSequencer('numbers')
 
-    def __init__(self):
-        self.numbers = list()
+    def __init__(self) -> None:
+        self.numbers: list[str] = []
         self.services = Services()
 
 
@@ -185,18 +190,18 @@ class Contact:
     well as `person`- and telephony-sub-nodes.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.category = None
         self.uniqueid = None
         self.person = Person()
         self.telephony = Telephony()
 
     @property
-    def name(self):
-        return self.person.realName
+    def name(self) -> str:
+        return cast(str, self.person.realName)
 
     @property
-    def numbers(self):
+    def numbers(self) -> list[str]:
         return self.telephony.numbers
 
 
@@ -208,7 +213,7 @@ class Phonebook(Storage):
     """
     contact = InstanceAttributeFactory(Contact)
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.timestamp = None
-        self.contacts = list()
+        self.contacts: list[Contact] = []
         super().__init__(self.contacts)

@@ -15,7 +15,7 @@ import pickle
 import string
 import xml.etree.ElementTree as ElementTree
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 # from typing import Union  # for python < 3.10
 
 import requests
@@ -266,6 +266,9 @@ class FritzConnection:
             port = FRITZ_TLS_PORT
         elif port is None:
             port = FRITZ_TCP_PORT
+        assert address is not None
+        assert user is not None
+        assert password is not None
         address = self.set_protocol(address, use_tls)
 
         # a session will speed up connections (significantly for tls)
@@ -280,13 +283,13 @@ class FritzConnection:
 
         # TODO: remove 'self._updatecheck' when 3.7 is no longer supported.
         # this is a dictionary-based cache
-        self._updatecheck: dict | None = None
+        self._updatecheck: dict[str, str | None] | None = None
 
         # store as instance attributes for use by library modules
-        self.address = address
+        self.address: str = address
         self.session = session
         self.timeout = timeout
-        self.port = port
+        self.port: int = port
 
         self.soaper = Soaper(
             address, port, user, password, timeout=timeout, session=session, redact_debug_log=redact_debug_log
@@ -300,7 +303,7 @@ class FritzConnection:
         # provide also the http-interface for more homeautomation tasks
         self.http_interface = FritzHttp(self)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return a readable representation"""
         return (
             f"{self.modelname} at {self.soaper.address}\n"
@@ -317,14 +320,14 @@ class FritzConnection:
         return self.device_manager.services
 
     @property
-    def modelname(self) -> str:
+    def modelname(self) -> str | None:
         """
         Returns the modelname of the router.
         """
         return self.device_manager.modelname
 
     @property
-    def system_version(self) -> str:
+    def system_version(self) -> str | None:
         """
         Returns system version if known, otherwise None.
         """
@@ -337,13 +340,13 @@ class FritzConnection:
         combination of the device model name and the installed software
         version.
         """
-        return self.call_action("DeviceInfo1", "GetInfo")["NewDescription"]
+        return str(self.call_action("DeviceInfo1", "GetInfo")["NewDescription"])
 
     # TODO: change to @functools.cached_property
     # when stopping support for Python 3.7
     # in this case the self._updatecheck instance attribute is no longer needed.
     @property
-    def updatecheck(self) -> dict:
+    def updatecheck(self) -> dict[str, str | None]:
         """
         Dictionary with information about the hard- and software version of
         the device according to "http://fritz.box/jason_boxinfo.xml".
@@ -382,7 +385,7 @@ class FritzConnection:
         url = url.split("//", 1)[-1]
         return PROTOCOLS[use_tls] + url
 
-    def _reset_user(self, user, password):
+    def _reset_user(self, user: str, password: str) -> None:
         """
         For Fritz!OS >= 7.24: if a password is given and the username is
         the historic FRITZ_USERNAME, then check for the last logged-in
@@ -393,8 +396,11 @@ class FritzConnection:
         the way AVM recommends setting the required username in case a
         username is not provided.
         """
+        version = self.system_version
+        if version is None:
+            return
         try:
-            sys_version = float(self.system_version)
+            sys_version = float(version)
         except (ValueError, TypeError):
             # version not available: don't do anything
             return
@@ -429,8 +435,8 @@ class FritzConnection:
         service_name: str,
         action_name: str,
         *,
-        arguments: dict | None = None,
-        **kwargs
+        arguments: dict[str, Any] | None = None,
+        **kwargs: Any,
     ) -> dict[str, Any]:
         """
         Executes the given action of the given service. Both parameters
@@ -455,7 +461,7 @@ class FritzConnection:
         the corresponding information as values. Numeric and boolean
         values are converted from strings to Python datatypes.
         """
-        arguments = arguments if arguments else dict()
+        arguments = arguments if arguments else {}
         if not arguments:
             arguments.update(kwargs)
         service_name = self.normalize_name(service_name)
@@ -469,7 +475,7 @@ class FritzConnection:
         self,
         command: str,
         identifier: str | None = None,
-        **kwargs
+        **kwargs: Any,
     ) -> dict[str, str]:
         """
         Excecutes the given command by means of the http-interface. This
@@ -501,6 +507,8 @@ class FritzConnection:
             identifier,
             **kwargs
         )
+        if header is None:
+            header = ""
         content_type, charset = [item.strip() for item in header.split(";")]
         # extract the encoding from the charset-information
         encoding = charset.split("=")[-1].strip()
@@ -540,11 +548,11 @@ class FritzConnection:
 
     def _load_router_api(
         self,
-        use_cache=False,
-        cache_directory=None,
-        cache_format=FRITZ_CACHE_FORMAT_JSON,
-        verify_cache=True,
-    ):
+        use_cache: bool = False,
+        cache_directory: str | Path | None = None,
+        cache_format: str = FRITZ_CACHE_FORMAT_JSON,
+        verify_cache: bool = True,
+    ) -> None:
         """
         Load the router api.
 
@@ -560,7 +568,7 @@ class FritzConnection:
         from the router and the cache data are updated. The same happens
         on errors loading the cache-file.
         """
-        def reload_api():
+        def reload_api() -> None:
             # reset in case of remaining artefacts:
             self.device_manager.descriptions = []
             self.device_manager.services = {}
@@ -582,7 +590,7 @@ class FritzConnection:
         else:
             self._load_api_from_router()
 
-    def _is_valid_cache(self):
+    def _is_valid_cache(self) -> bool:
         """
         Checks whether the cache-data seems to be valid. Returns a
         booean: `True` if valid, `False` otherwise.
@@ -590,9 +598,12 @@ class FritzConnection:
         # system_id is something like ('FRITZ!Box 7590', '154.07.29') which
         # originates from the device description and is part of the cache data.
         try:
+            system_info = self.device_manager.system_info
+            if system_info is None:
+                return False
             cached_id = (
                 self.device_manager.modelname,
-                self.device_manager.system_info[-1]
+                system_info[-1]
             )
         except TypeError:
             # this can happen if the default ip is used with multiple
@@ -615,7 +626,11 @@ class FritzConnection:
         )
         return cached_id == current_id
 
-    def _get_cache_path(self, cache_directory, cache_format):
+    def _get_cache_path(
+        self,
+        cache_directory: str | Path | None,
+        cache_format: str,
+    ) -> Path:
         """
         Returns the path to the cache file (including the filename and
         extension) as a Path instance.
@@ -636,7 +651,7 @@ class FritzConnection:
         path.mkdir(exist_ok=True)
         return path / filename
 
-    def _write_api_to_cache(self, path, cache_format):
+    def _write_api_to_cache(self, path: Path, cache_format: str) -> None:
         """
         Stores the api data in a cache-file.
         """
@@ -649,7 +664,7 @@ class FritzConnection:
             else:
                 json.dump(self.device_manager.serialize(), fobj)
 
-    def _load_api_from_cache(self, path, cache_format):
+    def _load_api_from_cache(self, path: Path, cache_format: str) -> None:
         """
         Read the api data from a cache-file and forwards the data to the
         device_manager.
@@ -668,7 +683,7 @@ class FritzConnection:
                 self.device_manager.deserialize(json.load(fobj))
         self.device_manager.scan()
 
-    def _load_api_from_router(self):
+    def _load_api_from_router(self) -> None:
         """
         Read the api data from the router and forwards the data to the
         device_manager.

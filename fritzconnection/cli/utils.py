@@ -7,8 +7,11 @@ License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
 
+from __future__ import annotations
+
 import argparse
 import os
+from typing import Any, Callable
 
 from ..core.fritzconnection import (
     FritzConnection,
@@ -25,7 +28,7 @@ from ..core.utils import get_bool_env
 from .. import __version__
 
 
-def print_header(instance):
+def print_header(instance: Any) -> None:
     print(f'\nfritzconnection v{__version__}')
     if isinstance(instance, FritzConnection):
         print(instance)
@@ -34,7 +37,7 @@ def print_header(instance):
     print()
 
 
-def print_common_exception_message(error_object):
+def print_common_exception_message(error_object: Exception) -> None:
     print(error_object)
     print(
         "\nSeems you forgot to provide the user and/or the password."
@@ -44,7 +47,7 @@ def print_common_exception_message(error_object):
     )
 
 
-def get_instance(cls, args):
+def get_instance(cls: type[Any], args: argparse.Namespace) -> Any:
     # -y implies -x:
     if not args.verify_cache:
         args.use_cache = True
@@ -61,7 +64,9 @@ def get_instance(cls, args):
     )
 
 
-def get_cli_arguments(scan_additional_arguments=None):
+def get_cli_arguments(
+    scan_additional_arguments: Callable[[argparse.ArgumentParser], None] | None = None,
+) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--ip-address',
                         nargs='?', default=FRITZ_IP_ADDRESS, const=None,

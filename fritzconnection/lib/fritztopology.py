@@ -12,6 +12,8 @@ See https://avm.de/service/schnittstellen/ "Mesh-Topologie"
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 from .fritzhosts import FritzHosts
 from .fritzbase import AbstractLibraryBase
 
@@ -35,18 +37,18 @@ class Connection:
     source is represented by the interface-link node 2.
     """
 
-    def __init__(self, source, target, interface_link):
+    def __init__(self, source: Device, target: Device, interface_link: InterfaceLink) -> None:
         self.source = source
         self.target = target
         self.interface_link = interface_link
 
     @property
     def type(self) -> str | None:
-        return self._get_interface_attribute("type")
+        return cast(str | None, self._get_interface_attribute("type"))
 
     @property
     def state(self) -> str | None:
-        return self._get_interface_attribute("state")
+        return cast(str | None, self._get_interface_attribute("state"))
 
     @property
     def max_rx(self) -> int | None:
@@ -64,7 +66,7 @@ class Connection:
     def cur_tx(self) -> int | None:
         return self._get_transfer_rate("cur_data_rate_tx")
 
-    def _get_transfer_rate(self, name):
+    def _get_transfer_rate(self, name: str) -> int | None:
         """
         Adapt the rate to the link direction: 'tx' is the transfer rate
         from node 1 to node 2 which is ok, if node 1 represents the
@@ -75,9 +77,10 @@ class Connection:
             name, direction = name.rsplit("_", 1)
             direction = "rx" if direction == "tx" else "tx"
             name = f"{name}_{direction}"
-        return self._get_interface_attribute(name)
+        value = self._get_interface_attribute(name)
+        return cast(int | None, value)
 
-    def _get_interface_attribute(self, name, default=None):
+    def _get_interface_attribute(self, name: str, default: Any = None) -> Any:
         return getattr(self.interface_link, name, default)
 
 
@@ -92,7 +95,7 @@ class InterfaceLink:
     'self.last_connected' in case the UNIX timestamp is requested.
     """
 
-    def __init__(self, data: dict, interface: Interface):
+    def __init__(self, data: dict[str, Any], interface: Interface) -> None:
         self.__dict__.update(data)
         self.interface = interface
         # The starting point is assumed to be the device, which is
@@ -130,13 +133,13 @@ class InterfaceLink:
         """
         return Connection(self.source, self.target, self)
 
-    def _get_connected_device(self, target=True):
+    def _get_connected_device(self, target: bool = True) -> Device:
         """
         Returns the device connected by this link,
         either the target or source device.
         """
         index = self.target_index if target else self.source_index
-        device_id = getattr(self, f"node_{index}_uid")
+        device_id = cast(str, getattr(self, f"node_{index}_uid"))
         return self.interface.device.mesh.get_device_by_id(device_id)
 
 
@@ -149,7 +152,7 @@ class Interface:
     A connection is represented by the InterfaceLink class.
     """
 
-    def __init__(self, data: dict, device: Device):
+    def __init__(self, data: dict[str, Any], device: Device) -> None:
         self.__dict__.update(data)
         self.interface_links = [
             InterfaceLink(link, self) for link in self.node_links
@@ -177,9 +180,9 @@ class Interface:
     @property
     def mac(self) -> str:
         """mac address of the interface"""
-        return self.mac_address
+        return cast(str, self.mac_address)
 
-    def get_connections(self):
+    def get_connections(self) -> list[Connection]:
         """
         Returns a list of Connection objects describing all devices
         connected by this interface.
@@ -200,7 +203,7 @@ class Device:
     the data in a more mnemonic way.
     """
 
-    def __init__(self, data: dict, mesh: FritzMeshTopology):
+    def __init__(self, data: dict[str, Any], mesh: FritzMeshTopology) -> None:
         self.__dict__.update(data)
         self.interfaces = [
             Interface(interface_data, self)
@@ -219,26 +222,26 @@ class Device:
 
     @property
     def name(self) -> str:
-        return self.device_name
+        return cast(str, self.device_name)
 
     @property
     def model(self) -> str:
-        return self.device_model
+        return cast(str, self.device_model)
 
     @property
     def vendor(self) -> str:
-        return self.device_manufacturer
+        return cast(str, self.device_manufacturer)
 
     @property
     def mac(self) -> str:
-        return self.device_mac_address
+        return cast(str, self.device_mac_address)
 
-    def get_connections(self):
+    def get_connections(self) -> list[Connection]:
         """
         Returns a list of Connection objects describing all
         devices connected to this device.
         """
-        connections = []
+        connections: list[Connection] = []
         for interface in self.interfaces:
             connections.extend(interface.get_connections())
         return connections
@@ -250,11 +253,11 @@ class FritzMeshTopology(AbstractLibraryBase):
 
     """
 
-    def __init__(self, fc=None, *args, **kwargs):
+    def __init__(self, fc: Any = None, *args: Any, **kwargs: Any) -> None:
         super().__init__(fc, *args, **kwargs)
         self._fritzhosts = FritzHosts(self.fc)
-        self.topology = {}
-        self.nodes = {}
+        self.topology: dict[str, Any] = {}
+        self.nodes: dict[str, Device] = {}
 
     def __repr__(self) -> str:
         return (
@@ -269,7 +272,7 @@ class FritzMeshTopology(AbstractLibraryBase):
 
     @property
     def schema_version(self) -> str:
-        return self.topology.get("schema_version", "unknown")
+        return cast(str, self.topology.get("schema_version", "unknown"))
 
     @property
     def number_of_devices(self) -> int:
@@ -288,12 +291,17 @@ class FritzMeshTopology(AbstractLibraryBase):
         """
         return self.nodes[uid]
 
-    def load_topology(self):
+    def load_topology(self) -> None:
         """
         Load the topology from the router.
         """
-        self.topology = self._fritzhosts.get_mesh_topology(raw=False)
+        topology = self._fritzhosts.get_mesh_topology(raw=False)
+        if not isinstance(topology, dict):
+            self.topology = {}
+            self.nodes = {}
+            return
+        self.topology = topology
         self.nodes = {
-            node["uid"]: Device(node, self)
+            cast(str, node["uid"]): Device(cast(dict[str, Any], node), self)
             for node in self.topology.get("nodes", ())
         }
