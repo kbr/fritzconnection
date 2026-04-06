@@ -10,6 +10,7 @@ Author: Klaus Bremer
 """
 
 import datetime
+import argparse
 
 from ..core.exceptions import FritzAuthorizationError
 from ..core.fritzconnection import FritzConnection
@@ -28,16 +29,16 @@ class FritzInspection:
     """
     # pylint: disable=invalid-name  # self.fc is ok.
 
-    def __init__(self, fc):
+    def __init__(self, fc: FritzConnection) -> None:
         self.fc = fc
 
-    def view_servicenames(self):
+    def view_servicenames(self) -> None:
         """Send all known service names to stdout."""
         print('Servicenames:')
         for service_name in self.fc.services:
             print('{:20}{}'.format('', service_name))
 
-    def view_actionnames(self, service_name, view_arguments=False):
+    def view_actionnames(self, service_name: str, view_arguments: bool = False) -> None:
         """Send all action names of the given service to stdout."""
         print('\n{:<20}{}'.format('Servicename:', service_name))
         print('Actionnames:')
@@ -54,7 +55,7 @@ class FritzInspection:
                         print('{:24}- {}'.format('', argument))
                     print()
 
-    def view_actionarguments(self, service_name, action_name):
+    def view_actionarguments(self, service_name: str, action_name: str) -> None:
         """Send all action names of the given service to stdout."""
         try:
             service = self.fc.services[service_name]
@@ -75,11 +76,15 @@ class FritzInspection:
                 direction = '-> in'
             else:
                 direction = '   out ->'
-            var = service.state_variables.get(argument.relatedStateVariable, '')
-            line = f'    {argument.name:38}{direction:14}{var.dataType}'
+            if argument.relatedStateVariable is None:
+                data_type = ''
+            else:
+                var = service.state_variables.get(argument.relatedStateVariable)
+                data_type = '' if var is None else str(var.dataType)
+            line = f'    {argument.name:38}{direction:14}{data_type}'
             print(line)
 
-    def view_complete_api(self):
+    def view_complete_api(self) -> None:
         """
         Send the complete api to stdout.
 
@@ -105,7 +110,7 @@ class FritzInspection:
                 self.view_actionarguments(service_name, action_name)
 
 
-def add_arguments(parser):
+def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('-r', '--reconnect',
                         action='store_true',
                         help='Reconnect and get a new ip')
@@ -133,7 +138,7 @@ def add_arguments(parser):
                         help='List the complete api of the router')
 
 
-def run_inspector(inspector, args):
+def run_inspector(inspector: FritzInspection, args: argparse.Namespace) -> None:
     print_header(inspector.fc)
     if args.services:
         inspector.view_servicenames()
@@ -155,14 +160,14 @@ def run_inspector(inspector, args):
     print()
 
 
-def execute():
+def execute() -> None:
     args = get_cli_arguments(add_arguments)
     fc = get_instance(FritzConnection, args)
     inspector = FritzInspection(fc=fc)
     run_inspector(inspector, args)
 
 
-def main():
+def main() -> None:
     try:
         execute()
     except FritzAuthorizationError as err:

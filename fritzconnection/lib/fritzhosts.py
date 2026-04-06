@@ -10,11 +10,7 @@ Module to access and control the known hosts.
 from __future__ import annotations
 
 import itertools
-
-try:
-    from typing import Generator
-except ImportError:
-    from collections.abc import Generator
+from typing import Any, Generator, cast
 
 from ..core.exceptions import (
     FritzActionError,
@@ -39,16 +35,22 @@ class FritzHosts(AbstractLibraryBase):
     boolean indicating to use TLS (default False).
     """
 
-    def _action(self, actionname, *, arguments=None, **kwargs):
+    def _action(
+        self,
+        actionname: str,
+        *,
+        arguments: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         return self.fc.call_action(SERVICE, actionname, arguments=arguments, **kwargs)
 
     @property
     def host_numbers(self) -> int:
         """The number of known hosts."""
         result = self._action("GetHostNumberOfEntries")
-        return result["NewHostNumberOfEntries"]
+        return cast(int, result["NewHostNumberOfEntries"])
 
-    def get_generic_host_entry(self, index: int) -> dict:
+    def get_generic_host_entry(self, index: int) -> dict[str, Any]:
         """
         Returns a dictionary with information about a device internally
         registered by the position *index*. Index-positions are
@@ -56,7 +58,7 @@ class FritzHosts(AbstractLibraryBase):
         """
         return self._action("GetGenericHostEntry", NewIndex=index)
 
-    def get_generic_host_entries(self) -> Generator[dict, None, None]:
+    def get_generic_host_entries(self) -> Generator[dict[str, Any], None, None]:
         """
         Generator returning a dictionary for every host as provided by
         `get_generic_host_entry()`. (See also `get_hosts_info()` that
@@ -68,14 +70,14 @@ class FritzHosts(AbstractLibraryBase):
             except IndexError:
                 break
 
-    def get_specific_host_entry(self, mac_address: str) -> dict:
+    def get_specific_host_entry(self, mac_address: str) -> dict[str, Any]:
         """
         Returns a dictionary with information about a device addressed
         by the MAC-address.
         """
         return self._action("GetSpecificHostEntry", NewMACAddress=mac_address)
 
-    def get_specific_host_entry_by_ip(self, ip: str) -> dict:
+    def get_specific_host_entry_by_ip(self, ip: str) -> dict[str, Any]:
         """
         Returns a dictionary with information about a device addressed
         by the ip-address. Provides additional information about
@@ -94,9 +96,9 @@ class FritzHosts(AbstractLibraryBase):
             result = self.get_specific_host_entry(mac_address)
         except (FritzArgumentError, FritzLookUpError):
             return None
-        return result["NewActive"]
+        return cast(bool, result["NewActive"])
 
-    def get_active_hosts(self) -> list[dict]:
+    def get_active_hosts(self) -> list[dict[str, Any]]:
         """
         Returns a list of dicts with information about the active
         devices. The dict-keys are: 'ip', 'name', 'mac', 'status',
@@ -104,13 +106,13 @@ class FritzHosts(AbstractLibraryBase):
         """
         return [host for host in self.get_hosts_info() if host["status"]]
 
-    def get_hosts_info(self) -> list[dict]:
+    def get_hosts_info(self) -> list[dict[str, Any]]:
         """
         Returns a list of dicts with information about the known hosts.
         The dict-keys are: 'ip', 'name', 'mac', 'status',
         'interface_type', 'address_source', 'lease_time_remaining'.
         """
-        result = []
+        result: list[dict[str, Any]] = []
         for index in itertools.count():
             try:
                 host = self.get_generic_host_entry(index)
@@ -130,7 +132,7 @@ class FritzHosts(AbstractLibraryBase):
             )
         return result
 
-    def get_mesh_topology(self, raw=False) -> dict | str:
+    def get_mesh_topology(self, raw: bool = False) -> dict[str, Any] | str:
         """
         Returns information about the mesh network topology. If `raw` is
         `False` the topology gets returned as a dictionary with a list
@@ -138,13 +140,16 @@ class FritzHosts(AbstractLibraryBase):
         json format. Default is `False`.
         """
         result = self._action("X_AVM-DE_GetMeshListPath")
-        path = result["NewX_AVM-DE_MeshListPath"]
+        path = cast(str, result["NewX_AVM-DE_MeshListPath"])
         url = f"{self.fc.address}:{self.fc.port}{path}"
         with self.fc.session.get(url) as response:
             if not response.ok:
                 message = f"Error {response.status_code}: Device has no access to topology information."
                 raise FritzActionError(message)
-            return response.text if raw else response.json()
+            if raw:
+                return response.text
+            mesh_topology: dict[str, Any] = response.json()
+            return mesh_topology
 
     def get_wakeonlan_status(self, mac_address: str) -> bool:
         """
@@ -154,7 +159,7 @@ class FritzHosts(AbstractLibraryBase):
         info = self._action(
             "X_AVM-DE_GetAutoWakeOnLANByMACAddress", NewMACAddress=mac_address
         )
-        return info["NewAutoWOLEnabled"]
+        return cast(bool, info["NewAutoWOLEnabled"])
 
     def set_wakeonlan_status(self, mac_address: str, status: bool = False) -> None:
         """
@@ -185,7 +190,8 @@ class FritzHosts(AbstractLibraryBase):
         Returns a String with the host_name of the device with the given
         mac_address
         """
-        return self.get_specific_host_entry(mac_address)["NewHostName"]
+        result = self.get_specific_host_entry(mac_address)
+        return cast(str, result["NewHostName"])
 
     def run_host_update(self, mac_address: str) -> None:
         """
@@ -197,7 +203,7 @@ class FritzHosts(AbstractLibraryBase):
         """
         self._action("X_AVM-DE_HostDoUpdate", NewMACAddress=mac_address)
 
-    def get_hosts_attributes(self) -> list[dict]:
+    def get_hosts_attributes(self) -> list[dict[str, Any]]:
         """
         Returns a list of dictionaries with information about all hosts.
 
@@ -211,7 +217,7 @@ class FritzHosts(AbstractLibraryBase):
         .. versionadded:: 1.10
         """
         result = self._action("X_AVM-DE_GetHostListPath")
-        path = result["NewX_AVM-DE_HostListPath"]
+        path = cast(str, result["NewX_AVM-DE_HostListPath"])
         url = f"{self.fc.address}:{self.fc.port}{path}"
         storage = HostStorage(get_xml_root(source=url, session=self.fc.session))
         return storage.hosts_attributes

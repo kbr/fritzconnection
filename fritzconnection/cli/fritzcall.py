@@ -10,6 +10,8 @@ License: MIT (https://opensource.org/licenses/MIT)
 Author: Klaus Bremer
 """
 
+import argparse
+
 from ..core.exceptions import FritzAuthorizationError
 from ..lib.fritzcall import FritzCall
 from . utils import (
@@ -20,7 +22,7 @@ from . utils import (
 )
 
 
-def report_calls(fc, arguments):
+def report_calls(fc: FritzCall, arguments: argparse.Namespace) -> None:
     print('FritzCall:')
     days = arguments.days
     num = arguments.num if not days else None
@@ -44,13 +46,13 @@ def report_calls(fc, arguments):
     print()
 
 
-def dial_number(fc, number):
+def dial_number(fc: FritzCall, number: str) -> None:
     print(f'dialing number: {number}')
     fc.dial(number)
     print('dialing done, please wait for signal.')
 
 
-def add_arguments(parser):
+def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('-n', '--num',
                         nargs='?', default=None, const=None,
                         help='max number of calls in the call-list')
@@ -65,7 +67,7 @@ def add_arguments(parser):
                         help='phone number to call')
 
 
-def execute(arguments):
+def execute(arguments: argparse.Namespace) -> None:
     fc = get_instance(FritzCall, arguments)
     if arguments.call:
         dial_number(fc, arguments.call)
@@ -74,7 +76,7 @@ def execute(arguments):
         report_calls(fc, arguments)
 
 
-def main():
+def main() -> None:
     arguments = get_cli_arguments(add_arguments)
     try:
         execute(arguments)

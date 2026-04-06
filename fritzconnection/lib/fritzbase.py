@@ -14,6 +14,8 @@ base class for library classes providing a common initialisation.
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 from ..core.fritzconnection import FritzConnection
 
 
@@ -30,8 +32,8 @@ class AbstractLibraryBase:
     def __init__(
         self,
         fc: FritzConnection | None = None,
-        *args,
-        **kwargs
+        *args: Any,
+        **kwargs: Any,
     ):
         if fc is None:
             fc = FritzConnection(*args, **kwargs)
@@ -43,4 +45,4 @@ class AbstractLibraryBase:
         The device modelname. Every library module derived from
         `AbstractLibraryBase` inherits this property.
         """
-        return self.fc.modelname
+        return cast(str, self.fc.modelname)

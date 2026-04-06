@@ -2,11 +2,15 @@
 Implements the DeviceManager for physical and virtual devices. Every
 physical device (a router) has a set of virtual subdevices.
 """
+
+from __future__ import annotations
+
+from typing import Any
+
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection
 # License: MIT (https://opensource.org/licenses/MIT)
 # Author: Klaus Bremer
-
 
 from .processor import Description
 from .utils import get_xml_root
@@ -22,14 +26,14 @@ class DeviceManager:
     will not get used.
     """
 
-    def __init__(self, timeout=None, session=None):
-        self.descriptions = []
-        self.services = {}
+    def __init__(self, timeout: float | None = None, session: Any = None) -> None:
+        self.descriptions: list[Description] = []
+        self.services: dict[str, Any] = {}
         self.timeout = timeout
         self.session = session
 
     @property
-    def modelname(self):
+    def modelname(self) -> str | None:
         """
         Take the root-device of the first description and return the
         according modelname. This is the name of the Fritz!Box itself.
@@ -39,7 +43,7 @@ class DeviceManager:
         return self.descriptions[0].device_model_name
 
     @property
-    def system_version(self):
+    def system_version(self) -> str | None:
         """
         Returns the system-version as string with minor- and
         patch-level. This corresponds to the OS version reported by the
@@ -54,7 +58,7 @@ class DeviceManager:
         return None
 
     @property
-    def system_info(self):
+    def system_info(self) -> tuple[Any, ...] | None:
         """
         Returns a tuple with Hardwarecode, Major-, Minor-, Patch-Level,
         Buildnumber and Display-String, in this order.
@@ -67,7 +71,7 @@ class DeviceManager:
                 return system_info
         return None
 
-    def add_description(self, source):
+    def add_description(self, source: str) -> None:
         """
         Adds description data about the devices and the according
         services. 'source' is a string with the xml-data, like the
@@ -76,7 +80,7 @@ class DeviceManager:
         root = get_xml_root(source, timeout=self.timeout, session=self.session)
         self.descriptions.append(Description(root))
 
-    def scan(self):
+    def scan(self) -> None:
         """
         Scans all available services defined by the description files.
         Must get called after all xml-descriptions are added.
@@ -84,7 +88,7 @@ class DeviceManager:
         for description in self.descriptions:
             self.services.update(description.services)
 
-    def load_service_descriptions(self, address, port):
+    def load_service_descriptions(self, address: str, port: str | int) -> None:
         """
         Triggers the load of the scpd files of the services, so they
         known their actions.
@@ -94,14 +98,14 @@ class DeviceManager:
                 address, port, timeout=self.timeout, session=self.session
             )
 
-    def serialize(self):
+    def serialize(self) -> list[dict[str, Any]]:
         """
         Returns a json-serializable list with Python-datastructures
         representing the known api of the device.
         """
         return [description.serialize() for description in self.descriptions]
 
-    def deserialize(self, data):
+    def deserialize(self, data: list[dict[str, Any]]) -> None:
         """
         Fills the collections `self.descriptions` and `self.services`
         with the content provided by `data` (from a json-source).

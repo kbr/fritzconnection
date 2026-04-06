@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import datetime
 import itertools
+from typing import Any, cast
 from warnings import warn
 from xml.etree import ElementTree as etree
 
@@ -59,13 +60,19 @@ class FritzHomeAutomation(AbstractLibraryBase):
     `use_tls` a boolean indicating to use TLS (default False).
     """
 
-    def _action(self, actionname, *, arguments=None, **kwargs):
+    def _action(
+        self,
+        actionname: str,
+        *,
+        arguments: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         if arguments is None:
-            arguments = kwargs
+            arguments = dict(kwargs)
         return self.fc.call_action(SERVICE, actionname, arguments=arguments)
 
     @property
-    def get_info(self) -> dict:
+    def get_info(self) -> dict[str, Any]:
         """
         Return a dictionary with a single key-value pair:
         'NewAllowedCharsAIN': string with all allowed chars for state
@@ -76,7 +83,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
     def get_device_information_by_index(
         self,
         index: int
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Return a dictionary with all device arguments according to the
         AVM documentation (x_homeauto) at the given internal index.
@@ -88,7 +95,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
     def get_device_information_by_identifier(
         self,
         identifier: str
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Returns a dictionary with all device arguments according to the
         AVM documentation (x_homeauto) with the given identifier (AIN).
@@ -96,7 +103,7 @@ class FritzHomeAutomation(AbstractLibraryBase):
         """
         return self._action('GetSpecificDeviceInfos', NewAIN=identifier)
 
-    def device_information(self) -> list[dict]:
+    def device_information(self) -> list[dict[str, Any]]:
         """
         .. deprecated:: 1.12.0
            Use :func:`get_device_information_list` instead.
@@ -104,11 +111,11 @@ class FritzHomeAutomation(AbstractLibraryBase):
         warn('This method is deprecated. Use "get_device_information_list" instead.', DeprecationWarning)
         return self.get_device_information_list()
 
-    def get_device_information_list(self) -> list[dict]:
+    def get_device_information_list(self) -> list[dict[str, Any]]:
         """
         Returns a list of dictionaries for all known homeauto-devices.
         """
-        info = list()
+        info: list[dict[str, Any]] = []
         for n in itertools.count():
             try:
                 device_information = self.get_device_information_by_index(n)
@@ -217,20 +224,23 @@ class HomeAutomationDevice:
     def __init__(
         self,
         fh: FritzHomeAutomation,
-        device_information: dict,
+        device_information: dict[str, Any],
         identifier: str | None = None
-    ):
+    ) -> None:
         self.fh = fh
         self.AIN = identifier
         self._extraxt_device_information_as_attributes(device_information)
 
-    def __repr__(self):
+    def __getattr__(self, name: str) -> Any:
+        return self.__dict__[name]
+
+    def __repr__(self) -> str:
         """
         Provide some basic information about the device.
         """
         return f"ain: {self.AIN}, {self.Manufacturer} - {self.ProductName}"
 
-    def _extraxt_device_information_as_attributes(self, device_information):
+    def _extraxt_device_information_as_attributes(self, device_information: dict[str, Any]) -> None:
         """
         Takes the device_information, which is a dictionary returned
         from a call like
@@ -250,9 +260,10 @@ class HomeAutomationDevice:
         `self.FunctionBitMask`.
         """
         feature_bit = 1 << value
-        return feature_bit & self.FunctionBitMask == feature_bit  # type: ignore
+        bitmask = cast(int, getattr(self, "FunctionBitMask"))
+        return feature_bit & bitmask == feature_bit
 
-    def call_http(self, command: str, **kwargs) -> dict[str, str]:
+    def call_http(self, command: str, **kwargs: Any) -> dict[str, str]:
         """
         Shortcut to access the http-interface of the router.
 
@@ -265,7 +276,7 @@ class HomeAutomationDevice:
 
     @property
     def identifier(self) -> str:
-        return self.AIN  # type: ignore
+        return cast(str, self.AIN)
 
     @property
     def is_han_fun_unit(self) -> bool:
@@ -336,7 +347,7 @@ class HomeAutomationDevice:
             self.fh.get_device_information_by_identifier(self.identifier)
         )
 
-    def get_basic_device_stats(self) -> dict:
+    def get_basic_device_stats(self) -> dict[str, dict[str, Any]]:
         """
         Returns a dictionary of device statistics. The content depends on
         the actors supported by a device. The keys can be:
@@ -366,38 +377,34 @@ class HomeAutomationDevice:
         return self.extract_basicdevicestats_response(response)
 
     @staticmethod
-    def extract_basicdevicestats_response(response: dict) -> dict:
+    def extract_basicdevicestats_response(response: dict[str, str]) -> dict[str, dict[str, Any]]:
         """
         Converts the xml `response` and returns a dictionary with a
         datastructure described in the method `get_basic_device_stats()`
         """
-        # implemented separately for testing.
-        # 'stats' and 'datatime' are defined in the AVM xml-protocol
-        # some types are dynamic therefore some 'type: ignore'.
-        elements = {}
+        elements: dict[str, dict[str, Any]] = {}
         content = response['content']
         root = etree.fromstring(content)
         for element in root:
-            content = {}
+            element_content: dict[str, Any] = {}
             stats: etree.Element | None = element.find("stats")
             if stats is None:
                 continue
             for key, value in stats.attrib.items():
-                value = int(value)  # type: ignore
+                timestamp_value = int(value)
+                parsed_value: int | datetime.datetime = timestamp_value
                 if key == "datatime":
-                    value = datetime.datetime.fromtimestamp(value)  # type: ignore
-                content[key] = value
-            # convert the csv-list of returned values from text to int.
-            # on missing data dashes (-) may get returned.
-            # this get catched and missing data are represented as `None`.
-            content["data"] = []
-            for item in stats.text.split(","):  # type: ignore
-                try:
-                    value = int(item)  # type: ignore
-                except ValueError:
-                    value = None  # type: ignore
-                content["data"].append(value)
-            elements[element.tag] = content
+                    parsed_value = datetime.datetime.fromtimestamp(timestamp_value)
+                element_content[key] = parsed_value
+            data: list[int | None] = []
+            if stats.text is not None:
+                for item in stats.text.split(","):
+                    try:
+                        data.append(int(item))
+                    except ValueError:
+                        data.append(None)
+            element_content["data"] = data
+            elements[element.tag] = element_content
         return elements
 
     def get_switch_state(self) -> bool:
@@ -406,11 +413,11 @@ class HomeAutomationDevice:
         to on (True) or off (False).
         """
         self.update_device_information()
-        return self.SwitchState.lower() == 'on'  # type: ignore
+        switch_state = cast(str, getattr(self, "SwitchState"))
+        return switch_state.lower() == 'on'
 
     def set_switch(self, on: bool = True) -> None:
         """
         Set a switchable device to 'on' (True) or 'off' (False).
         """
         self.fh.set_switch(self.identifier, on)
-

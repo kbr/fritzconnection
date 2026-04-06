@@ -3,6 +3,8 @@ fritzhttp.py
 
 Access the AVM Fritz!Box AHA-HTTP-Interface
 """
+
+from __future__ import annotations
 # This module is part of the FritzConnection package.
 # https://github.com/kbr/fritzconnection
 # License: MIT (https://opensource.org/licenses/MIT)
@@ -12,12 +14,18 @@ Access the AVM Fritz!Box AHA-HTTP-Interface
 import hashlib
 from http import HTTPStatus
 from http.client import HTTP_PORT
+from typing import TYPE_CHECKING, Any, Generator
 from xml.etree import ElementTree as etree
+
+from requests import Response
 
 from fritzconnection.core.exceptions import (
     FritzHttpInterfaceError,
     FritzAuthorizationError,
 )
+
+if TYPE_CHECKING:
+    from .fritzconnection import FritzConnection
 
 
 URL_LOGIN = "/login_sid.lua?version=2"
@@ -39,12 +47,12 @@ class FritzHttp:
     this case the aha-interface login will not return a valid sid until
     blocktime runs out.
     """
-    def __init__(self, fc):
+    def __init__(self, fc: FritzConnection) -> None:
         self.fc = fc  # the active fritzconnection instance
-        self.sid = None
+        self.sid: str | None = None
 
     @property
-    def remote_port(self):
+    def remote_port(self) -> int:
         """
         Provides the configurable https port for the aha-interface as int.
         """
@@ -54,21 +62,26 @@ class FritzHttp:
         return HTTP_PORT
 
     @property
-    def router_url(self):
+    def router_url(self) -> str:
         """Returns the combination of router address and port."""
         return f"{self.fc.address}:{self.remote_port}"
 
     @property
-    def login_url(self):
+    def login_url(self) -> str:
         """The login-url including protocol and configurable port."""
         return f"{self.router_url}{URL_LOGIN}"
 
     @property
-    def homeauto_url(self):
+    def homeauto_url(self) -> str:
         """The homeauto-url including protocol and configurable port."""
         return f"{self.router_url}{URL_HOMEAUTOSWITCH}"
 
-    def execute(self, command=None, identifier=None, **kwargs):
+    def execute(
+        self,
+        command: str | None = None,
+        identifier: str | None = None,
+        **kwargs: Any,
+    ) -> tuple[str | None, str]:
         """
         Send the command and the optional identifier to the
         http-interface and returns a tuple with the content-type and the
@@ -86,7 +99,7 @@ class FritzHttp:
         response = self.call_url(self.homeauto_url, payload)
         return response.headers.get('content-type'), response.text
 
-    def call_url(self, url, payload):
+    def call_url(self, url: str, payload: dict[str, Any]) -> Response:
         """
         Makes a call to the router with the provided url. Returns the
         request object in case of success. Otherwise a
@@ -117,7 +130,7 @@ class FritzHttp:
         msg = f"{msg}, payload: {payload}"
         raise FritzHttpInterfaceError(msg)
 
-    def _get_sid(self):
+    def _get_sid(self) -> Generator[str | None, None, None]:
         """
         Generator to provide the sid two times in case the first try
         failed. This can happen on an invalide or expired sid. In this
@@ -130,20 +143,23 @@ class FritzHttp:
         self._set_sid_from_box()
         yield self.sid
 
-    def _set_sid_from_box(self):
+    def _set_sid_from_box(self) -> None:
         """
         Read a session id from the box and store it in self.sid
         As long as self.sid holds a valid sid, the user is logged in.
         """
         with self.fc.session.get(self.login_url) as response:
-            challenge = etree.fromstring(response.text).find('Challenge').text
+            challenge_node = etree.fromstring(response.text).find('Challenge')
+            if challenge_node is None or challenge_node.text is None:
+                raise FritzHttpInterfaceError("Could not read login challenge from device response.")
+            challenge = challenge_node.text
         if challenge.startswith(PBKDF2_CHALLENGE_INDICATOR):
             challenge_hash = self._get_pbkdf2_hash(challenge)
         else:
             challenge_hash = self._get_md5_hash(challenge)
         self.sid = self._request_sid(challenge_hash)
 
-    def _get_pbkdf2_hash(self, challenge):
+    def _get_pbkdf2_hash(self, challenge: str) -> str:
         """Returns the vendor-recommended pbkdf2 challenge hash."""
         _, iterations_1, salt_1, iterations_2, salt_2 = challenge.split('$')
         static_hash = hashlib.pbkdf2_hmac(
@@ -160,14 +176,14 @@ class FritzHttp:
         )
         return f"{salt_2}${dynamic_hash.hex()}"
 
-    def _get_md5_hash(self, challenge):
+    def _get_md5_hash(self, challenge: str) -> str:
         """Returns the legathy md5 challenge hash."""
         hash = hashlib.md5(
             f"{challenge}-{self.fc.soaper.password}".encode("utf-16-le")
         )
         return f"{challenge}-{hash.hexdigest()}"
 
-    def _request_sid(self, challenge_hash):
+    def _request_sid(self, challenge_hash: str) -> str | None:
         """
         Takes the challenge_hash to request and return a new session id.
         """
@@ -179,4 +195,4 @@ class FritzHttp:
         ) as response:
             root = etree.fromstring(response.text)
             sid_node = root.find("SID")
-            return sid_node.text
+            return None if sid_node is None else sid_node.text

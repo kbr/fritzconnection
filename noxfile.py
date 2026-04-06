@@ -35,9 +35,9 @@ def ruff_check(session):
 def mypy(session):
     session.install("-e", ".")
     session.install("mypy==1.11.1", "types-requests", "segno")
-    session.run("mypy", "fritzconnection/core/fritzconnection.py")
-    session.run("mypy", "fritzconnection/core/fritzmonitor.py")
-    session.run("mypy", "fritzconnection/lib")
+    session.run("mypy", "--strict", "fritzconnection/core/fritzconnection.py")
+    session.run("mypy", "--strict", "fritzconnection/core/fritzmonitor.py")
+    session.run("mypy", "--strict", "fritzconnection/lib")
 
 
 @nox.session

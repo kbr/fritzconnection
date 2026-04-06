@@ -20,7 +20,7 @@ from .utils import (
 )
 
 
-def print_status(fh):
+def print_status(fh: FritzHosts) -> None:
     print('FritzHosts:')
     print('List of registered hosts:\n')
     print('{:>3}: {:<16} {:<28} {:<17}   {}\n'.format(
@@ -35,14 +35,14 @@ def print_status(fh):
     print('\n')
 
 
-def execute():
+def execute() -> None:
     args = get_cli_arguments()
     fh = get_instance(FritzHosts, args)
     print_header(fh)
     print_status(fh)
 
 
-def main():
+def main() -> None:
     try:
         execute()
     except FritzAuthorizationError as err:

@@ -29,7 +29,7 @@ from .. import __version__
 HEALTHCHECK_TIMEOUT = 10
 
 
-def print_header(args):
+def print_header(args: argparse.Namespace) -> None:
     print(f"\nfritzconnection v{__version__}")
     print(f"start fritzmonitor on address: {args.address}")
     print(f"settings for socket-timeout: {args.timeout} [sec]")
@@ -37,7 +37,7 @@ def print_header(args):
     print("(to stop press ^C)\n")
 
 
-def get_cli_arguments():
+def get_cli_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-i",
@@ -75,7 +75,11 @@ def get_cli_arguments():
     return args
 
 
-def process_events(monitor, event_queue, healthcheck_interval):
+def process_events(
+    monitor: FritzMonitor,
+    event_queue: queue.Queue[str],
+    healthcheck_interval: int,
+) -> None:
     while True:
         try:
             event = event_queue.get(timeout=healthcheck_interval)
@@ -88,7 +92,7 @@ def process_events(monitor, event_queue, healthcheck_interval):
             print(event)
 
 
-def main():
+def main() -> None:
     """
     Entry point: example to use FritzMonitor.
     """

@@ -24,7 +24,7 @@ from .utils import (
 )
 
 
-def print_status(fs):
+def print_status(fs: FritzStatus) -> None:
     print("FritzStatus:\n")
     status_information = [
         ("is linked", "is_linked"),
@@ -46,14 +46,14 @@ def print_status(fs):
     print()
 
 
-def execute():
+def execute() -> None:
     arguments = get_cli_arguments()
     fs = get_instance(FritzStatus, arguments)
     print_header(fs)
     print_status(fs)
 
 
-def main():
+def main() -> None:
     try:
         execute()
     except FritzAuthorizationError as err:
