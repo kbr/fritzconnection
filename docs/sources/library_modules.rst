@@ -462,6 +462,29 @@ The call of the `get_wifi_qr_code()` method returns a file-like object. Instead 
     If the `segno`-package is not available, calling the method will raise an `AttributeError`. Refer to `Installation <install.html>`_ to install this requirement.
 
 
+FritzWebUI and FritzWireguard
+.............................
+
+WireGuard VPN connections are not exposed via TR-064/SOAP. ``FritzWebUI``
+handles Web UI login (PBKDF2 and legacy MD5, same as ``FritzHttp``).
+``FritzWireguard`` lists and toggles WireGuard connections (FRITZ!OS 7.50+).
+
+Example: ::
+
+    from fritzconnection import FritzConnection
+    from fritzconnection.lib.fritzwireguard import FritzWireguard
+
+    fc = FritzConnection(address="192.168.178.1", password=<password>)
+    fwg = FritzWireguard(fc)
+    fwg.toggle_vpn("uid-office", enable=False)
+
+.. automodule:: fritzconnection.lib.fritzwebui
+    :members:
+
+.. automodule:: fritzconnection.lib.fritzwireguard
+    :members:
+
+
 FritzWLAN API
 .............
 
