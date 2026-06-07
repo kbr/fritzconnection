@@ -47,7 +47,7 @@ def main() -> int:
     )
     parser.add_argument("--uid", default=None, help="WireGuard connection uid")
     parser.add_argument(
-        "--name-match",
+        "--name",
         default=None,
         help="Match a connection by case-insensitive substring of its name.",
     )
@@ -132,8 +132,8 @@ def main() -> int:
     target_uid: str
     if args.uid is not None:
         target_uid = str(args.uid)
-    elif args.name_match is not None:
-        needle = str(args.name_match).strip().lower()
+    elif args.name is not None:
+        needle = str(args.name).strip().lower()
         matches = [
             uid
             for uid, conn in connections.items()
@@ -141,7 +141,7 @@ def main() -> int:
         ]
         if not matches:
             print(
-                f"FAIL: no VPN connection matches name substring: {args.name_match}"
+                f"FAIL: no VPN connection matches name substring: {args.name}"
             )
             return 1
         target_uid = matches[0]
