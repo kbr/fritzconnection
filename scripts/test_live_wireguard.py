@@ -91,8 +91,6 @@ def main() -> int:
         print("SKIP: FRITZ_PASS not set (no live test)", file=sys.stderr)
         return 0
 
-    # Ensure we test the local checkout (current git working tree), not an
-    # unrelated installed `fritzconnection` from site-packages.
     repo_root = Path(__file__).resolve().parents[1]
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
@@ -172,7 +170,6 @@ def main() -> int:
         print(f"FAIL: expected active={target}, got {new_active}")
         return 1
     print("OK: toggle verified")
-    # Best-practice: revert to the original state unless disabled.
     if not args.no_restore:
         fwg.toggle_vpn(target_uid, enable=current)
     return 0
