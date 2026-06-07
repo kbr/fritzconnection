@@ -48,26 +48,24 @@ def _parse_bool(value: Any) -> bool:
 
 
 def _normalize_connection(
-    data: dict[str, Any], uid_fallback: str | None = None
+    data: dict[str, Any],
 ) -> dict[str, Any] | None:
     """Normalize one WireGuard connection payload.
 
-    Aligns with the original `fritzbox-vpn` parsing:
-    - compute `active` from `active`, otherwise from `activated`
-    - fall back to the dict key as `uid` when the payload misses it
+    For the currently supported Fritz!OS payload structure:
+    - `active` is expected as the canonical active state
+    - `uid` is expected inside the payload
     """
     if not isinstance(data, dict):
         return None
 
     uid = data.get(API_KEY_UID)
-    if (uid is None or uid == "") and uid_fallback:
-        uid = uid_fallback
     if not uid:
         return None
 
     raw_active = data.get(API_KEY_ACTIVE)
     if raw_active is None:
-        raw_active = data.get(API_KEY_ACTIVATED, False)
+        return None
 
     return {
         API_KEY_UID: str(uid),
@@ -112,9 +110,7 @@ class FritzWireguard(AbstractLibraryBase):
         result: dict[str, dict[str, Any]] = {}
         if isinstance(connections, dict):
             for dict_key, conn_data in connections.items():
-                normalized = _normalize_connection(
-                    conn_data, uid_fallback=str(dict_key)
-                )
+                normalized = _normalize_connection(conn_data)
                 if normalized is not None:
                     result[normalized[API_KEY_UID]] = normalized
         elif isinstance(connections, list):
