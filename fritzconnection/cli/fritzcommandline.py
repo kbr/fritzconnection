@@ -4,7 +4,6 @@ command-line interface for fritzconnection.
 
 import argparse
 import textwrap
-import types
 
 import fritzconnection
 from fritzconnection.core.description import HostItems
@@ -13,9 +12,6 @@ from fritzconnection.core.exceptions import FritzConnectionException
 from fritzconnection.core.exceptions import FritzServiceError
 from fritzconnection.core.utils import get_xml_root
 from fritzconnection.lib.fritzwan import FritzStatus
-
-import logging
-from fritzconnection.core.logger import activate_local_debug_mode
 
 _author_ = "Klaus Bremer"
 _version_ = fritzconnection.__version__
@@ -28,6 +24,7 @@ PROGRAM_DESCRIPTION = textwrap.dedent(f"""\
 """)
 SERVICE_HEADER_LINE = "=" * 54
 DEFAULT_TIMEOUT = 3  # the device should respond at least after 3 seconds
+NO_SERVICES_MESSAGE = "no services available"
 
 
 class FritzInspection:
@@ -116,7 +113,7 @@ def print_services(fi, with_actions=False, with_args=False):
     for name, services in zip(("UPnP", "TR64"), (upnp_services, tr64_services)):
         print(f"\n{' '*2}{name} services:\n")
         if not services:
-            print(f"{' '*4}{no_services_message}")
+            print(f"{' '*4}{NO_SERVICES_MESSAGE}")
         for service in sorted(services, key=lambda s: s.short_service_id):
             print_service(
                 service,
