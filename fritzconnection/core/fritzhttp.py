@@ -11,12 +11,12 @@ Access the AVM Fritz!Box AHA-HTTP-Interface
 
 from http import HTTPStatus
 from http.client import HTTP_PORT
-from xml.etree import ElementTree as etree
+
+from contextlib import contextmanager
 
 from fritzconnection.core.exceptions import FritzAuthorizationError
 from fritzconnection.core.exceptions import FritzHttpInterfaceError
 from fritzconnection.core.fritz_sid import FritzSID
-from fritzconnection.core.utils import get_xml_root
 
 
 BASE_LOGIN_URL = "/login_sid.lua"
@@ -43,6 +43,16 @@ class FritzHttp:
     def __init__(self, fc):
         self.fc = fc  # the active fritzconnection instance
         self.fs = FritzSID(fc)
+
+    @contextmanager
+    def _digest_auth_disabled(self):
+        """Temporarily disable digest auth on the shared requests session."""
+        old_auth = self.fc.session.auth
+        self.fc.session.auth = None
+        try:
+            yield
+        finally:
+            self.fc.session.auth = old_auth
 
     @property
     def remote_port(self):
@@ -124,7 +134,8 @@ class FritzHttp:
         base_path=None, 
         path_extension=None,
         params=None,
-        payload=None
+        payload=None,
+        extra_headers: dict[str, str] | None = None,
     ):
         """
         Makes a low level-call to the router REST-API. Takes a method
@@ -134,9 +145,13 @@ class FritzHttp:
         the call. If payload is given it should be an object convertible
         to json (typically a dict). All given arguments are expected to
         follow the openapi 3 specification.
-        Returns a response object (which is a Requests
-        response) with status_code and text as properties (or json() as
-        callable).
+        `extra_headers`: Optional additional request headers for this
+        endpoint (e.g. `Origin`, `Referer` for WebUI-like REST endpoints).
+        `Authorization` is always derived from SID and not overridden by
+        `extra_headers`.
+
+        Returns a response object (from the `requests` library) with
+        `status_code` and `text` as properties (or `json()` as callable).
         """
         if base_path is None:
             base_path = REST_API_BASEPATH
@@ -151,15 +166,30 @@ class FritzHttp:
         if path_extension:
             url = f"{url}/{path_extension}"
         sid = self.get_sid()
-        headers = {
+        rest_headers = {
             'Authorization': f"{AUTHORIZATION_PREFIX} {sid}",
         }
         if payload:
-            headers["content-type"] = "application/json"
-        with call(
-            url, headers=headers, params=params, json=payload, verify=False
-        ) as response:
-            return response
+            rest_headers["content-type"] = "application/json"
+        if extra_headers is not None:
+            # The REST layer can be reused for WebUI endpoints that require
+            # additional browser-like headers (e.g. Origin/Referer).
+            # Keep Authorization from being overridden accidentally.
+            rest_headers.update(extra_headers)
+            rest_headers["Authorization"] = f"{AUTHORIZATION_PREFIX} {sid}"
+
+        # Disable digest auth on the shared requests session because REST
+        # calls use SID in Authorization. Digest auth can otherwise interfere
+        # with the WebUI endpoints.
+        with self._digest_auth_disabled():
+            with call(
+                url,
+                headers=rest_headers,
+                params=params,
+                json=payload,
+                verify=False,
+            ) as response:
+                return response
         
     def get_sid(self):
         """
