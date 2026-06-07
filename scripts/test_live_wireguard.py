@@ -52,22 +52,22 @@ def main() -> int:
         help="Match a connection by case-insensitive substring of its name.",
     )
     parser.add_argument(
-        "--enable",
+        "--set-active",
         choices=["0", "1"],
         default=None,
-        help="Explicitly set desired activated state (0/1).",
+        help="Explicitly set desired activated state (0/1) for the selected VPN.",
     )
     parser.add_argument(
         "--toggle-first",
         action="store_true",
         default=os.environ.get("FRITZ_TOGGLE", "").lower() in ("1", "true", "yes"),
-        help="Toggle first VPN connection (default: off unless FRITZ_TOGGLE=1).",
+        help="Toggle the first VPN connection (default: off unless FRITZ_TOGGLE=1).",
     )
     parser.add_argument(
-        "--toggle-uid",
+        "--toggle",
         action="store_true",
         default=False,
-        help="Toggle the given --uid (flip current active state).",
+        help="Toggle (flip) current active state for the selected VPN.",
     )
     parser.add_argument(
         "--no-restore",
@@ -152,16 +152,25 @@ def main() -> int:
         return 1
 
     current = connections[target_uid].get("active", False)
-    if args.enable is not None:
-        target = args.enable == "1"
-        print(f"Toggle {target_uid}: explicit -> {target}")
-    elif args.toggle_first or args.toggle_uid:
-        target = not current
-        reason = "first" if args.toggle_first else "uid"
-        print(f"Toggle {reason} {target_uid}: {current} -> {target}")
-    else:
-        print("INFO: nothing to do (set --toggle-first, --toggle-uid, or --enable).")
+    action = None
+    if args.set_active is not None:
+        action = "set-active"
+    elif args.toggle_first:
+        action = "toggle-first"
+    elif args.toggle:
+        action = "toggle"
+
+    if action is None:
+        print("INFO: nothing to do (set --toggle-first, --toggle, or --set-active).")
         return 0
+
+    if args.set_active is not None:
+        target = args.set_active == "1"
+        print(f"Set {target_uid}: active -> {target}")
+    else:
+        target = not current
+        reason = "first" if args.toggle_first else "selected"
+        print(f"Toggle {reason} {target_uid}: {current} -> {target}")
 
     if not fwg.toggle_vpn(target_uid, enable=target):
         print("FAIL: toggle_vpn returned False")
