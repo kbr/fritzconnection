@@ -149,7 +149,8 @@ class FritzWireguard(AbstractLibraryBase):
                 return {}
             return response.json()
         except HTTPError as err:
-            status_code = getattr(getattr(err, "response", None), "status_code", None)
+            response = getattr(err, "response", None)
+            status_code = getattr(response, "status_code", None)
             if status_code in (401, 403):
                 raise FritzAuthorizationError(
                     f"Authorization failed for WireGuard listing (HTTP {status_code})"
@@ -167,7 +168,7 @@ class FritzWireguard(AbstractLibraryBase):
 
         Returns True if the active state matches `enable` after the call.
         """
-        payload = {API_KEY_ACTIVATED: 1 if enable else 0}
+        payload = {API_KEY_ACTIVATED: int(enable)}
         base = self.fc.http_interface.router_url
         extra_headers = {
             **HEADERS_ACCEPT_ANY,
