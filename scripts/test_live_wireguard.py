@@ -7,7 +7,6 @@ Environment (or scripts/.env in repo root):
   FRITZ_HOST, FRITZ_USER, FRITZ_PASS
 Optional:
   FRITZ_USE_TLS=1 for https (default)
-  FRITZ_TOGGLE=1 to toggle first VPN
 """
 
 from __future__ import annotations
@@ -152,22 +151,16 @@ def main() -> int:
         return 1
 
     current = connections[target_uid].get("active", False)
-    action = None
-    if args.set_active is not None:
-        action = "set-active"
-    elif args.toggle:
-        action = "toggle"
-
-    if action is None:
-        print("INFO: nothing to do (set --toggle or --set-active).")
-        return 0
 
     if args.set_active is not None:
         target = args.set_active == "1"
         print(f"Set {target_uid}: active -> {target}")
-    else:
+    elif args.toggle:
         target = not current
         print(f"Toggle selected {target_uid}: {current} -> {target}")
+    else:
+        print("INFO: nothing to do (set --toggle or --set-active).")
+        return 0
 
     if not fwg.toggle_vpn(target_uid, enable=target):
         print("FAIL: toggle_vpn returned False")
