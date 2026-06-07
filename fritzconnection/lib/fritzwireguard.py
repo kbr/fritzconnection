@@ -107,17 +107,18 @@ class FritzWireguard(AbstractLibraryBase):
         if connections is None:
             return {}
 
-        result: dict[str, dict[str, Any]] = {}
         if isinstance(connections, dict):
-            for dict_key, conn_data in connections.items():
-                normalized = _normalize_connection(conn_data)
-                if normalized is not None:
-                    result[normalized[API_KEY_UID]] = normalized
+            connection_payloads = connections.values()
         elif isinstance(connections, list):
-            for conn in connections:
-                normalized = _normalize_connection(conn)
-                if normalized is not None:
-                    result[normalized[API_KEY_UID]] = normalized
+            connection_payloads = connections
+        else:
+            return {}
+
+        result: dict[str, dict[str, Any]] = {}
+        for conn_data in connection_payloads:
+            normalized = _normalize_connection(conn_data)
+            if normalized is not None:
+                result[normalized[API_KEY_UID]] = normalized
         return result
 
     def _vpn_connections_url(self) -> str:
