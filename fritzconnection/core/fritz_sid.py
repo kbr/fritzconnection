@@ -10,7 +10,8 @@ from __future__ import annotations
 
 import hashlib
 import re
-from dataclasses import field
+from typing import Any
+import time
 from http import HTTPStatus
 
 from fritzconnection.core.description import SessionInfo
@@ -31,10 +32,11 @@ class FritzSID:
     """
     Provides access to an AVM-SID for using the REST-API
     """
-    def __init__(self, fc: FritzConnection):
+    def __init__(self, fc: Any):
         self.fc = fc
         self.session_id = None
         self.challenge_method = self.get_challenge_method()
+        self._login_url_cache: str | None = None
     
     @property
     def is_PBKDF2_challenge(self) -> bool:
@@ -46,11 +48,25 @@ class FritzSID:
         Return sid login-url depending on the system software version.
         PBKDF2 for >= 7.24 else MD5
         """
+        if self._login_url_cache is not None:
+            return self._login_url_cache
+
         if self.is_PBKDF2_challenge:
             path = PBKDF2_LOGIN_URL
         else:
             path = MD5_LOGIN_URL
-        return f"{self.fc.protocol}{self.fc.ip_address}{path}"
+
+        # For https use the remote port derived from TR-064 GetInfo NewPort
+        # (see FritzHttp.remote_port). This avoids relying on configured
+        # port alone, which can differ from the WebUI/REST port.
+        if self.fc.address.startswith("https") and hasattr(self.fc, "http_interface"):
+            port = self.fc.http_interface.remote_port
+            base = f"{self.fc.protocol}{self.fc.ip_address}:{port}"
+        else:
+            base = f"{self.fc.protocol}{self.fc.ip_address}:{self.fc.port}"
+
+        self._login_url_cache = f"{base}{path}"
+        return self._login_url_cache
     
     def get_session_id(self) -> str:
         """
@@ -59,6 +75,10 @@ class FritzSID:
         if not self.is_valid_session_id(self.session_id):
             si = self.get_session_info()
             challenge = si.Challenge
+            # FRITZ!Box can enforce a temporary block-after-failed-logins.
+            # If BlockTime is set we need to wait before performing the next
+            # SID challenge-response to avoid permission issues.
+            self._sleep_for_blocktime(si.BlockTime)
             if challenge.startswith(PBKDF2_CHALLENGE_INDICATOR):
                 challenge_hash = self.get_hash_from_PBKDF2_challenge(challenge)
             else:
@@ -124,6 +144,15 @@ class FritzSID:
         if os_version_state > 0:
             return PBKDF2_CHALLENGE
         return MD5_CHALLENGE
+
+    @staticmethod
+    def _sleep_for_blocktime(blocktime: Any) -> None:
+        try:
+            seconds = int(blocktime)
+        except (TypeError, ValueError):
+            return
+        if seconds > 0:
+            time.sleep(seconds)
         
     def get_hash_from_PBKDF2_challenge(self, challenge: str) -> str:
         _, iterations_1, salt_1, iterations_2, salt_2 = challenge.split('$')
