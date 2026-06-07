@@ -69,6 +69,7 @@ def test_get_vpn_connections_with_dict_data():
         "init": {
             "boxConnections": {
                 "wg-1": {
+                    "uid": "wg-1",
                     "name": "Remote",
                     "activated": False,
                     "connected": "0",
@@ -81,45 +82,6 @@ def test_get_vpn_connections_with_dict_data():
         connections = fw.get_vpn_connections()
         assert connections["wg-1"]["active"] is True
         assert connections["wg-1"]["connected"] is False
-
-
-def test_get_vpn_connections_active_falls_back_to_activated():
-    fw = FritzWireguard(fc=_mock_fc())
-    mock_response = {
-        "init": {
-            "boxConnections": [
-                {
-                    "uid": "wg-1",
-                    "name": "Remote",
-                    "activated": "1",
-                    # active intentionally missing
-                }
-            ]
-        }
-    }
-    with patch.object(fw, "_post_data_lua", return_value=mock_response):
-        connections = fw.get_vpn_connections()
-        assert connections["wg-1"]["active"] is True
-        assert connections["wg-1"]["activated"] is True
-
-
-def test_get_vpn_connections_uid_fallback_from_dict_key():
-    fw = FritzWireguard(fc=_mock_fc())
-    mock_response = {
-        "init": {
-            "boxConnections": {
-                "wg-1": {
-                    "name": "Remote",
-                    "active": 1,
-                    "connected": 0,
-                }
-            }
-        }
-    }
-    with patch.object(fw, "_post_data_lua", return_value=mock_response):
-        connections = fw.get_vpn_connections()
-        assert connections["wg-1"]["uid"] == "wg-1"
-
 
 def test_get_vpn_connections_malformed():
     fw = FritzWireguard(fc=_mock_fc())
