@@ -53,6 +53,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--set-active",
+        "--enable",
+        dest="set_active",
         choices=["0", "1"],
         default=None,
         help="Explicitly set desired activated state (0/1) for the selected VPN.",
@@ -65,6 +67,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--toggle",
+        "--toggle-uid",
+        dest="toggle",
         action="store_true",
         default=False,
         help="Toggle (flip) current active state for the selected VPN.",
@@ -76,7 +80,9 @@ def main() -> int:
         help="Do not revert the connection to its original active state after the test.",
     )
     parser.add_argument(
+        "--print-import-path",
         "--show-import-path",
+        dest="print_import_path",
         action="store_true",
         default=False,
         help="Print where `fritzconnection` was imported from.",
@@ -110,7 +116,7 @@ def main() -> int:
     )
     fwg = FritzWireguard(fc=fc)
 
-    if args.show_import_path:
+    if args.print_import_path:
         print(
             f"Using fritzconnection from: {fritzconnection_pkg.__file__} "
             f"(version={getattr(fritzconnection_pkg, '__version__', 'unknown')})"
