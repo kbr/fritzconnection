@@ -3,8 +3,6 @@ import pathlib
 import pytest
 
 from fritzconnection.core.fritzdescription import FritzDescription
-from fritzconnection.core.fritzdescription import FRITZ_IGD_DESC_FILE
-from fritzconnection.core.fritzdescription import FRITZ_TR64_DESC_FILE
 
 
 THIS_DIRECTORY = pathlib.Path(__file__).parent.resolve()
