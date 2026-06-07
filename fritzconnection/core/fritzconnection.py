@@ -1,18 +1,18 @@
 """
 Module to communicate with the AVM Fritz!Box.
-"""
-"""
-changelog v2.0:
 
-    argument `use_cache` now defaults to True
-    argument `verify_cache` removed
-    argument `cache_format` removed
+Changelog v2.0:
+    - argument `use_cache` now defaults to True
+    - argument `verify_cache` removed
+    - argument `cache_format` removed
 """
 
 import os
 import string
 
 import requests
+import urllib3
+from xml.etree import ElementTree
 
 from pathlib import Path
 from requests.auth import HTTPDigestAuth
@@ -44,8 +44,6 @@ FRITZ_ENV_CACHEDIRECTORY = "FRITZ_CACHEDIRECTORY"
 # same defaults as used by requests:
 DEFAULT_POOL_CONNECTIONS = 10
 DEFAULT_POOL_MAXSIZE = 10
-
-import urllib3
 urllib3.disable_warnings()
 
 
@@ -426,7 +424,8 @@ class FritzConnection:
         params: dict|list[tuple]|bytes = None,
         payload: dict|None =None,
         uid: str|None = None,
-        serial: str|None =None
+        serial: str|None =None,
+        extra_headers: dict[str, str] | None = None,
     ):
         """
         Returns a response instance (from the requests library) with the
@@ -442,6 +441,10 @@ class FritzConnection:
         `serial`: serial id for an action
         Refer to the vendor documentation when to provide a `uid` or a `serial`.
         It is an error to provide both arguments in the same call.
+
+        `extra_headers`: Optional additional request headers for this
+        endpoint. `Authorization` remains derived from the SID and is not
+        overwritten by user-provided headers.
         
         Example:
         
@@ -466,7 +469,8 @@ class FritzConnection:
             path=path,
             base_path=base_path,
             path_extension=path_extension,
-            payload=payload
+            payload=payload,
+            extra_headers=extra_headers,
         )
 
     def get_cpu_temperatures(self) -> list[int]:
