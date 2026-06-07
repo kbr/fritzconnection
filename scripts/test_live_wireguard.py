@@ -60,12 +60,6 @@ def main() -> int:
         help="Explicitly set desired activated state (0/1) for the selected VPN.",
     )
     parser.add_argument(
-        "--toggle-first",
-        action="store_true",
-        default=os.environ.get("FRITZ_TOGGLE", "").lower() in ("1", "true", "yes"),
-        help="Toggle the first VPN connection (default: off unless FRITZ_TOGGLE=1).",
-    )
-    parser.add_argument(
         "--toggle",
         "--toggle-uid",
         dest="toggle",
@@ -161,13 +155,11 @@ def main() -> int:
     action = None
     if args.set_active is not None:
         action = "set-active"
-    elif args.toggle_first:
-        action = "toggle-first"
     elif args.toggle:
         action = "toggle"
 
     if action is None:
-        print("INFO: nothing to do (set --toggle-first, --toggle, or --set-active).")
+        print("INFO: nothing to do (set --toggle or --set-active).")
         return 0
 
     if args.set_active is not None:
@@ -175,8 +167,7 @@ def main() -> int:
         print(f"Set {target_uid}: active -> {target}")
     else:
         target = not current
-        reason = "first" if args.toggle_first else "selected"
-        print(f"Toggle {reason} {target_uid}: {current} -> {target}")
+        print(f"Toggle selected {target_uid}: {current} -> {target}")
 
     if not fwg.toggle_vpn(target_uid, enable=target):
         print("FAIL: toggle_vpn returned False")
