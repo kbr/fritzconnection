@@ -132,8 +132,6 @@ class FritzWireguard(AbstractLibraryBase):
         The endpoint is undocumented by AVM and might change between FRITZ!OS
         versions.
         """
-        # Reuse core session handling (PBKDF2/MD5) and restore session if
-        # needed. This lives in `fritzconnection.core.fritz_sid`.
         sid = self.fc.http_interface.get_sid()
 
         url = self._vpn_connections_url()
@@ -159,7 +157,6 @@ class FritzWireguard(AbstractLibraryBase):
         except (Timeout, RequestsConnectionError):
             return None
         except ValueError:
-            # JSON parsing failed
             return None
 
     def toggle_vpn(self, connection_uid: str, enable: bool) -> bool:
