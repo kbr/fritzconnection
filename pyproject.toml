@@ -1,0 +1,116 @@
+[project]
+name = "fritzconnection"
+description = "Communicate with the AVM FRITZ!Box"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = [ "LICENSE.txt" ]
+authors = [{ name = "Klaus Bremer", email = "bremer@bremer-media.com" }]
+keywords = [ 
+    "AVM",
+    "FRITZ!Box",
+    "fritzbox",
+    "fritz",
+    "TR-064",
+    "AHA-HTTP",
+    "homeautomation"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "requests>=2.22.0",
+]
+dynamic = ["version"]
+
+[project.urls]
+homepage = "https://github.com/kbr/fritzconnection"
+source = "https://github.com/kbr/fritzconnection.git"
+docs = "https://fritzconnection.readthedocs.io"
+download = "https://pypi.org/project/fritzconnection/"
+
+[project.optional-dependencies]
+qr = ["segno>=1.6.6"]
+
+[dependency-groups]
+dev = [
+    "nox[pbs]>=2025",
+    "pytest",
+]
+
+[project.scripts]
+fritzconnection = "fritzconnection.cli.fritzinspection:main"
+fritzcall = "fritzconnection.cli.fritzcall:main"
+fritzhomeauto = "fritzconnection.cli.fritzhomeauto:main"
+fritzhosts = "fritzconnection.cli.fritzhosts:main"
+fritzmonitor = "fritzconnection.cli.fritzmonitor:main"
+fritzphonebook = "fritzconnection.cli.fritzphonebook:main"
+fritzstatus = "fritzconnection.cli.fritzstatus:main"
+fritzwlan = "fritzconnection.cli.fritzwlan:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+# ref: https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+[tool.setuptools]
+
+[tool.setuptools.dynamic]
+version = { attr = "fritzconnection.__version__" }
+readme = { file = ["README.md"], content-type = "text/markdown" }
+
+[tool.setuptools.packages.find]
+# where = ["fritzconnection"]
+exclude = ["*.tests"]
+
+# ref: https://docs.pytest.org/en/7.1.x/reference/customize.html
+[tool.pytest.ini_options]
+addopts = ["-l", "--strict", "-p", "no:warnings" ]
+norecursedirs = ["lib", "include", ".tox", "local"]
+python_files = "test_*.py"
+
+# ref: https://mypy.readthedocs.io/en/stable/config_file.html
+[tool.mypy]
+python_version = "3.7"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "fritzconnection.core.*" 
+check_untyped_defs = true
+disallow_untyped_defs = true
+
+# ref: https://docs.astral.sh/ruff/settings/#extension
+[tool.ruff]
+fix = false # disable by config
+
+# line-length = 80
+target-version = "py37"
+
+[tool.ruff.format]
+# indent-width = 4
+
+[tool.ruff.lint]
+select = [ "E", "F", "W" ]
+
+### Discourage tool usage ###
+
+# ref: https://black.readthedocs.io/en/stable/usage_and_configuration/the_basics.html
+[tool.black] 
+check = true # disable by config
+
+# [blue]
+
