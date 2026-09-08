@@ -8,6 +8,22 @@ import pytest
 from ..core.fritzmonitor import FritzMonitor, EventReporter
 
 
+def wait_for(condition, timeout=2.0, interval=0.005):
+    """
+    Poll `condition` (a zero-argument callable) until it returns a
+    truthy value or `timeout` seconds have passed. Used instead of a
+    fixed `time.sleep()` to avoid races on slower or more heavily
+    loaded machines, where a background thread may need more than a
+    few milliseconds to reconnect, give up, or terminate.
+    """
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if condition():
+            return True
+        time.sleep(interval)
+    return condition()
+
+
 class MockSocket:
     """
     A socket dummy to simulate receiving data and optional timeouts.
@@ -355,12 +371,15 @@ def test_terminate_thread_on_failed_reconnection(
     mock_socket = MockReconnectFailSocket(data, timeouts=timeouts)
     fm = FritzMonitor()
     fm.start(sock=mock_socket, reconnect_delay=0.001, reconnect_tries=tries)
-    # give thread some time:
-    time.sleep(0.01)
     if success:
+        # thread keeps running once connected, so just give it a moment
+        # to get past the initial reconnect attempts:
+        time.sleep(0.01)
         assert fm.is_alive is True
     else:
-        assert fm.is_alive is False
+        # exhausting all reconnect tries can take longer than a fixed
+        # sleep on a slow or busy machine, so poll for termination:
+        assert wait_for(lambda: fm.is_alive is False)
         assert fm.monitor_thread is None
     fm.stop()
 
@@ -381,8 +400,7 @@ def test_restart_failed_monitor():
         sock=socket, reconnect_delay=0.001, reconnect_tries=5
     )  # set default explicit for clarity
     # give socket some time to lose connection:
-    time.sleep(0.01)
-    assert fm.is_alive is False
+    assert wait_for(lambda: fm.is_alive is False)
     assert fm.stop_flag.is_set() is False
     # dont' call stop here!
     # fm.stop()
