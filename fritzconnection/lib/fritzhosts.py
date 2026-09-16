@@ -140,7 +140,7 @@ class FritzHosts(AbstractLibraryBase):
         result = self._action("X_AVM-DE_GetMeshListPath")
         path = result["NewX_AVM-DE_MeshListPath"]
         url = f"{self.fc.address}:{self.fc.port}{path}"
-        with self.fc.session.get(url) as response:
+        with self.fc.session.get(url, timeout=self.fc.timeout) as response:
             if not response.ok:
                 message = f"Error {response.status_code}: Device has no access to topology information."
                 raise FritzActionError(message)
@@ -213,5 +213,8 @@ class FritzHosts(AbstractLibraryBase):
         result = self._action("X_AVM-DE_GetHostListPath")
         path = result["NewX_AVM-DE_HostListPath"]
         url = f"{self.fc.address}:{self.fc.port}{path}"
-        storage = HostStorage(get_xml_root(source=url, session=self.fc.session))
+        root = get_xml_root(
+            source=url, timeout=self.fc.timeout, session=self.fc.session
+        )
+        storage = HostStorage(root)
         return storage.hosts_attributes
