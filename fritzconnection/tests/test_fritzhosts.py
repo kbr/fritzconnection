@@ -1,4 +1,6 @@
 import os
+from types import SimpleNamespace
+
 import pytest
 
 from ..core.utils import get_xml_root
@@ -92,3 +94,89 @@ def test_readhostlist(idx, attribute, expected_value, devicehostlist_source):
     storage = HostStorage(devicehostlist_source)
     attrs = storage.hosts_attributes[idx-1]  # list is sorted but host-index is 1 based
     assert attrs[attribute] == expected_value
+
+
+# --- timeout handling of the http requests made outside of TR-064 ---------
+
+class _MockHostsResponse:
+    """Response stub for the mesh- and hostlist-requests of FritzHosts."""
+    def __init__(self, text="", payload=None):
+        self.text = text
+        self.ok = True
+        self.status_code = 200
+        self.headers = {"Content-type": "text/xml"}
+        self._payload = payload if payload is not None else {}
+
+    def json(self):
+        return self._payload
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+
+class _MockHostsSession:
+    """Session stub recording the kwargs of every get() call."""
+    def __init__(self, response):
+        self.response = response
+        self.calls = []
+
+    def get(self, url, **kwargs):
+        self.calls.append((url, kwargs))
+        return self.response
+
+    @property
+    def timeouts(self):
+        return [kwargs.get("timeout", "not given") for _, kwargs in self.calls]
+
+
+def _get_fritzhosts(response, timeout):
+    """
+    Returns a FritzHosts instance bound to a fake connection. The fake
+    answers the path-lookup actions and exposes the session stub.
+    """
+    from ..lib.fritzhosts import FritzHosts
+
+    def call_action(service, action, arguments=None, **kwargs):
+        return {
+            "X_AVM-DE_GetMeshListPath": {"NewX_AVM-DE_MeshListPath": "/meshlist.lua"},
+            "X_AVM-DE_GetHostListPath": {"NewX_AVM-DE_HostListPath": "/hostlist.lua"},
+        }[action]
+
+    fc = SimpleNamespace(
+        address="http://192.168.178.1",
+        port=49000,
+        session=_MockHostsSession(response),
+        timeout=timeout,
+        call_action=call_action,
+    )
+    return FritzHosts(fc=fc)
+
+
+@pytest.mark.parametrize("timeout", [None, 10, 2.5, (3, 7)])
+def test_get_mesh_topology_forwards_the_timeout(timeout):
+    """
+    The mesh topology is fetched by a plain http request instead of a
+    TR-064 call, and must honor the connection timeout like any other.
+    """
+    fh = _get_fritzhosts(_MockHostsResponse(payload={"nodes": []}), timeout)
+
+    result = fh.get_mesh_topology()
+
+    assert result == {"nodes": []}
+    assert fh.fc.session.timeouts == [timeout]
+
+
+@pytest.mark.parametrize("timeout", [None, 10, 2.5, (3, 7)])
+def test_get_hosts_attributes_forwards_the_timeout(timeout):
+    """
+    The host list is fetched by a plain http request as well.
+    """
+    fh = _get_fritzhosts(_MockHostsResponse(text="<List></List>"), timeout)
+
+    result = fh.get_hosts_attributes()
+
+    assert result == []
+    assert fh.fc.session.timeouts == [timeout]

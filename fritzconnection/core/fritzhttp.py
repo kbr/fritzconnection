@@ -102,7 +102,9 @@ class FritzHttp:
         """
         for sid in self._get_sid():
             payload['sid'] = sid
-            with self.fc.session.get(url, params=payload) as response:
+            with self.fc.session.get(
+                url, params=payload, timeout=self.fc.timeout
+            ) as response:
                 if response.status_code == HTTPStatus.OK:
                     return response
 
@@ -135,7 +137,9 @@ class FritzHttp:
         Read a session id from the box and store it in self.sid
         As long as self.sid holds a valid sid, the user is logged in.
         """
-        with self.fc.session.get(self.login_url) as response:
+        with self.fc.session.get(
+            self.login_url, timeout=self.fc.timeout
+        ) as response:
             challenge = etree.fromstring(response.text).find('Challenge').text
         if challenge.startswith(PBKDF2_CHALLENGE_INDICATOR):
             challenge_hash = self._get_pbkdf2_hash(challenge)
@@ -175,7 +179,8 @@ class FritzHttp:
         with self.fc.session.post(
             self.login_url,
             data={"username": self.fc.soaper.user, "response": challenge_hash},
-            headers={"Content-Type": "application/x-www-form-urlencoded"}
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            timeout=self.fc.timeout
         ) as response:
             root = etree.fromstring(response.text)
             sid_node = root.find("SID")
