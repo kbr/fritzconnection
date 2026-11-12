@@ -63,7 +63,7 @@ def test_boolean_from_string_typeerror(value):
         ("false", False),
         ("wahr", None),
         ("falsch", None),
-        ("None", None),
+        pytest.param("None", None, id="None-string"),
         (42, None),
         ("", None),
         (None, None),
