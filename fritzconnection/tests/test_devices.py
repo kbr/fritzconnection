@@ -1,5 +1,6 @@
 import json
 import os
+from unittest import mock
 
 import pytest
 
@@ -95,3 +96,31 @@ def test_DeviceManager_load_json_check_actions(device_manager_from_data):
     dm.scan()
     for service in dm.services.values():
         assert service.actions is not None
+
+
+@pytest.mark.parametrize("path_prefix", ["", "/tr064"])
+def test_DeviceManager_load_service_descriptions_path_prefix(path_prefix):
+    """The path prefix gets forwarded to every service."""
+    manager = DeviceManager(timeout=5, session="session")
+    services = [mock.MagicMock(), mock.MagicMock()]
+    manager.services = {"A1": services[0], "B1": services[1]}
+
+    manager.load_service_descriptions(
+        "https://example.myfritz.net", 12345, path_prefix=path_prefix
+    )
+
+    for service in services:
+        service.load_scpd.assert_called_once_with(
+            "https://example.myfritz.net", 12345,
+            timeout=5, session="session", path_prefix=path_prefix,
+        )
+
+
+def test_DeviceManager_load_service_descriptions_default_prefix():
+    """Callers not knowing about the prefix keep working."""
+    manager = DeviceManager()
+    service = mock.MagicMock()
+    manager.services = {"A1": service}
+    manager.load_service_descriptions("http://192.168.178.1", 49000)
+    _, kwargs = service.load_scpd.call_args
+    assert kwargs["path_prefix"] == ""

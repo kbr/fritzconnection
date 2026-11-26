@@ -466,9 +466,12 @@ class Service(Serializer):
             self._state_variables = self._scpd.state_variables
         return self._state_variables
 
-    def load_scpd(self, address, port, timeout=None, session=None):
-        """Loads the scpd data"""
-        url = f'{address}:{port}{self.SCPDURL}'
+    def load_scpd(self, address, port, timeout=None, session=None, path_prefix=""):
+        """
+        Loads the scpd data. `path_prefix` gets inserted between port
+        and SCPDURL (e.g. "/tr064" for access from the internet).
+        """
+        url = f'{address}:{port}{path_prefix}{self.SCPDURL}'
         root = get_xml_root(url, timeout=timeout, session=session)
         self._scpd = Scpd(root)
 

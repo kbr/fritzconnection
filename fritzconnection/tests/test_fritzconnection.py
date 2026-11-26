@@ -1,12 +1,16 @@
 
+import inspect
 import os
 from pathlib import Path
 from types import SimpleNamespace
+from unittest import mock
 
 import pytest
 
 from ..core.devices import DeviceManager
 from ..core.exceptions import FritzConnectionException
+from ..core.processor import Service
+from ..core.soaper import Soaper
 from ..core.fritzconnection import (
     FritzConnection,
     FRITZ_CACHE_DIR,
@@ -14,6 +18,8 @@ from ..core.fritzconnection import (
     FRITZ_CACHE_FORMAT_PICKLE,
     FRITZ_CACHE_JSON_SUFFIX,
     FRITZ_CACHE_PICKLE_SUFFIX,
+    FRITZ_TCP_PORT,
+    FRITZ_TLS_PORT,
 )
 
 
@@ -151,3 +157,110 @@ def test_write_api_to_cache(file_name, cache_format, datadir):
     assert cache_file.exists() is False
 
 
+@pytest.fixture
+def router_api():
+    """Replaces the DeviceManager methods loading the api from the router."""
+    with mock.patch.object(
+        DeviceManager, "add_description"
+    ) as add_description, mock.patch.object(
+        DeviceManager, "scan"
+    ) as scan, mock.patch.object(
+        DeviceManager, "load_service_descriptions"
+    ) as load_service_descriptions:
+        yield SimpleNamespace(
+            add_description=add_description,
+            scan=scan,
+            load_service_descriptions=load_service_descriptions,
+        )
+
+
+@pytest.mark.parametrize(
+    "use_public_connection, expected_base, expected_prefix", [
+        (False, "http://testaddress:1234", ""),
+        (True, "https://testaddress:1234/tr064", "/tr064"),
+    ]
+)
+def test_load_api_from_router_with_public_connection(
+    router_api, use_public_connection, expected_base, expected_prefix
+):
+    """
+    Accessing the box from the internet requires https and the path prefix
+    "/tr064" for the description files and the scpd files.
+    """
+    connection = FritzConnection(
+        address="testaddress",
+        port=1234,
+        use_public_connection=use_public_connection,
+    )
+
+    assert router_api.add_description.call_args_list == [
+        mock.call(f"{expected_base}/igddesc.xml"),
+        mock.call(f"{expected_base}/tr64desc.xml"),
+    ]
+    router_api.scan.assert_called_once()
+    router_api.load_service_descriptions.assert_called_once_with(
+        connection.address, 1234, path_prefix=expected_prefix
+    )
+    assert connection.path_prefix == expected_prefix
+    assert connection.soaper.path_prefix == expected_prefix
+
+
+def test_public_connection_implies_tls(router_api):
+    """
+    use_public_connection enforces https and the default tls-port
+    in case no port is given.
+    """
+    connection = FritzConnection(
+        address="example.myfritz.net", use_public_connection=True
+    )
+    assert connection.use_public_connection is True
+    assert connection.address == "https://example.myfritz.net"
+    assert connection.soaper.address == "https://example.myfritz.net"
+    assert connection.port == FRITZ_TLS_PORT
+
+
+def test_public_connection_default_is_off(router_api):
+    """Without the flag the connection is unchanged."""
+    connection = FritzConnection(address="192.168.178.1")
+    assert connection.use_public_connection is False
+    assert connection.path_prefix == ""
+    assert connection.address == "http://192.168.178.1"
+    assert connection.port == FRITZ_TCP_PORT
+
+
+@pytest.mark.parametrize(
+    "func, expected_leading_parameters", [
+        (
+            FritzConnection.__init__,
+            ["self", "address", "port", "user", "password", "timeout",
+             "use_tls", "use_cache", "verify_cache", "cache_directory",
+             "cache_format", "pool_connections", "pool_maxsize",
+             "redact_debug_log"],
+        ),
+        (
+            Soaper.__init__,
+            ["self", "address", "port", "user", "password", "timeout",
+             "session", "redact_debug_log"],
+        ),
+        (Soaper.execute, ["self", "service", "action_name", "arguments"]),
+        (
+            Service.load_scpd,
+            ["self", "address", "port", "timeout", "session"],
+        ),
+        (
+            DeviceManager.load_service_descriptions,
+            ["self", "address", "port"],
+        ),
+    ]
+)
+def test_public_connection_keeps_api_compatible(func, expected_leading_parameters):
+    """
+    The public connection support is optional: existing parameters keep
+    their positions and every new parameter is appended with a default,
+    so positional calls of existing code keep working.
+    """
+    parameters = list(inspect.signature(func).parameters.values())
+    leading = parameters[:len(expected_leading_parameters)]
+    assert [p.name for p in leading] == expected_leading_parameters
+    for parameter in parameters[len(expected_leading_parameters):]:
+        assert parameter.default is not inspect.Parameter.empty

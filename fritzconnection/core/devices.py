@@ -84,14 +84,16 @@ class DeviceManager:
         for description in self.descriptions:
             self.services.update(description.services)
 
-    def load_service_descriptions(self, address, port):
+    def load_service_descriptions(self, address, port, path_prefix=""):
         """
         Triggers the load of the scpd files of the services, so they
-        known their actions.
+        known their actions. `path_prefix` gets inserted between port
+        and resource path (e.g. "/tr064" for access from the internet).
         """
         for service in self.services.values():
             service.load_scpd(
-                address, port, timeout=self.timeout, session=self.session
+                address, port, timeout=self.timeout, session=self.session,
+                path_prefix=path_prefix
             )
 
     def serialize(self):

@@ -54,6 +54,8 @@ def get_instance(cls, args):
         user=args.username,
         password=args.password,
         use_tls=args.encrypt,
+        # getattr: keep working with argument namespaces of older callers
+        use_public_connection=getattr(args, 'public_connection', False),
         use_cache=args.use_cache,
         verify_cache=args.verify_cache,
         cache_directory=args.cache_directory,
@@ -81,6 +83,12 @@ def get_cli_arguments(scan_additional_arguments=None):
     parser.add_argument('-e', '--encrypt',
                         nargs='?', default=False, const=True,
                         help='Flag: use secure connection (TLS)')
+    parser.add_argument('--public-connection',
+                        default=False,
+                        action='store_true',
+                        dest='public_connection',
+                        help='Flag: access the FritzBox from the internet '
+                             '(remote access, implies -e)')
     parser.add_argument('-x', '--use-cache',
                         default=get_bool_env(FRITZ_ENV_USECACHE, False),
                         action="store_true",
