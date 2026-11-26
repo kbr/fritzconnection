@@ -1,5 +1,6 @@
 import datetime
 import types
+from unittest import mock
 from xml.etree import ElementTree as etree
 
 import pytest
@@ -23,6 +24,7 @@ from ..core.exceptions import (
 )
 
 from ..core.soaper import (
+    Soaper,
     boolean_convert,
     encode_boolean,
     get_argument_value,
@@ -430,3 +432,39 @@ def test_redact_debug_log_wifi_passwords():
     </s:Body>
     </s:Envelope>
     """
+
+
+@pytest.mark.parametrize(
+    "path_prefix, expected_url", [
+        ("", "https://example.myfritz.net:12345/upnp/control/deviceinfo"),
+        ("/tr064", "https://example.myfritz.net:12345/tr064/upnp/control/deviceinfo"),
+    ]
+)
+def test_execute_uses_path_prefix(path_prefix, expected_url):
+    """The soap request goes to the controlURL behind the optional prefix."""
+    response = mock.MagicMock(status_code=200)
+    session = mock.MagicMock()
+    session.post.return_value.__enter__.return_value = response
+    service = types.SimpleNamespace(
+        serviceType="urn:dslforum-org:service:DeviceInfo:1",
+        controlURL="/upnp/control/deviceinfo",
+    )
+    soaper = Soaper(
+        "https://example.myfritz.net", 12345, "user", "secret",
+        session=session, path_prefix=path_prefix,
+    )
+
+    with mock.patch.object(
+        Soaper, "parse_response", return_value={"NewX": 1}
+    ) as parse_response:
+        result = soaper.execute(service, "GetInfo", {})
+
+    assert result == {"NewX": 1}
+    args, _ = session.post.call_args
+    assert args[0] == expected_url
+    parse_response.assert_called_once_with(response, service, "GetInfo")
+
+
+def test_soaper_path_prefix_default():
+    soaper = Soaper("http://192.168.178.1", 49000, None, None)
+    assert soaper.path_prefix == ""

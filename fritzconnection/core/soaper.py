@@ -255,8 +255,14 @@ class Soaper:
         "ui4": int,
     }
 
-    def __init__(self, address, port, user, password, timeout=None, session=None, redact_debug_log=False):
+    def __init__(
+        self, address, port, user, password, timeout=None, session=None,
+        redact_debug_log=False, path_prefix=""
+    ):
         self.address = address
+        # inserted between port and controlURL, e.g. "/tr064" for
+        # access from the internet:
+        self.path_prefix = path_prefix
         self.port = port
         self.user = user
         self.password = password
@@ -294,7 +300,7 @@ class Soaper:
         )
         body = self.get_body(service, action_name, arguments)
         envelope = self.envelope.format(body=body).encode("utf-8")
-        url = f"{self.address}:{self.port}{service.controlURL}"
+        url = f"{self.address}:{self.port}{self.path_prefix}{service.controlURL}"
         fritzlogger.debug(f"\n{url}")
         fritzlogger.debug(envelope)
         if self.session:

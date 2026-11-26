@@ -479,6 +479,25 @@ The default setting for `use_tls` is `False`. For the command line tools encrypt
     - In case the client communicates by VPN there is also no need to add an additional encryption layer.
 
 
+Access from the Internet
+------------------------
+
+If internet access via HTTPS ("Internetzugriff") is enabled on the Fritz!Box and the user is allowed to access the box from the internet, the TR-064 api can also be used from the internet. In this case the box provides the api only encrypted and with the additional path prefix `/tr064`. This gets activated by the option `use_public_connection` (implies `use_tls=True`): ::
+
+    fc = FritzConnection(
+        address="<your-myfritz-address>.myfritz.net",
+        port=<remote-https-port>,
+        user=<username>,
+        password=<password>,
+        use_public_connection=True,
+    )
+
+The port is the TLS port shown in the Fritz!Box remote access settings (not the default local TLS port 49443). For the command line tools the option is provided by the flag :command:`--public-connection`.
+
+.. note ::
+    Cache verification uses the file `jason_boxinfo.xml`, which is not available from the internet. Using the cache in combination with `use_public_connection` will therefore reload the api from the router on each instantiation unless `verify_cache` is set to `False`.
+
+
 Environment-Variables
 ---------------------
 

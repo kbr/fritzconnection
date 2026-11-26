@@ -3,6 +3,11 @@
 Version History
 ===============
 
+unreleased
+----------
+
+- FritzConnection: new argument `use_public_connection` (default: False) to access the TR-064 api from the internet (remote access). This implies `use_tls=True` and adds the path prefix `/tr064` to the urls of the description-, scpd- and control-resources. The command line tools provide the flag `--public-connection`.
+
 1.15.1 - 2026-01-26
 -------------------
 

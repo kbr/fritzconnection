@@ -1,5 +1,7 @@
 
 import os
+from unittest import mock
+
 import pytest
 
 from ..core.processor import (
@@ -241,3 +243,29 @@ def test_scpd_statevariable_allowed_range(scpd_instance):
     assert allowed_range.minimum == '0'
     assert allowed_range.maximum == '4294967295'
     assert allowed_range.step == '1'
+
+
+@pytest.mark.parametrize(
+    "path_prefix, expected_url", [
+        ("", "https://example.myfritz.net:12345/deviceinfoSCPD.xml"),
+        ("/tr064", "https://example.myfritz.net:12345/tr064/deviceinfoSCPD.xml"),
+    ]
+)
+def test_service_load_scpd_path_prefix(path_prefix, expected_url):
+    service = Service()
+    service.SCPDURL = "/deviceinfoSCPD.xml"
+
+    with mock.patch(
+        "fritzconnection.core.processor.get_xml_root", return_value="root"
+    ) as get_xml_root, mock.patch(
+        "fritzconnection.core.processor.Scpd"
+    ) as scpd:
+        service.load_scpd(
+            "https://example.myfritz.net", 12345,
+            timeout=3, session="session", path_prefix=path_prefix,
+        )
+
+    get_xml_root.assert_called_once_with(
+        expected_url, timeout=3, session="session"
+    )
+    scpd.assert_called_once_with("root")

@@ -52,6 +52,8 @@ FRITZ_BOXINFO_FILE = "jason_boxinfo.xml"
 FRITZ_IGD_DESC_FILE = "igddesc.xml"
 FRITZ_TR64_DESC_FILE = "tr64desc.xml"
 FRITZ_DESCRIPTIONS = [FRITZ_IGD_DESC_FILE, FRITZ_TR64_DESC_FILE]
+# path prefix for TR-064 resources when accessing the box from the internet
+FRITZ_PUBLIC_PATH_PREFIX = "/tr064"
 FRITZ_USERNAME_REQUIRED_VERSION = 7.24
 FRITZ_APPLICATION_ACCESS_DISABLED = """\n
     FRITZ!Box: access for applications disabled.
@@ -192,7 +194,8 @@ class FritzConnection:
         cache_format: str | None = None,
         pool_connections: int = DEFAULT_POOL_CONNECTIONS,
         pool_maxsize: int = DEFAULT_POOL_MAXSIZE,
-        redact_debug_log: bool = False
+        redact_debug_log: bool = False,
+        use_public_connection: bool = False,
     ):
         """
         Initialisation of FritzConnection: reads all data from the box
@@ -247,6 +250,14 @@ class FritzConnection:
 
         `redact_debug_log` accepts a boolean for enabling redacting some
         sensitiv data in debug outputs. Default is `False`.
+
+        If `use_public_connection` is `True` the box is accessed from
+        the internet (FRITZ!Box remote access, e.g. via the MyFRITZ!
+        address). The FRITZ!Box provides TR-064 from the outside only
+        encrypted and under the path prefix `/tr064`, so this flag
+        implies `use_tls=True` and adds the prefix to all TR-064 urls.
+        `port` should be set to the TLS port shown in the FRITZ!Box
+        remote access settings. Default is `False`.
         """
         if address is None:
             address = FRITZ_IP_ADDRESS
@@ -262,6 +273,9 @@ class FritzConnection:
             )
         if cache_directory is None:
             cache_directory = os.getenv(FRITZ_ENV_CACHEDIRECTORY, None)
+        if use_public_connection:
+            # remote access to TR-064 is only available via https
+            use_tls = True
         if port is None and use_tls:
             port = FRITZ_TLS_PORT
         elif port is None:
@@ -287,9 +301,14 @@ class FritzConnection:
         self.session = session
         self.timeout = timeout
         self.port = port
+        self.use_public_connection = use_public_connection
+        self.path_prefix = (
+            FRITZ_PUBLIC_PATH_PREFIX if use_public_connection else ""
+        )
 
         self.soaper = Soaper(
-            address, port, user, password, timeout=timeout, session=session, redact_debug_log=redact_debug_log
+            address, port, user, password, timeout=timeout, session=session,
+            redact_debug_log=redact_debug_log, path_prefix=self.path_prefix
         )
         self.device_manager = DeviceManager(timeout=timeout, session=session)
         self._load_router_api(
@@ -674,7 +693,7 @@ class FritzConnection:
         device_manager.
         """
         for description in FRITZ_DESCRIPTIONS:
-            source = f"{self.address}:{self.port}/{description}"
+            source = f"{self.address}:{self.port}{self.path_prefix}/{description}"
             try:
                 self.device_manager.add_description(source)
             except FritzResourceError:
@@ -690,4 +709,6 @@ class FritzConnection:
                         FRITZ_APPLICATION_ACCESS_DISABLED
                     )
         self.device_manager.scan()
-        self.device_manager.load_service_descriptions(self.address, self.port)
+        self.device_manager.load_service_descriptions(
+            self.address, self.port, path_prefix=self.path_prefix
+        )
